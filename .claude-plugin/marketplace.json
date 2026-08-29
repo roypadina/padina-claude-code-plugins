@@ -9,7 +9,7 @@
     {
       "name": "cmux-control",
       "source": "./cmux-control",
-      "description": "Wires Claude Code into the cmux terminal \u2014 tabs named after repo and branch, sidebar notifications that say what finished, progress pills, a session inventory, and a skill that knows the cmux CLI.",
+      "description": "Wires Claude Code into the cmux terminal — tabs named after repo and branch, sidebar notifications that say what finished, progress pills, a session inventory, and a skill that knows the cmux CLI.",
       "category": "productivity",
       "keywords": [
         "cmux",
@@ -23,12 +23,12 @@
     {
       "name": "agentctl-sessions",
       "source": "./agentctl-sessions",
-      "description": "Name, label, flag, annotate, schedule and close out Claude Code sessions \u2014 Claude does it for you, and agentctl shows it in its session picker."
+      "description": "Name, label, flag, annotate, schedule and close out Claude Code sessions — Claude does it for you, and agentctl shows it in its session picker."
     },
     {
       "name": "heeng-keyboard-translator",
       "source": "./heeng-keyboard-translator",
-      "description": "Repairs text typed with the wrong keyboard layout (Hebrew \u2194 English) \u2014 per word, so a half-garbled sentence is fixed too.",
+      "description": "Repairs text typed with the wrong keyboard layout (Hebrew ↔ English) — per word, so a half-garbled sentence is fixed too.",
       "category": "productivity",
       "keywords": [
         "hebrew",
@@ -37,6 +37,31 @@
         "layout",
         "rtl",
         "il"
+      ]
+    },
+    {
+      "name": "espanso-control",
+      "source": "./espanso-control",
+      "description": "Teaches Claude the Espanso text-expansion CLI — config paths, match YAML patterns, package management — plus a /espanso-doctor preflight for PATH, version, daemon status, service registration and config path.",
+      "category": "productivity",
+      "keywords": [
+        "espanso",
+        "text-expansion",
+        "productivity",
+        "macos"
+      ]
+    },
+    {
+      "name": "recipe-research",
+      "source": "./recipe-research",
+      "description": "Researches a dish with three parallel subagents — classic recipes, food science, pro-chef technique — and synthesizes a restaurant-level recipe into a linked note tree. Obsidian optional.",
+      "category": "productivity",
+      "keywords": [
+        "recipes",
+        "cooking",
+        "research",
+        "obsidian",
+        "food"
       ]
     }
   ]

@@ -1,0 +1,13 @@
+{
+  "name": "espanso-control",
+  "version": "0.1.0",
+  "description": "Manage Espanso text-expansion config and packages, plus a /espanso-doctor preflight that checks the daemon, service registration and config path before you trust an expansion to fire.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins",
+  "license": "MIT",
+  "keywords": ["espanso", "text-expansion", "productivity", "macos"]
+}

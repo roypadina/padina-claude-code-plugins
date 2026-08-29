@@ -1,0 +1,33 @@
+{
+  "name": "recipe-research",
+  "version": "0.1.0",
+  "description": "Research a dish with parallel subagents (classic recipes, food science, pro-chef technique) and synthesize a restaurant-level recipe into a linked note tree — Obsidian vault optional.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins",
+  "license": "MIT",
+  "keywords": ["recipes", "cooking", "research", "obsidian", "food"],
+  "userConfig": {
+    "outputDir": {
+      "type": "directory",
+      "title": "Recipe output folder",
+      "description": "Where dish folders get written, e.g. ~/recipes.",
+      "default": "~/recipes"
+    },
+    "vaultMode": {
+      "type": "boolean",
+      "title": "Obsidian vault mode",
+      "description": "On: [[wiki-links]] and frontmatter tags for an Obsidian vault. Off (default): plain relative Markdown links, readable anywhere.",
+      "default": false
+    },
+    "language": {
+      "type": "string",
+      "title": "Output language",
+      "description": "Language for the synthesized recipe and summaries (e.g. english, hebrew, spanish). \"auto\" (default) matches the language you write in.",
+      "default": "auto"
+    }
+  }
+}

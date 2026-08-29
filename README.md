@@ -1,8 +1,9 @@
 # Padina Claude Code plugins
 
-A [Claude Code](https://claude.com/claude-code) plugin marketplace. Three plugins so far: one that
+A [Claude Code](https://claude.com/claude-code) plugin marketplace. Five plugins so far: one that
 wires Claude into the cmux terminal, one that gives your sessions a memory of themselves, one that
-repairs Hebrew/English layout typos.
+repairs Hebrew/English layout typos, one that teaches Claude the Espanso text-expander CLI, one that
+researches recipes with parallel subagents.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -14,6 +15,8 @@ Then install whichever you want:
 /plugin install cmux-control@padina
 /plugin install agentctl-sessions@padina
 /plugin install heeng-keyboard-translator@padina
+/plugin install espanso-control@padina
+/plugin install recipe-research@padina
 ```
 
 📖 **[Full documentation is in the Wiki](https://github.com/roypadina/padina-claude-code-plugins/wiki)**
@@ -85,6 +88,39 @@ blocks, paths, URLs or identifiers.
 
 → [Plugin README](heeng-keyboard-translator/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/heeng-keyboard-translator)
 
+### [`espanso-control`](espanso-control) — the Espanso CLI, for Claude
+
+[Espanso](https://espanso.org) is a text expander configured entirely through YAML, driven by a CLI
+whose subcommands have shifted across 2.x releases. A binary being installed says nothing about
+whether the daemon is running, registered to survive a reboot, or has the macOS Accessibility
+permission it silently requires — expansions just don't fire, with no error anywhere.
+
+This plugin teaches Claude the CLI properly (verified against 2.4.0) and adds `/espanso-doctor` — six
+checks that each degrade independently: PATH, installed version vs. latest stable, daemon actually
+running, service registration, config path, and Accessibility permission (reported as
+**unverifiable**, not guessed — querying `TCC.db` from an unprivileged shell returns zero rows
+whether or not the grant is real, so a script that claimed otherwise would be wrong exactly when it
+mattered). It only reports and advises — never restarts, registers, or edits anything.
+
+**Requires** macOS and [Espanso](https://espanso.org) (`brew install --cask espanso`) with
+Accessibility permission granted by hand.
+
+→ [Plugin README](espanso-control/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/espanso-control)
+
+### [`recipe-research`](recipe-research) — a restaurant-level recipe, not one blogger's opinion
+
+"Find me a recipe" gets you one source. This plugin fans three subagents out in parallel — classic
+recipes (sourced, exact quantities), food science (why the good version works), pro-chef technique
+(named chefs, restaurant practice, UNVERIFIED claims flagged rather than asserted) — then makes the
+actual editorial call on where they disagree, instead of averaging opinions.
+
+The output is a linked note tree under `<cuisine>/<dish>/`: a synthesized recipe, three summaries,
+three raw research files. **Obsidian is optional** — off by default (plain relative Markdown links,
+readable anywhere), or turn on `vaultMode` for `[[wiki-links]]` and frontmatter tags. Output folder
+and language are configurable too (`/plugin configure recipe-research`).
+
+→ [Plugin README](recipe-research/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/recipe-research)
+
 ---
 
 ## Repository layout
@@ -94,6 +130,8 @@ blocks, paths, URLs or identifiers.
 cmux-control/                     plugin: commands/, hooks/, scripts/, skills/
 agentctl-sessions/                plugin: commands/, hooks/, skills/
 heeng-keyboard-translator/        plugin: skills/ (with a bundled Python translator)
+espanso-control/                  plugin: commands/, scripts/, skills/
+recipe-research/                  plugin: commands/, skills/
 ```
 
 Each plugin directory is self-contained and follows the standard Claude Code plugin layout —
