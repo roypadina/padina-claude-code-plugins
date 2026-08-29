@@ -9,7 +9,21 @@
     {
       "name": "agentctl-sessions",
       "source": "./agentctl-sessions",
-      "description": "Name, label, flag, annotate, schedule and close out Claude Code sessions — Claude does it for you, and agentctl shows it in its session picker."
+      "description": "Name, label, flag, annotate, schedule and close out Claude Code sessions \u2014 Claude does it for you, and agentctl shows it in its session picker."
+    },
+    {
+      "name": "heeng-keyboard-translator",
+      "source": "./heeng-keyboard-translator",
+      "description": "Repairs text typed with the wrong keyboard layout (Hebrew \u2194 English) \u2014 per word, so a half-garbled sentence is fixed too.",
+      "category": "productivity",
+      "keywords": [
+        "hebrew",
+        "english",
+        "keyboard",
+        "layout",
+        "rtl",
+        "il"
+      ]
     }
   ]
 }

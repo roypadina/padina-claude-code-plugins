@@ -1,44 +1,84 @@
 # agentctl-sessions
 
-A Claude Code plugin that lets a session name itself, take notes on itself, flag itself and set its
-own reminders — all of which show up in the [Agentctl](https://github.com/roypadina/Agentctl)
-Resume picker.
-
-Requires the `agentctl` CLI on `PATH` (`brew install --cask roypadina/tap/agentctl`).
-
-## Install
+Gives a Claude Code session a memory of itself — a real name, labels, notes, flags, a done state,
+reminders and due dates — so you can find it again among the hundreds you have.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
 /plugin install agentctl-sessions@padina
 ```
 
-Requires `agentctl` **0.5.0 or newer** for labels and due dates.
+**Requires** the [`agentctl`](https://github.com/roypadina/agentctl) CLI, **0.5.0 or newer** for
+labels and due dates:
 
-## Commands
+```
+brew install --cask roypadina/tap/agentctl
+```
 
-| Command | What it does |
+The plugin checks for it and offers to install it rather than failing quietly.
+
+## The problem
+
+Claude Code names a session after your first prompt — `Run the shell command 'sleep 20' in the
+back…` — and records nothing else. A month in you have hundreds of them and no way to find the one
+where you fixed that billing bug.
+
+## What Claude does on its own
+
+- **Names the session** once your first task is clear — a short name describing the work. Once,
+  quietly, without asking.
+- **Labels it with the ticket.** If your branch is `feature/RD-12345-fix-thing`, the session gets
+  labelled `RD-12345`. Every session on that ticket is then one search away.
+- **Leaves a note before a long pause**, so a resumed session tells you where you left off.
+
+It will *not* mark a session done, set reminders, or set due dates on its own — those are your
+judgement calls.
+
+## What you can just ask for
+
+> "name this session billing spike" · "mark this done" · "remind me in 2 hours" · "this is due
+> Friday" · "tag this with RD-123" · "flag this to come back to" · "what do I need to get back to?"
+
+Or use the slash commands directly:
+
+| Command | Does |
 |---|---|
-| `/agentctl-name [name]` | Name this session (no name given → Claude suggests one) |
+| `/agentctl-name [name]` | Name it (no name → Claude suggests one) |
 | `/agentctl-note [text]` | Attach a note (no text → Claude summarises where things stand) |
-| `/agentctl-flag <tag>` | Tag it: `todo`, `later`, `blocked`… (`-tag` removes) |
-| `/agentctl-remind <when>` | `2h`, `30m`, `3d`, `tomorrow 9am`, `17:00`, or an ISO date |
-| `/agentctl-done` | Mark it finished (`--undo` reopens) |
+| `/agentctl-label <label>` | Ticket, repo, topic. No argument → reads the issue key from your branch |
+| `/agentctl-flag <flag>` | `todo`, `later`, `blocked`… (`-flag` removes) |
+| `/agentctl-remind <when>` | `2h`, `30m`, `tomorrow 9am`, `17:00`, ISO |
+| `/agentctl-due <when>` | When the work is actually due |
+| `/agentctl-done` | Finished (`--undo` reopens) |
 
 ## The hook
 
-One `SessionStart` hook runs `agentctl hook session-start`. On a **named** session it hands Claude the
-name, flags and note, so a resumed session knows what it is. On an **unnamed** one it asks Claude to
-pick a short name once the first task is clear — quietly, without asking permission. It also
-mentions any reminders that have come due on other sessions.
+One `SessionStart` hook, running `agentctl hook session-start`. On a **named** session it hands
+Claude the name, labels, note and due state, so a resumed session knows what it is and what is
+overdue. On an **unnamed** one it asks Claude to name it once your first task is clear, and points
+out any issue key it found in your branch. It also mentions reminders that came due elsewhere.
 
-That is the only hook, it runs once per session start, and it prints at most a handful of lines. If
-`agentctl` is missing or the payload is malformed it prints nothing and exits 0 — a hook must never break
-the session it runs in.
+It runs once per session start and prints a handful of lines. If `agentctl` is not installed the
+hook is skipped entirely — no error, no noise.
 
 ## Where the data lives
 
-`~/.config/agentctl/annotations/<session-id>.json` — one small file per session, outside
-`~/.claude`, so nothing here can corrupt a transcript. Renaming through `agentctl` (rather than appending
-a `custom-title` line to the JSONL) is deliberate: Claude Code re-flushes its in-memory title after
-almost every turn, which would silently revert an externally written rename on a live session.
+`~/.config/agentctl/annotations/<session-id>.json` — one small file per session, written atomically,
+deliberately **outside `~/.claude`** so nothing here can corrupt a transcript.
+
+Renaming goes through `agentctl` rather than the transcript on purpose: Claude Code re-flushes its
+own cached title after almost every turn, so a rename written into the JSONL by an outside tool is
+silently reverted on a live session.
+
+## Layout
+
+```
+.claude-plugin/plugin.json
+commands/agentctl-*.md            seven slash commands
+hooks/hooks.json                  the SessionStart hook
+skills/agentctl-sessions/SKILL.md the full toolset, for Claude
+```
+
+## License
+
+MIT © Roy Padina

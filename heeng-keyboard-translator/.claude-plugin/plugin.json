@@ -1,0 +1,22 @@
+{
+  "name": "heeng-keyboard-translator",
+  "version": "0.1.0",
+  "description": "Detects text typed with the wrong active keyboard layout (Hebrew vs English) and offers a one-click fix. Useful when the user thought the layout was Hebrew but it was actually English (or vice versa) and ended up with garbled output.",
+  "author": {
+    "name": "Roy Padina"
+  },
+  "license": "MIT",
+  "keywords": [
+    "hebrew",
+    "english",
+    "keyboard",
+    "layout",
+    "translation",
+    "mojibake",
+    "fix-typing",
+    "rtl",
+    "il"
+  ],
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins"
+}
