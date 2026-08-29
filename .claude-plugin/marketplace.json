@@ -1,0 +1,15 @@
+{
+  "name": "padina",
+  "description": "Claude Code plugins by Roy Padina.",
+  "owner": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "plugins": [
+    {
+      "name": "agentctl-sessions",
+      "source": "./agentctl-sessions",
+      "description": "Name, label, flag, annotate, schedule and close out Claude Code sessions — Claude does it for you, and agentctl shows it in its session picker."
+    }
+  ]
+}
