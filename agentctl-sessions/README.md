@@ -31,8 +31,19 @@ where you fixed that billing bug.
   labelled `RD-12345`. Every session on that ticket is then one search away.
 - **Leaves a note before a long pause**, so a resumed session tells you where you left off.
 
-It will *not* mark a session done, set reminders, or set due dates on its own — those are your
-judgement calls.
+It will *not* mark a session done, set reminders or due dates, hide a session, or delete one on its
+own — those are your judgement calls, and it never deletes anything you did not ask it to.
+
+### Hiding and deleting
+
+Both are listing preferences kept by `agentctl`. **Neither touches the Claude Code transcript** or
+removes anything from `~/.claude` — a hidden or deleted session still resumes normally if you
+address it by id.
+
+- **Hidden** — out of the default list, still under `agentctl ls --hidden` (`v` cycles views in the
+  TUI, and the GUI has a view menu). For sessions you want out of the way.
+- **Deleted** — out of every list except `agentctl ls --deleted`. `agentctl delete --undo` restores
+  it.
 
 ## What you can just ask for
 
@@ -50,6 +61,8 @@ Or use the slash commands directly:
 | `/agentctl-remind <when>` | `2h`, `30m`, `tomorrow 9am`, `17:00`, ISO |
 | `/agentctl-due <when>` | When the work is actually due |
 | `/agentctl-done` | Finished (`--undo` reopens) |
+| `/agentctl-hide` | Out of the default list, still under `--hidden` |
+| `/agentctl-delete` | Out of every list — recoverable, transcript untouched |
 
 ## The hook
 

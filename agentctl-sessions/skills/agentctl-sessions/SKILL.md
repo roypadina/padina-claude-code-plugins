@@ -38,7 +38,10 @@ parent-process chain to the live Claude process, so it works from any shell you 
 | `agentctl remind 2h` | Nudge me then. `30m`, `3d`, `tomorrow 9am`, `17:00`, ISO. `--clear` |
 | `agentctl due "friday 17:00"` | When the work itself is due. Same formats. `--clear` |
 | `agentctl done` | Finished. `--undo` reopens it |
+| `agentctl hide` | Keep it out of the default list; still in `agentctl ls --hidden`. `--undo` |
+| `agentctl delete` | Keep it out of every list. `--undo` restores it |
 | `agentctl annotations` | Everything annotated. `--due` for what has come due, `--label RD-12345` to filter |
+| `agentctl ls --hidden` / `--deleted` / `--all` | List the other views |
 
 Add `--json` to any of them when you need to read the result back.
 
@@ -60,8 +63,9 @@ Bad: `debugging` · `fix the thing` · `Claude Code session`
 **Leave a note before a long pause** — if the user is clearly stopping mid-task (they say they're
 leaving, or you're blocked on someone else), save one line on where things stand and what's next.
 
-Do **not** proactively: mark a session done, set reminders, or set due dates. Those are the user's
-judgement calls — wait to be asked.
+Do **not** proactively: mark a session done, set reminders or due dates, hide a session, or delete
+one. Those are the user's judgement calls — wait to be asked. **Never delete a session the user did
+not explicitly ask you to delete.**
 
 ## Do it when asked
 
@@ -76,6 +80,10 @@ Map plain requests onto the commands, and confirm in one line — never dump the
 - "make a note that…" → `agentctl note "…"`
 - "what do I need to get back to?" → `agentctl annotations --due`, then summarise in prose
 - "what was I doing on RD-123?" → `agentctl annotations --label RD-123`
+- "hide this session" / "get this out of my list" → `agentctl hide`
+- "delete this session" / "remove it from the list" → `agentctl delete`, and say in the same breath
+  that it is recoverable with `agentctl delete --undo` and that the transcript itself is untouched
+- "show me the hidden/deleted ones" → `agentctl ls --hidden` / `agentctl ls --deleted`
 
 If a reminder or due date fails to parse, the CLI says so and exits 2 — ask for a clearer time
 rather than guessing at one.
@@ -84,6 +92,19 @@ rather than guessing at one.
 
 Nothing pops up. A due reminder shows as a red marker in the `agentctl` picker and is mentioned at
 the start of the user's next session. Say that when you set one, so the expectation is right.
+
+## Hiding vs deleting — and what neither does
+
+Both are **listing preferences stored by `agentctl`**. Neither touches the Claude Code transcript,
+removes anything from `~/.claude`, or stops the session resuming if you address it by id.
+
+- **Hidden** — out of the default list, still there under `agentctl ls --hidden` (or `v` in the TUI).
+  For sessions you want out of the way but not gone.
+- **Deleted** — out of every list except `agentctl ls --deleted`. For clutter you never want to see.
+  `agentctl delete --undo` brings it back.
+
+Say this plainly when the user asks to delete something: nothing is destroyed, and it is one command
+to undo.
 
 ## Notes
 
