@@ -1,0 +1,13 @@
+{
+  "name": "cmux-control",
+  "version": "0.1.0",
+  "description": "Drive the cmux terminal from Claude Code — tabs named after repo and branch, informative sidebar notifications when work finishes, progress pills, a session inventory, and a skill that teaches Claude the whole cmux CLI.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins",
+  "license": "MIT",
+  "keywords": ["cmux", "terminal", "workspace", "notifications", "sessions", "macos"]
+}

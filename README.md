@@ -1,7 +1,8 @@
 # Padina Claude Code plugins
 
-A [Claude Code](https://claude.com/claude-code) plugin marketplace. Two plugins so far: one that
-gives your sessions a memory of themselves, one that repairs Hebrew/English layout typos.
+A [Claude Code](https://claude.com/claude-code) plugin marketplace. Three plugins so far: one that
+wires Claude into the cmux terminal, one that gives your sessions a memory of themselves, one that
+repairs Hebrew/English layout typos.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -10,6 +11,7 @@ gives your sessions a memory of themselves, one that repairs Hebrew/English layo
 Then install whichever you want:
 
 ```
+/plugin install cmux-control@padina
 /plugin install agentctl-sessions@padina
 /plugin install heeng-keyboard-translator@padina
 ```
@@ -19,6 +21,32 @@ Then install whichever you want:
 ---
 
 ## Plugins
+
+### [`cmux-control`](cmux-control) — Claude Code, wired into cmux
+
+You run Claude inside [cmux](https://cmux.com), and cmux has a tab title, a sidebar entry, a
+notification centre and a progress bar that Claude never touches. So you get eleven tabs called
+`zsh`, and no way to know a twenty-minute agent run finished except to keep looking at it.
+
+This plugin closes that gap. A `SessionStart` hook names the tab **and** the sidebar entry
+`repo · branch` — the real branch, slashes and all, the main repo's name from inside a worktree, the
+sha on a detached HEAD. `Stop` and `SubagentStop` hooks push a notification that says what actually
+finished:
+
+```
+Subagent finished · Explore
+myapp · feature/RD-12851
+Found 3 call sites in src/api.ts
+```
+
+Plus `/cmux-sessions` — an inventory of every Claude pane across cmux with its resume command, and a
+`check`/`restore` pair for the workspaces that don't come back after a restart — and a skill that
+teaches Claude the cmux CLI properly, verified against 0.64.22, traps and all.
+
+**Requires** macOS, the cmux app with its CLI on PATH, and `jq` for the hooks. Every hook is guarded:
+outside cmux they exit silently.
+
+→ [Plugin README](cmux-control/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/cmux-control)
 
 ### [`agentctl-sessions`](agentctl-sessions) — sessions that remember what they were
 
@@ -63,6 +91,7 @@ blocks, paths, URLs or identifiers.
 
 ```
 .claude-plugin/marketplace.json   the marketplace manifest
+cmux-control/                     plugin: commands/, hooks/, scripts/, skills/
 agentctl-sessions/                plugin: commands/, hooks/, skills/
 heeng-keyboard-translator/        plugin: skills/ (with a bundled Python translator)
 ```

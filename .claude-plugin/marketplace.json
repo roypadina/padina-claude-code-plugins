@@ -7,6 +7,20 @@
   },
   "plugins": [
     {
+      "name": "cmux-control",
+      "source": "./cmux-control",
+      "description": "Wires Claude Code into the cmux terminal \u2014 tabs named after repo and branch, sidebar notifications that say what finished, progress pills, a session inventory, and a skill that knows the cmux CLI.",
+      "category": "productivity",
+      "keywords": [
+        "cmux",
+        "terminal",
+        "workspace",
+        "notifications",
+        "sessions",
+        "macos"
+      ]
+    },
+    {
       "name": "agentctl-sessions",
       "source": "./agentctl-sessions",
       "description": "Name, label, flag, annotate, schedule and close out Claude Code sessions \u2014 Claude does it for you, and agentctl shows it in its session picker."
