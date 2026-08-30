@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 #
-# cmux-control — one entrypoint for all three Claude Code hooks.
+# cmux-control — one entrypoint for both Claude Code hooks.
 #
-#   cmux-hook.sh session-start    rename the cmux tab + workspace to "repo · branch"
 #   cmux-hook.sh stop             notify the sidebar that the turn finished
 #   cmux-hook.sh subagent-stop    notify the sidebar that a subagent finished
 #
 # Reads the hook JSON payload on stdin. Silent and harmless outside cmux, and
 # always exits 0 — it must never block or prolong a session.
 #
-# Set CMUX_CONTROL_QUIET=1 to keep the tab naming but suppress the notifications.
+# Set CMUX_CONTROL_QUIET=1 to suppress the notifications.
 
 set -u
 
@@ -89,30 +88,6 @@ main() {
     export CMUX_QUIET=1     # mute cmux's own legacy-alias deprecation notices
 
     case "${1:-}" in
-    session-start)
-        local dir label args
-        dir=$(jqr '.cwd // ""')
-        label=$(workspace_label "$dir")
-        [ -n "$label" ] || exit 0
-
-        # The horizontal tab.
-        args=(--workspace "$CMUX_WORKSPACE_ID")
-        [ -n "${CMUX_TAB_ID:-}" ] && args+=(--tab "$CMUX_TAB_ID")
-        cmux rename-tab "${args[@]}" -- "$label" >/dev/null 2>&1 || true
-
-        # The sidebar entry.
-        cmux workspace-action --workspace "$CMUX_WORKSPACE_ID" \
-            --action rename --title "$label" >/dev/null 2>&1 || true
-
-        # Claude Code's own session title. Whether cmux mirrors it anywhere is
-        # unverified; it costs nothing and names the session in Claude's picker.
-        if command -v jq >/dev/null 2>&1; then
-            printf '%s' "$label" | jq -Rs \
-                '{hookSpecificOutput: {hookEventName: "SessionStart", sessionTitle: .}}' \
-                2>/dev/null || true
-        fi
-        ;;
-
     stop)
         # stop_hook_active means Claude is already running because of a previous
         # Stop hook. Firing again would notify on every continuation.

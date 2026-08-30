@@ -1,7 +1,7 @@
 {
   "name": "cmux-control",
-  "version": "0.1.0",
-  "description": "Drive the cmux terminal from Claude Code — tabs named after repo and branch, informative sidebar notifications when work finishes, progress pills, a session inventory, and a skill that teaches Claude the whole cmux CLI.",
+  "version": "0.2.0",
+  "description": "Drive the cmux terminal from Claude Code — informative sidebar notifications when work finishes, progress pills, a session inventory, and a skill that teaches Claude the whole cmux CLI.",
   "author": {
     "name": "Roy Padina",
     "url": "https://github.com/roypadina"

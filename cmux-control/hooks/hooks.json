@@ -1,18 +1,6 @@
 {
-  "description": "cmux-control: name the cmux tab after repo + branch at session start, and push an informative notification into the cmux sidebar when Claude or one of its subagents finishes.",
+  "description": "cmux-control: push an informative notification into the cmux sidebar when Claude or one of its subagents finishes.",
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup|resume",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "command -v cmux >/dev/null 2>&1 && \"${CLAUDE_PLUGIN_ROOT}/scripts/cmux-hook.sh\" session-start || exit 0",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [

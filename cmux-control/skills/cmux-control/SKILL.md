@@ -88,23 +88,19 @@ The `OK <ref>` payload still goes to stdout, so `awk '{print $2}'` parsing is un
 
 ## What this plugin adds
 
-### Tab naming (automatic, hook-enforced)
+### Tab and workspace naming — NOT this plugin's job
 
-A `SessionStart` hook renames both the horizontal tab and the sidebar entry to `repo · branch`,
-derived from the session's cwd. Nothing to invoke.
-
-Interaction with cmux's own naming: cmux ships an **opt-in** `automation.workspaceAutoNaming`
-setting that summarises agent sessions into workspace and tab names. It is off by default, and its
-own settings copy is explicit about the precedence — verbatim from the app:
+This plugin does **not** rename tabs or workspaces. It did before 0.2.0, from a `SessionStart` hook;
+that was removed because a `rename-tab` / `workspace-action rename` counts as a *manual* rename and
+permanently stops cmux's own naming for that workspace. Verbatim from cmux's settings copy for the
+opt-in `automation.workspaceAutoNaming` setting:
 
 > "When enabled, cmux summarizes supported agent sessions into short workspace and tab names using
 > each agent's own binary, refreshed as the topic shifts. **Manual renames always win and stop
 > auto-naming for that workspace or tab.** Uses your agent account for the short summarization calls."
 
-A `rename-tab` / `workspace-action rename` counts as a manual rename, so the two never fight: this
-plugin's name wins and cmux's AI naming stands down for that workspace.
-
-To rename by hand mid-session:
+So names belong to the user. **Do not rename a tab or workspace on your own initiative** — same rule
+as `cmux todo`. When the user asks for it:
 
 ```bash
 cmux rename-tab "release prep"                                    # horizontal tab

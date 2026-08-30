@@ -1,8 +1,8 @@
 # cmux-control
 
-Makes Claude Code and the [cmux](https://cmux.com) terminal aware of each other. Your tabs get named
-after the work, finished turns announce themselves in the sidebar with a line about what actually
-happened, and Claude gets a skill that knows the cmux CLI properly.
+Makes Claude Code and the [cmux](https://cmux.com) terminal aware of each other. Finished turns
+announce themselves in the sidebar with a line about what actually happened, and Claude gets a skill
+that knows the cmux CLI properly.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -11,46 +11,26 @@ happened, and Claude gets a skill that knows the cmux CLI properly.
 
 ## The problem
 
-cmux gives every workspace a tab, a sidebar entry, a notification centre, a status pill and a
-progress bar. Claude Code, running inside that terminal, uses none of it. You end up with eleven tabs
-called `zsh`, and the only way to know a twenty-minute agent run finished is to keep looking at it.
+cmux gives every workspace a notification centre, a status pill and a progress bar. Claude Code,
+running inside that terminal, uses none of it — the only way to know a twenty-minute agent run
+finished is to keep looking at it.
 
 ## Features
 
 | Feature | Mechanism | File |
 |---|---|---|
-| Tab + sidebar named `repo · branch` | `SessionStart` hook | `hooks/hooks.json` → `scripts/cmux-hook.sh session-start` |
 | Notification when a turn finishes | `Stop` hook | `hooks/hooks.json` → `scripts/cmux-hook.sh stop` |
 | Notification when a subagent finishes | `SubagentStop` hook | `hooks/hooks.json` → `scripts/cmux-hook.sh subagent-stop` |
 | Sidebar progress + status pill | **skill guidance** (see below) | `skills/cmux-control/SKILL.md` |
 | `/cmux-sessions` — session inventory and recovery | slash command | `commands/cmux-sessions.md` → `scripts/cmux-sessions.py` |
 | The whole cmux CLI, for Claude | skill | `skills/cmux-control/SKILL.md` + `references/` |
 
-### Tab naming
-
-The tab and the sidebar entry both become `repo · branch` — derived from git, deterministically, not
-guessed:
-
-| Situation | Name |
-|---|---|
-| `~/Code/myapp` on `feature/RD-12851` | `myapp · feature/RD-12851` |
-| A subdirectory of that repo | `myapp · feature/RD-12851` |
-| A linked worktree at `~/wt/topic` | `myapp · wt/topic` — the **main** repo's name, not the worktree directory's |
-| Detached HEAD | `myapp · @a1b2c3d` |
-| Not a git repo | the directory's own name |
-
-Branch names keep their slashes. A worktree reports the main repository via `--git-common-dir`,
-because a worktree directory is usually named after its branch and you would otherwise read the
-branch twice.
-
-It also sets `hookSpecificOutput.sessionTitle`, which is a real Claude Code SessionStart field
-("Set the session title"). Whether cmux mirrors that anywhere in its own UI is **unverified** — the
-tab and sidebar names come from the `cmux` calls, not from that field.
-
-**It does not fight cmux's own naming.** cmux ships an opt-in `automation.workspaceAutoNaming`
-setting; its settings copy says, verbatim: *"Manual renames always win and stop auto-naming for that
-workspace or tab."* A `rename-tab` counts as a manual rename, so this plugin's name stands and cmux's
-AI naming stays out of the way.
+> **Tab and workspace naming was removed in 0.2.0.** Earlier versions renamed the tab and the sidebar
+> entry to `repo · branch` from a `SessionStart` hook. That counted as a manual rename, which
+> permanently stops cmux's own `automation.workspaceAutoNaming` for that workspace — so the plugin
+> was quietly taking a decision that belongs to cmux and to you. Names are now yours: leave them,
+> set them with `cmux rename-tab "…"` / `cmux workspace-action --action rename --title "…"`, or turn
+> on cmux's auto-naming and let it summarise the session.
 
 ### Notifications
 
@@ -71,10 +51,24 @@ Found 3 call sites in src/api.ts
 The body is the closing message, whitespace-collapsed and cut to 180 characters on a codepoint
 boundary.
 
+The subtitle's `repo · branch` is derived from git, deterministically, not guessed:
+
+| Situation | Subtitle |
+|---|---|
+| `~/Code/myapp` on `feature/RD-12851` | `myapp · feature/RD-12851` |
+| A subdirectory of that repo | `myapp · feature/RD-12851` |
+| A linked worktree at `~/wt/topic` | `myapp · wt/topic` — the **main** repo's name, not the worktree directory's |
+| Detached HEAD | `myapp · @a1b2c3d` |
+| Not a git repo | the directory's own name |
+
+Branch names keep their slashes. A worktree reports the main repository via `--git-common-dir`,
+because a worktree directory is usually named after its branch and you would otherwise read the
+branch twice.
+
 The `Stop` hook respects `stop_hook_active` (so it never fires again on a continuation) and **never**
 emits `decision: "block"`. It notifies and exits 0. It cannot keep a session running.
 
-Set `CMUX_CONTROL_QUIET=1` to keep the tab naming and drop the notifications.
+Set `CMUX_CONTROL_QUIET=1` to drop the notifications.
 
 > cmux's own Claude wrapper sets `CMUX_SUPPRESS_SUBAGENT_NOTIFICATIONS=1` for its own notifier. This
 > plugin deliberately does not read that variable — its semantics are undocumented, and installing
@@ -134,8 +128,8 @@ user. Do not add, edit, complete, remove, or replace items on your own initiativ
 - **macOS** and the [cmux](https://cmux.com) app, with its CLI on PATH
   (`/Applications/cmux.app/Contents/Resources/bin/cmux`).
 - **`jq`** (`brew install jq`) for the hooks. Without it the notifications lose their body text and
-  the tab is named from `$PWD` instead of the payload's `cwd` — everything still works, just less
-  precisely.
+  their subtitle comes from `$PWD` instead of the payload's `cwd` — everything still works, just
+  less precisely.
 - **Python 3** for `/cmux-sessions` only.
 
 Everything is guarded. Outside cmux, or without the CLI, every hook exits 0 without a sound — no
@@ -145,7 +139,7 @@ errors, no output, nothing in your transcript.
 
 | | |
 |---|---|
-| **Hook-enforced** — happens whether or not Claude cooperates | tab + sidebar naming, turn-finished notification, subagent-finished notification |
+| **Hook-enforced** — happens whether or not Claude cooperates | turn-finished notification, subagent-finished notification |
 | **Skill guidance** — Claude's judgement, usually right, not guaranteed | sidebar progress and status pills, when to use which cmux command, restraint about the user's `todo` list |
 | **On request** | `/cmux-sessions` and everything else in the skill |
 
@@ -153,9 +147,9 @@ errors, no output, nothing in your transcript.
 
 ```
 .claude-plugin/plugin.json
-hooks/hooks.json                     three hooks, each guarded on `command -v cmux`
+hooks/hooks.json                     two hooks, each guarded on `command -v cmux`
 commands/cmux-sessions.md            the /cmux-sessions slash command
-scripts/cmux-hook.sh                 one entrypoint for all three hook events
+scripts/cmux-hook.sh                 one entrypoint for both hook events
 scripts/cmux-sessions.py             session inventory / check / restore
 scripts/selfcheck.sh                 the runnable check for both of the above
 skills/cmux-control/SKILL.md         the cmux CLI, for Claude
@@ -168,17 +162,17 @@ skills/cmux-control/references/      cli-reference · agents · browser · custo
 scripts/selfcheck.sh
 ```
 
-Asserts the `repo · branch` derivation against real throwaway repos — plain directory, slashed
-branch, subdirectory, detached HEAD, linked worktree, bare repo — then runs the session script's own
-assertions. No framework; it prints a line per check.
+Asserts the `repo · branch` derivation behind the notification subtitle against real throwaway
+repos — plain directory, slashed branch, subdirectory, detached HEAD, linked worktree, bare repo —
+then runs the session script's own assertions. No framework; it prints a line per check.
 
 ## Credits
 
 The idea of wiring cmux to Claude Code hooks comes from
 [`hopchouinard/cmux-plugin`](https://github.com/hopchouinard/cmux-plugin) (MIT, Patrick Chouinard).
-This is an independent reimplementation — no code was copied — that fixes the two things that bothered
-me about the original: it names tabs with the branch as well as the repo, and its notifications say
-what finished instead of "Agent finished — check results".
+This is an independent reimplementation — no code was copied — that fixes the thing that bothered me
+about the original: its notifications say what finished, with the repo and branch they finished in,
+instead of "Agent finished — check results".
 
 ## License
 

@@ -27,14 +27,13 @@ Then install whichever you want:
 
 ### [`cmux-control`](cmux-control) — Claude Code, wired into cmux
 
-You run Claude inside [cmux](https://cmux.com), and cmux has a tab title, a sidebar entry, a
-notification centre and a progress bar that Claude never touches. So you get eleven tabs called
-`zsh`, and no way to know a twenty-minute agent run finished except to keep looking at it.
+You run Claude inside [cmux](https://cmux.com), and cmux has a notification centre and a progress bar
+that Claude never touches. So there is no way to know a twenty-minute agent run finished except to
+keep looking at it.
 
-This plugin closes that gap. A `SessionStart` hook names the tab **and** the sidebar entry
-`repo · branch` — the real branch, slashes and all, the main repo's name from inside a worktree, the
-sha on a detached HEAD. `Stop` and `SubagentStop` hooks push a notification that says what actually
-finished:
+This plugin closes that gap. `Stop` and `SubagentStop` hooks push a notification that says what
+actually finished, subtitled with the repo and branch it finished in — the real branch, slashes and
+all, the main repo's name from inside a worktree, the sha on a detached HEAD:
 
 ```
 Subagent finished · Explore
