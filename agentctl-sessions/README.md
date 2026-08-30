@@ -87,7 +87,7 @@ silently reverted on a live session.
 
 ```
 .claude-plugin/plugin.json
-commands/agentctl-*.md            seven slash commands
+commands/agentctl-*.md            nine slash commands
 hooks/hooks.json                  the SessionStart hook
 skills/agentctl-sessions/SKILL.md the full toolset, for Claude
 ```

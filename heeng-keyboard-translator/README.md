@@ -25,7 +25,7 @@ keystroke didn't land, leaving a couple of broken tokens in an otherwise fine se
 | `akuo, ש אםהק כםםג` | `שלום, ש אםהק food` | different tokens need **opposite** directions |
 | `hello world` | unchanged | nothing suspect — the skill stays silent |
 
-Every token is translated both ways and scored against bundled common-word sets (~120 Hebrew, ~110
+Every token is translated both ways and scored against bundled common-word sets (140 Hebrew, 123
 English). A token is high-confidence when the original or exactly one translation is a real word;
 otherwise it is reported as uncertain with both candidates, and you decide.
 
@@ -62,7 +62,9 @@ candidates, chosen reading and confidence.
 ## Known limits
 
 - Hebrew has no letter case, so uppercase Latin maps to the same Hebrew letter as lowercase.
-- Tokens of two characters or fewer are too ambiguous to call and are left alone.
+- Tokens of two characters or fewer are too ambiguous to call. The script still scores them and
+  returns them at `confidence: low` with the original kept; skipping them is a rule in the skill,
+  not a filter in the code.
 - Only US QWERTY ↔ Israeli SI-1452. Other layout pairs would need a new mapping file.
 
 ## License

@@ -26,6 +26,10 @@ editorial call — which disagreement resolves which way, and why — instead of
   temps/times, a "why this way" section explaining every call against the research.
 - **A linked note tree**: the recipe links to three summaries, each summary links to its raw
   research. Everything is filed under `<cuisine>/<dish>/`.
+- **Where the research comes from**: the subagents work from model knowledge, and search the web when
+  they have those tools — the skill does not *require* a search tool, so treat "sourced" as
+  attributed, not as guaranteed-live-fetched. Pro-chef claims that could not be pinned to a named
+  chef or restaurant are flagged `UNVERIFIED` rather than asserted.
 - **Obsidian optional.** Off by default: plain relative Markdown links, readable in any editor or on
   GitHub. Turn it on and the same structure gets `[[wiki-links]]` and frontmatter tags instead.
 

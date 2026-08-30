@@ -84,9 +84,11 @@ clear both when the work ends — including when it fails.
 Claude follows guidance well but not perfectly. If you want the pill gone, ask, or run
 `cmux clear-progress && cmux clear-status cmux_control`.
 
-The plugin writes to the status key **`cmux_control`** and never touches `claude_code` — cmux's own
-Claude wrapper owns that key (live value: `claude_code=Running icon=bolt.fill color=#4C8DFF`) and
-writing to it would stomp the app's own state.
+When Claude does write a pill, the skill tells it to use the status key **`cmux_control`** and never
+`claude_code` — cmux's own Claude wrapper owns that key (live value:
+`claude_code=Running icon=bolt.fill color=#4C8DFF`) and writing to it would stomp the app's own
+state. No script in this plugin ever calls `set-status` or `set-progress`; that is Claude following
+the skill, which is exactly why it is listed as guidance and not as a feature.
 
 ### `/cmux-sessions`
 
