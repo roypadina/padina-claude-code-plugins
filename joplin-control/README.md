@@ -133,7 +133,10 @@ default profile never reads, so the server lands somewhere Claude Code will not 
 - **Sync is Joplin's job.** Writes land in the local database immediately and reach other devices on
   Joplin's own sync cycle. Nothing here reads or writes a sync target directly — that is how you
   corrupt a revision history.
-- **No deletion by default.** `delete_note` is left off, and the doctor warns if you turn it on.
+- **The plugin never enables a tool for you.** Which tools an agent gets is entirely your choice in
+  Joplin's own settings, where everything starts off. `/joplin-doctor` reports the applied set and
+  warns whenever write tools — and separately `delete_note` — are on, since Joplin does not confirm
+  agent writes.
 - Verified against Joplin 3.7.16. The MCP tool set is young; re-run `/joplin-doctor` after a Joplin
   upgrade, since it reads the live tool list rather than trusting this README.
 
