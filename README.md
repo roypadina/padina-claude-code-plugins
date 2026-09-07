@@ -120,6 +120,30 @@ and language are configurable too (`/plugin configure recipe-research`).
 
 → [Plugin README](recipe-research/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/recipe-research)
 
+### [`joplin-control`](joplin-control) — your local Joplin notes, for Claude Code *and* Codex
+
+[Joplin](https://joplinapp.org) keeps notes as rows in SQLite, not as files an agent can open. It
+ships two local interfaces instead, and this plugin teaches both: the built-in **MCP server** for
+everyday note work, and the **Data API** for what MCP cannot do (attachments, bulk, exact fields).
+
+The interesting part is the credential. Joplin's documented endpoint is
+`http://127.0.0.1:PORT/mcp?token=<128-hex>`, and pasting that into a client writes a full-access
+token into `~/.claude.json` — **mode 644** on a default install. So instead there is a ~40-line
+stdio bridge that resolves the port and token from Joplin's own profile on every call: no client
+config holds the secret, renewing the token needs no reconfiguration, and a non-default port is
+discovered rather than assumed.
+
+`/joplin-doctor` walks the whole chain — app running, real port, token accepted, MCP answering —
+and reports **which tools are genuinely enabled** from a live `tools/list`, because all of them
+default to off across three separate settings panes. It prints the token as
+`<128 chars, sha256:1a2b3c4d>`, never the token itself, and warns when write-capable tools are on,
+since Joplin does not confirm agent writes.
+
+Installs into Codex too — same skill, symlinked into `~/.codex/skills/`, same bridge as a Codex MCP
+server.
+
+→ [Plugin README](joplin-control/README.md)
+
 ---
 
 ## Repository layout
@@ -131,6 +155,7 @@ agentctl-sessions/                plugin: commands/, hooks/, skills/
 heeng-keyboard-translator/        plugin: skills/ (with a bundled Python translator)
 espanso-control/                  plugin: commands/, scripts/, skills/
 recipe-research/                  plugin: commands/, skills/
+joplin-control/                   plugin: commands/, scripts/, skills/
 ```
 
 Each plugin directory is self-contained and follows the standard Claude Code plugin layout —

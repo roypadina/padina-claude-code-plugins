@@ -63,6 +63,20 @@
         "obsidian",
         "food"
       ]
+    },
+    {
+      "name": "joplin-control",
+      "source": "./joplin-control",
+      "description": "Read, search and write your local Joplin notes from Claude Code and Codex — Joplin's built-in MCP server for note work, its Data API for attachments and bulk. Keeps the API token out of every client config, and /joplin-doctor reports which tools are actually enabled.",
+      "category": "productivity",
+      "keywords": [
+        "joplin",
+        "notes",
+        "mcp",
+        "markdown",
+        "knowledge-base",
+        "macos"
+      ]
     }
   ]
 }

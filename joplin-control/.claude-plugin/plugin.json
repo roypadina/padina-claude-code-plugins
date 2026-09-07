@@ -1,0 +1,13 @@
+{
+  "name": "joplin-control",
+  "version": "0.1.0",
+  "description": "Read, search and write your local Joplin notes from Claude Code and Codex — via Joplin's built-in MCP server for note work, and its Data API for bulk, attachments and anything MCP doesn't expose. Includes a /joplin-doctor preflight that finds the real port, checks the token and lists which tools are actually enabled.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins",
+  "license": "MIT",
+  "keywords": ["joplin", "notes", "mcp", "markdown", "knowledge-base", "macos"]
+}
