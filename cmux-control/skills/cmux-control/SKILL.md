@@ -245,6 +245,13 @@ asked for it.
   plus printable keys.
 - Without `--surface`, `send` targets `CMUX_SURFACE_ID` — **the caller's own pane**, which is almost
   never what you want when scripting.
+- Never pack flags into one variable (`S="--surface surface:64"; cmux send $S text`). zsh does not
+  word-split `$S`, so cmux gets one bogus argument, drops it, and **types the text into the caller's
+  own pane**. Write the flags out literally, or use a bash script / bash function.
+- `send-key ctrl+c` answers `OK` but delivers **no byte** to the program. Claude Code never sees it.
+  To send a real Ctrl-C, use `cmux send --surface <ref> $'\x03'`.
+- To clear stray text from your own Claude input box, never use Ctrl-C or Esc: both interrupt the
+  running turn. Use `send-key end` and then repeated `send-key backspace`. Ctrl-U did not clear it.
 
 ### CRITICAL: cross-workspace surface targeting
 
