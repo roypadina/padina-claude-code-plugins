@@ -1,6 +1,6 @@
 {
   "name": "cmux-control",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Drive the cmux terminal from Claude Code — informative sidebar notifications when work finishes, progress pills, a session inventory, and a skill that teaches Claude the whole cmux CLI.",
   "author": {
     "name": "Roy Padina",
