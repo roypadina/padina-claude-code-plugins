@@ -198,6 +198,18 @@ cmux send-key --workspace "$WS" --surface "$NEW" enter
 `identify` returns both `.caller` (this shell) and `.focused` (whatever the user is looking at) —
 **they are frequently different**. When scripting, you almost always want `.caller`.
 
+**`.caller` is `null` after the pane moved to another workspace.** `CMUX_WORKSPACE_ID` is fixed at
+process start; once the user drags the pane elsewhere, `identify` gets a workspace/surface pair that
+no longer matches and returns `"caller" : null` (no error). The surface UUID stays valid, so look the
+caller up by it instead:
+
+```bash
+cmux --id-format both tree --all --json | jq -c --arg s "$CMUX_SURFACE_ID" '.windows[] | .workspaces[] as $w
+  | $w.panes[] as $p | $p.surfaces[] | select(.id==$s) | {workspace_ref:$w.ref, pane_ref:$p.ref, surface_ref:.ref}'
+```
+
+`tree --json` omits surface `id` unless `--id-format uuids|both` is passed.
+
 Faster equivalent, with the command pre-baked:
 
 ```bash
