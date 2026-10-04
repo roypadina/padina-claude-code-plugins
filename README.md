@@ -87,7 +87,7 @@ Three commands keep track of it:
 
 **Requires** nothing. `jq`, `agentctl` and cmux are used when present.
 
-→ [Plugin README](session-management/README.md)
+→ [Plugin README](session-management/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/session-management)
 
 ### [`heeng-keyboard-translator`](heeng-keyboard-translator) — fix wrong-layout typing
 
