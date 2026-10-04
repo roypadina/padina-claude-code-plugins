@@ -1,9 +1,10 @@
 # Padina Claude Code plugins
 
-A [Claude Code](https://claude.com/claude-code) plugin marketplace. Five plugins so far: one that
+A [Claude Code](https://claude.com/claude-code) plugin marketplace. Six plugins so far: one that
 wires Claude into the cmux terminal, one that gives your sessions a memory of themselves, one that
-repairs Hebrew/English layout typos, one that teaches Claude the Espanso text-expander CLI, one that
-researches recipes with parallel subagents.
+recaps and closes out sessions so nothing falls through the cracks, one that repairs Hebrew/English
+layout typos, one that teaches Claude the Espanso text-expander CLI, one that researches recipes with
+parallel subagents.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -14,6 +15,7 @@ Then install whichever you want:
 ```
 /plugin install cmux-control@padina
 /plugin install agentctl-sessions@padina
+/plugin install session-management@padina
 /plugin install heeng-keyboard-translator@padina
 /plugin install espanso-control@padina
 /plugin install recipe-research@padina
@@ -69,6 +71,23 @@ a skill that teaches Claude the whole toolset.
 offers to install it if it is missing.
 
 → [Plugin README](agentctl-sessions/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/agentctl-sessions)
+
+### [`session-management`](session-management) — recap mid-session, close out at the end
+
+A long session starts things everywhere — background agents, other panes, PRs, tickets, temp files.
+Three commands keep track of it:
+
+- `/session-recap` — mid-session: done / now / next, then what's open and *how* each item runs
+  (background agent, other pane or workspace, another session, a cron), what's missing, not planned,
+  waiting on, and what you need to do. Ends with a `/compact` verdict from the measured context size.
+- `/finish-session` — before closing: every open, un-done, un-cleaned or owed item with a proposed
+  action; acts only on what you pick.
+- `/close-session` — verifies those items are done or skipped, marks the session done in `agentctl`,
+  closes the cmux pane.
+
+**Requires** nothing. `jq`, `agentctl` and cmux are used when present.
+
+→ [Plugin README](session-management/README.md)
 
 ### [`heeng-keyboard-translator`](heeng-keyboard-translator) — fix wrong-layout typing
 
@@ -128,6 +147,7 @@ and language are configurable too (`/plugin configure recipe-research`).
 .claude-plugin/marketplace.json   the marketplace manifest
 cmux-control/                     plugin: commands/, hooks/, scripts/, skills/
 agentctl-sessions/                plugin: commands/, hooks/, skills/
+session-management/               plugin: commands/
 heeng-keyboard-translator/        plugin: skills/ (with a bundled Python translator)
 espanso-control/                  plugin: commands/, scripts/, skills/
 recipe-research/                  plugin: commands/, skills/
