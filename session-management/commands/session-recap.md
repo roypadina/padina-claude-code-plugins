@@ -54,6 +54,17 @@ Only the checks that apply:
 
 ## 3. Measure context
 
+Preferred — the status line's own numbers (the same `ctx` % the user sees), when the status line
+writes them (setup in the plugin README):
+
+```bash
+jq -c '{pct: .context_window.used_percentage, window: .context_window.context_window_size, ctx: (.context_window.current_usage | .input_tokens + .cache_read_input_tokens + .cache_creation_input_tokens), ts}' "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/context-window/$CLAUDE_CODE_SESSION_ID.json"
+```
+
+Use `pct` and `window` exactly as given; never recompute or second-guess the window.
+
+Fallback (file missing) — size from the transcript:
+
 ```bash
 f=$(ls "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/projects/*/"$CLAUDE_CODE_SESSION_ID".jsonl | head -1)
 grep '"type":"assistant"' "$f" | tail -n 50 | jq -s -c '[.[] | select(.isSidechain != true and .message.model != "<synthetic>" and .message.usage != null)] | last | {model:.message.model, ctx:(.message.usage|.input_tokens+(.cache_read_input_tokens//0)+(.cache_creation_input_tokens//0))}'
@@ -62,11 +73,12 @@ grep '"type":"assistant"' "$f" | tail -n 50 | jq -s -c '[.[] | select(.isSidecha
 `ctx` = current context size in tokens. Do not grep `"usage"` and take the last line — it matches
 prose and returns 0.
 
-Window: `jq -r .model "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json"` contains `[1m]` → 1000k;
-measured ctx > 200k → 1000k; otherwise 200k. The transcript's model id does NOT reveal the window.
+In the fallback the window is unknown: neither the transcript nor the `model` setting reveals it
+(the same model can run with a 200k or a 1000k window). Never guess it. Report `ctx <n>k (window
+unknown)` and judge only by the absolute caps below.
 No transcript or no `jq` → estimate from conversation length and label the line `(estimate)`.
 
-Verdict from ctx / window:
+Verdict from `pct` (only when known):
 - < 50% → `no`
 - 50–75% → `soon — at next break` (next finished sub-task; the line below is ready to paste)
 - ≥ 75% → `now`
@@ -118,7 +130,7 @@ Waiting on:
 You:
 1. <verb> ...
 
-Context: <ctx>k / <window>k (<pct>%) → <no | soon — at next break | now | now — right after <step>>
+Context: <ctx>k / <window>k (<pct>%)  — or <ctx>k (window unknown) in the fallback → <no | soon — at next break | now | now — right after <step>>
 /compact <paste-ready line>                      ← only for soon / now
 
 → Next: <one concrete action to take right now — the user's first You item, or what you will do on "go">

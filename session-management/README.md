@@ -28,6 +28,20 @@ None for the recap and close-out. Optional:
 
 - [`jq`](https://jqlang.org) — `/session-recap` reads the current context size from the session
   transcript; without it the size is an estimate.
+- A status-line tap — the transcript shows tokens used but not the window size, so for a real
+  percentage add this to your status-line script (it receives Claude Code's status JSON on stdin as
+  `$input`):
+
+  ```bash
+  sid=$(echo "$input" | jq -r '.session_id // empty')
+  if [ -n "$sid" ]; then
+    mkdir -p "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/context-window"
+    echo "$input" | jq -c '{ts: now|todate, model: .model.id, context_window: .context_window}' \
+      > "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/context-window/$sid.json" 2>/dev/null
+  fi
+  ```
+
+  Without it, `/session-recap` reports the token count with "window unknown".
 - [`agentctl`](https://github.com/roypadina/agentctl) — `/close-session` marks the session done.
 - [cmux](https://cmux.com) — `/close-session` closes the pane. Outside cmux it tells you to close the
   window yourself. It closes only its own pane, found by `$CMUX_SURFACE_ID` (needs `jq`), and the
