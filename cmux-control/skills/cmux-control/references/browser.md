@@ -26,7 +26,9 @@ cmux browser open-split https://news.ycombinator.com
 cmux browser open https://example.com --workspace workspace:2 --window window:1 --json
 ```
 
-`open` / `open-split` / `new` default to `$CMUX_WORKSPACE_ID` and `--focus false`.
+`open` / `open-split` / `new` default to `$CMUX_WORKSPACE_ID` and `--focus false`. That env value is
+stale after the user moves the pane, so the browser would open in the old workspace; pass
+`--workspace` when the pane may have moved.
 
 Two-step pattern when the URL flakily fails to load on creation:
 

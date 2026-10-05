@@ -118,8 +118,9 @@ reference files loaded on demand.
 Verified against **cmux 0.64.22**, with the traps that cost real time written down: `focus-surface`
 and `list-surfaces` do not exist, `--surface` resolves inside the *caller's* workspace so
 cross-workspace calls need `--workspace` (the failure is a misleading
-`invalid_params: Surface is not a terminal`), `close-surface` reports the surface focused *after* the
-close, `list-panes` prefixes the focused row with a literal `*`, and `identify` gives you both
+`invalid_params: Surface is not a terminal`), `$CMUX_WORKSPACE_ID` goes stale when a pane is moved
+to another workspace (so it must never drive a close), `close-surface` reports the surface focused
+*after* the close, `list-panes` prefixes the focused row with a literal `*`, and `identify` gives you both
 `.caller` and `.focused` — which are frequently different.
 
 It also carries cmux's own guardrail about `cmux todo`, verbatim: *"this checklist belongs to the

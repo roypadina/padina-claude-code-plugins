@@ -33,8 +33,10 @@ close until every item is done or skipped.
 Only when nothing is still open:
 1. `agentctl done` — skip if `agentctl` is not on PATH.
 2. Reply one line: `Closed: <n> done, <m> skipped. Closing pane.`
-3. `cmux close-surface --surface "$CMUX_SURFACE_ID"` — must be the last tool call (it ends this
-   session). If `$CMUX_SURFACE_ID` is empty (not inside cmux), skip this step and say
+3. `bash "${CLAUDE_PLUGIN_ROOT}/scripts/close-own-pane.sh"` — must be the last tool call (it ends
+   this session). It finds this pane by `$CMUX_SURFACE_ID`, closes only that pane, and closes the
+   workspace only when this pane is provably its single surface. Outside cmux it prints
    `Not in cmux — close the window yourself.`
-   If it fails with `Cannot close the last surface`, this pane is the workspace's only one: run
-   `cmux close-workspace --workspace "$CMUX_WORKSPACE_ID"` instead.
+   If it prints `closed nothing`, relay that line and stop. Never close anything yourself: no
+   `cmux close-surface` / `close-workspace` by hand, and never use `$CMUX_WORKSPACE_ID` — it goes
+   stale when the pane is moved, and a fallback on it once closed the parent session's workspace.

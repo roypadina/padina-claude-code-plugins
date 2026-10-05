@@ -58,7 +58,10 @@ Nesting: **Window → Workspace → Pane → Surface (terminal | browser | simul
 index. Output defaults to refs; `--id-format uuids|both` adds UUIDs. `--json` where supported.
 
 Inside any cmux terminal, `CMUX_WORKSPACE_ID`, `CMUX_SURFACE_ID` and `CMUX_TAB_ID` are exported and
-used as the defaults for `--workspace` / `--surface` / `--tab`.
+used as the defaults for `--workspace` / `--surface` / `--tab`. They are fixed when the shell starts:
+once the user moves the pane to another workspace, `CMUX_WORKSPACE_ID` and `CMUX_TAB_ID` still name
+the **old** workspace, while `CMUX_SURFACE_ID` stays right. Never pass `$CMUX_WORKSPACE_ID` to a
+destructive command; resolve the real workspace from `$CMUX_SURFACE_ID` (see Core Workflow).
 
 ## Decision Tree
 
@@ -140,7 +143,8 @@ cmux clear-status cmux_control
    `claude_code` (observed live: `claude_code=Running icon=bolt.fill color=#4C8DFF`). Never write to
    it and never clear it — you would be stomping the app's own state.
 5. Progress and status are per-workspace. Pass `--workspace "$CMUX_WORKSPACE_ID"` explicitly from a
-   script, or you may land on whichever workspace happens to be focused.
+   script, or you may land on whichever workspace happens to be focused. If the pane may have been
+   moved, pass the workspace resolved from `$CMUX_SURFACE_ID` instead (Core Workflow).
 
 ### Session inventory — `/cmux-sessions`
 
@@ -198,10 +202,12 @@ cmux send-key --workspace "$WS" --surface "$NEW" enter
 `identify` returns both `.caller` (this shell) and `.focused` (whatever the user is looking at) —
 **they are frequently different**. When scripting, you almost always want `.caller`.
 
-**`.caller` is `null` after the pane moved to another workspace.** `CMUX_WORKSPACE_ID` is fixed at
-process start; once the user drags the pane elsewhere, `identify` gets a workspace/surface pair that
-no longer matches and returns `"caller" : null` (no error). The surface UUID stays valid, so look the
-caller up by it instead:
+**`.caller` is `null` after the pane moved to another workspace** — when the caller has no tty.
+`CMUX_WORKSPACE_ID` is fixed at process start. From a tty-less caller (Claude Code's Bash tool, hooks,
+scripts) `identify` resolves the caller from that env, gets a workspace/surface pair that no longer
+matches, and returns `"caller" : null` (no error). From an interactive shell in the pane it still
+resolves correctly, so a manual test can mislead you (verified 2026-10-05, cmux 0.64.21). The surface
+UUID stays valid, so look the caller up by it instead:
 
 ```bash
 cmux --id-format both tree --all --json | jq -c --arg s "$CMUX_SURFACE_ID" '.windows[] | .workspaces[] as $w
@@ -264,6 +270,13 @@ asked for it.
   To send a real Ctrl-C, use `cmux send --surface <ref> $'\x03'`.
 - To clear stray text from your own Claude input box, never use Ctrl-C or Esc: both interrupt the
   running turn. Use `send-key end` and then repeated `send-key backspace`. Ctrl-U did not clear it.
+- `workspace create --command` and `send` **type** into the new shell; they do not exec. An
+  interactive startup question eats keystrokes: oh-my-zsh's `Would you like to update? [Y/n]` took the
+  first `c` of `cc …` and the shell ran `c …` (2026-10-05). Enter or `y` answers it **yes**. Wait for the
+  shell prompt with `read-screen` before sending, and never send while a `[Y/n]` is on screen.
+- A pane created unfocused (`new-split`, `workspace create` without `--command`) has no shell until it
+  is shown or gets input: `read-screen` fails with `internal_error: Failed to read terminal text`.
+  `send-key backspace` starts it without typing anything a startup question could take as yes.
 
 ### CRITICAL: cross-workspace surface targeting
 
@@ -271,6 +284,11 @@ asked for it.
 scripting a freshly-created workspace you **must** pass `--workspace <NEW_WS>` to every `send`,
 `send-key`, `read-screen` and `close-surface`, or the lookup fails with the misleading error
 `invalid_params: Surface is not a terminal`.
+
+That includes **your own pane after a move**: `close-surface --surface "$CMUX_SURFACE_ID"` looks the
+UUID up in the stale `$CMUX_WORKSPACE_ID` and fails with `not_found: Surface not found` (or
+`not_found: Workspace not found` once the old workspace is closed). Pass the resolved workspace.
+(`notify` is the exception: it resolves an explicit surface UUID globally.)
 
 ```bash
 # WRONG — looks surface:15 up in the caller's workspace:
@@ -319,6 +337,12 @@ with `list-panels` if in doubt.
    `--focus false` / `--no-focus` when creating background work so you do not steal focus.
 3. **Don't kill what you didn't create.** Never `close-surface` / `close-workspace` a pane the user
    opened — other agent sessions may be live inside it.
+   **Closing your own pane:** resolve its workspace from `$CMUX_SURFACE_ID` and pass explicit
+   `--workspace` + `--surface`. Close the workspace only when the tree shows it holds exactly this one
+   surface. Unsure → close nothing. Never chain `close-surface … || close-workspace
+   --workspace "$CMUX_WORKSPACE_ID"`: on 2026-10-05 the first call failed on a stale env and the
+   fallback closed the parent session's workspace. session-management's `close-own-pane.sh` does it
+   right.
 4. **Clean up.** Ask before closing helper panes you spawned; the user may still want the output.
 5. **Reads first.** `read-screen --surface surface:N --lines 200` before assuming agent state.
 6. **Refs are runtime.** `surface:7` is reassigned on every relaunch. UUIDs are stable — use

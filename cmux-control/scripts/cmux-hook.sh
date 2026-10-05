@@ -70,7 +70,9 @@ workspace_label() {
 
 notify() { # notify <title> <subtitle> <body>
     [ -z "${CMUX_CONTROL_QUIET:-}" ] || return 0
-    local args=(--workspace "$CMUX_WORKSPACE_ID" --title "$1")
+    # Surface UUID, not $CMUX_WORKSPACE_ID: that goes stale when the pane is moved to another
+    # workspace, and notify resolves an explicit surface UUID globally.
+    local args=(--surface "$CMUX_SURFACE_ID" --title "$1")
     [ -n "${2:-}" ] && args+=(--subtitle "$2")
     [ -n "${3:-}" ] && args+=(--body "$3")
     cmux notify "${args[@]}" >/dev/null 2>&1 || true

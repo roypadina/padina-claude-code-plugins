@@ -30,7 +30,8 @@ None for the recap and close-out. Optional:
   transcript; without it the size is an estimate.
 - [`agentctl`](https://github.com/roypadina/agentctl) — `/close-session` marks the session done.
 - [cmux](https://cmux.com) — `/close-session` closes the pane. Outside cmux it tells you to close the
-  window yourself.
+  window yourself. It closes only its own pane, found by `$CMUX_SURFACE_ID` (needs `jq`), and the
+  workspace only when that pane is its single surface; when unsure it closes nothing.
 
 Every command is read-only until you approve an action, and all the gates in your own `CLAUDE.md`
 still apply.

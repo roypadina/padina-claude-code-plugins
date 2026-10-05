@@ -36,9 +36,9 @@ Any window/workspace/pane/surface/tab flag takes a UUID, a short ref (`window:1`
 
 | Var | Effect |
 |---|---|
-| `CMUX_WORKSPACE_ID` | Default `--workspace` inside cmux terminals |
-| `CMUX_SURFACE_ID` | Default `--surface` |
-| `CMUX_TAB_ID` | Default `--tab` for the tab commands |
+| `CMUX_WORKSPACE_ID` | Default `--workspace` inside cmux terminals. **Stale after the pane is moved** to another workspace — never use it for a destructive command |
+| `CMUX_SURFACE_ID` | Default `--surface`. Survives a pane move — resolve the real workspace from it |
+| `CMUX_TAB_ID` | Default `--tab` for the tab commands. Stale after a move, like `CMUX_WORKSPACE_ID` |
 | `CMUX_SOCKET_PATH` / `CMUX_SOCKET` | Socket path |
 | `CMUX_SOCKET_PASSWORD` | Socket password fallback |
 | `CMUX_QUIET` | Silences the legacy-alias deprecation notices on stderr |
@@ -109,7 +109,7 @@ Blue, Navy, Indigo, Purple, Magenta, Rose, Brown, Charcoal.
 | `new-surface [--type terminal\|browser\|simulator\|agent-session] [--placement workspace\|dock] [--pane …] [--url <url>] [--provider codex\|claude\|opencode] [--renderer react\|solid] [--working-directory <path>] [--focus …]` | `--placement dock` puts it in the right-sidebar Dock (terminal and browser only) |
 | `focus-pane --pane <id>` | **There is no `focus-surface`** — focus the surface's pane |
 | `focus-panel --panel <id>` | |
-| `close-surface [--surface …]` | Its `OK <ref>` names the surface focused *after* the close |
+| `close-surface [--surface …] [--workspace …]` | Its `OK <ref>` names the surface focused *after* the close. Looks the surface up in `--workspace` (default `$CMUX_WORKSPACE_ID`, stale after a move → `not_found: Surface not found`) |
 | `move-surface --surface <id> [--pane …] [--before <id>] [--after <id>] [--index <n>]` | |
 | `split-off --surface <id> <direction>` | |
 | `reorder-surface --surface <id> (--index <n> \| --before <id> \| --after <id>)` | |
