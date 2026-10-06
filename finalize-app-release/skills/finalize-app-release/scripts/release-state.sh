@@ -7,11 +7,12 @@
 #
 # Prints OK / GAP / WARN / INFO lines and a summary. Always exits 0 — it reports, the agent decides.
 # Only network/side effects: `git fetch --tags`, `git ls-remote`, `gh` reads.
-# Overrides: TAP_WORK (tap working copy), FAR_STATE_DIR (stamp dir).
+# Overrides: APPS_ROOT (where personal apps live), TAP_WORK (tap working copy), FAR_STATE_DIR (stamp dir).
 
 OWNER=roypadina
 TAP_SLUG=$OWNER/homebrew-tap
 TAP_WORK=${TAP_WORK:-$HOME/Code/Padina/homebrew-tap}
+APPS_ROOT=${APPS_ROOT:-$HOME/Code/Padina}
 KOFI="ko-fi.com/$OWNER"
 STATE_DIR=${FAR_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/finalize-app-release}
 
@@ -36,9 +37,16 @@ if [ -n "$REMOTE" ]; then
   SLUG=$(git remote get-url "$REMOTE" | sed -E "s#.*[:/]$OWNER/([^/]+)\$#\\1#; s#\\.git\$##")
   VIS=$(GH repo view "$OWNER/$SLUG" --json visibility -q .visibility 2>/dev/null)
 fi
+# Personal apps only: a repo under APPS_ROOT, pushed to the personal account, that is in the tap or
+# looks like a Mac app (a new one headed there). Anything else → SKIP, so callers can run it blindly.
+case "$R/" in "$APPS_ROOT"/*) ;; *) echo "SKIP  $R is not under $APPS_ROOT — not a personal app"; exit 0 ;; esac
+[ -z "$REMOTE" ] && { echo "SKIP  no $OWNER/* remote — not on the personal GitHub account"; exit 0; }
+case $SLUG in homebrew-tap|*.wiki) echo "SKIP  $SLUG is not an app repo"; exit 0 ;; esac
+grep -qisE "github\.com/$OWNER/$SLUG([/\"]|\.git)" "$TAP_WORK"/Casks/*.rb "$TAP_WORK"/Formula/*.rb 2>/dev/null \
+  || ls Package.swift ./*.xcodeproj Info.plist >/dev/null 2>&1 \
+  || { echo "SKIP  $OWNER/$SLUG is not in the tap and has no Mac app project"; exit 0; }
 BRANCH=$(git branch --show-current)
-echo "== $(basename "$R")  repo=${SLUG:+$OWNER/}${SLUG:-none} remote=${REMOTE:-none} visibility=${VIS:-?} branch=$BRANCH"
-[ -z "$REMOTE" ] && info "no $OWNER/* remote: local-only app — release/tap/Ko-fi checks skipped"
+echo "== $(basename "$R")  repo=$OWNER/$SLUG remote=$REMOTE visibility=${VIS:-?} branch=$BRANCH"
 
 DIRTY=$(git status --porcelain | wc -l | tr -d ' ')
 [ "$DIRTY" = 0 ] && ok "working tree clean" || warn "working tree: $DIRTY uncommitted/untracked path(s)"

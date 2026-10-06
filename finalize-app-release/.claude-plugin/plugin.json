@@ -1,6 +1,6 @@
 {
   "name": "finalize-app-release",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "End-of-dev release checklist for roypadina's Mac apps — version, CHANGELOG, README, wiki, Ko-fi, GitHub release, Homebrew tap and the local install, checked by a script and fixed by Claude, so no step is missed.",
   "author": {
     "name": "Roy Padina",
@@ -9,5 +9,12 @@
   "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
   "repository": "https://github.com/roypadina/padina-claude-code-plugins",
   "license": "MIT",
-  "keywords": ["release", "homebrew", "macos", "changelog", "wiki", "ko-fi"]
+  "keywords": [
+    "release",
+    "homebrew",
+    "macos",
+    "changelog",
+    "wiki",
+    "ko-fi"
+  ]
 }

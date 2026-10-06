@@ -11,6 +11,11 @@ checks the mechanical state in about 10 s; you fix its GAPs and review what a sc
 
 ## When to run
 
+**Personal apps only.** The repo must sit under `~/Code/Padina`, push to a `roypadina/*` GitHub repo,
+and be in the tap or be a Mac app project headed there. Step 1 checks this and prints `SKIP …` for
+anything else (work repos, the tap itself, wikis, private scripts, local-only projects) — then say one
+line ("<repo>: not a personal app, skipped") and stop.
+
 - **Unprompted:** dev work on one of these apps is wrapping up — the user says release / ship / push
   all / finalize / we're done, a version was bumped or a release built, or the session is ending
   (including `/finish-session`) after changes to an app repo. Run Step 1; if it shows gaps, offer the

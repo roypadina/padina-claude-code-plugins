@@ -46,6 +46,11 @@ Only what applies to this session:
 - **Session metadata** — if `agentctl` is on PATH: is the session named/labelled; should it be
   marked done or flagged?
 
+- **App release** — if the `finalize-app-release` skill is installed: for every repo this session
+  changed, run its state script (Step 1 of that skill). It prints `SKIP` for repos it doesn't cover —
+  drop those silently. For the rest, `STAMP MATCH` or no GAP → nothing to report; otherwise one open
+  item `<app>: <n> release gaps → /finalize-app-release <dir>`.
+
 ## 3. Report — SHORT
 
 The user will ask for detail if they want it.
