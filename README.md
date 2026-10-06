@@ -1,10 +1,10 @@
 # Padina Claude Code plugins
 
-A [Claude Code](https://claude.com/claude-code) plugin marketplace. Six plugins so far: one that
+A [Claude Code](https://claude.com/claude-code) plugin marketplace. Seven plugins so far: one that
 wires Claude into the cmux terminal, one that gives your sessions a memory of themselves, one that
-recaps and closes out sessions so nothing falls through the cracks, one that repairs Hebrew/English
-layout typos, one that teaches Claude the Espanso text-expander CLI, one that researches recipes with
-parallel subagents.
+recaps and closes out sessions so nothing falls through the cracks, one that runs the release
+checklist for my Mac apps, one that repairs Hebrew/English layout typos, one that teaches Claude the
+Espanso text-expander CLI, one that researches recipes with parallel subagents.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -16,6 +16,7 @@ Then install whichever you want:
 /plugin install cmux-control@padina
 /plugin install agentctl-sessions@padina
 /plugin install session-management@padina
+/plugin install finalize-app-release@padina
 /plugin install heeng-keyboard-translator@padina
 /plugin install espanso-control@padina
 /plugin install recipe-research@padina
@@ -89,6 +90,20 @@ Three commands keep track of it:
 
 → [Plugin README](session-management/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/session-management)
 
+### [`finalize-app-release`](finalize-app-release) — no forgotten release step
+
+Shipping one of my Mac apps is twenty small steps across four repos — version, CHANGELOG, README,
+wiki, Ko-fi links, GitHub release and zip, Homebrew cask, the tap's README, pushing it all, upgrading
+the copy you actually run. One skill runs the whole checklist at the end of a session (or when Claude
+sees the work wrapping up). A script checks the mechanical part in about ten seconds — including that
+the tap and wiki really reached the server, since a failed tap push still upgrades your own Mac — and
+stamps a clean result, so the next run skips the review when nothing changed.
+
+**Requires** macOS, `gh`, Homebrew and the tap checked out locally. Written for my own repos; fork it
+to point it at yours.
+
+→ [Plugin README](finalize-app-release/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/finalize-app-release)
+
 ### [`heeng-keyboard-translator`](heeng-keyboard-translator) — fix wrong-layout typing
 
 You meant to type Hebrew, the layout was still English, and you got `akuo` instead of `שלום`. This
@@ -148,6 +163,7 @@ and language are configurable too (`/plugin configure recipe-research`).
 cmux-control/                     plugin: commands/, hooks/, scripts/, skills/
 agentctl-sessions/                plugin: commands/, hooks/, skills/
 session-management/               plugin: commands/
+finalize-app-release/             plugin: skills/ (with a bundled state script)
 heeng-keyboard-translator/        plugin: skills/ (with a bundled Python translator)
 espanso-control/                  plugin: commands/, scripts/, skills/
 recipe-research/                  plugin: commands/, skills/
