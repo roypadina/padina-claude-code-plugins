@@ -97,7 +97,7 @@ else info "no version found (unversioned private tool?)"; fi
 LATEST=$(git tag -l 'v[0-9]*' | sed 's/^v//' | sort -V | tail -1)
 if [ -n "$VER" ]; then
   if git rev-parse -q --verify "refs/tags/v$VER" >/dev/null; then
-    AHEAD=$(git rev-list --count "v$VER"..HEAD)
+    AHEAD=$(git rev-list --count "v$VER"..HEAD -- . ':!appcast.xml')  # appcast follows the release by design
     ok "tag v$VER exists"
     [ "$AHEAD" -gt 0 ] && warn "$AHEAD commit(s) on HEAD since v$VER — unreleased changes (bump + release?)"
     PREV=$(git tag -l 'v[0-9]*' | sed 's/^v//' | sort -V | grep -B1 -x "$VER" | head -1); [ "$PREV" = "$VER" ] && PREV=""

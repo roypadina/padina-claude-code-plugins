@@ -1,6 +1,6 @@
 {
   "name": "finalize-app-release",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "End-of-dev release checklist for roypadina's Mac apps — version, CHANGELOG, README, wiki, Ko-fi, GitHub release, Homebrew tap and the local install, checked by a script and fixed by Claude, so no step is missed.",
   "author": {
     "name": "Roy Padina",

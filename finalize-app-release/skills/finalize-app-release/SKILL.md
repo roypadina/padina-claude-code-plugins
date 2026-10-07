@@ -180,7 +180,7 @@ Summary only — the app's `CLAUDE.md` and memory note win.
 | App | Dir in `~/Code/Padina` | Quirks |
 |---|---|---|
 | LanGuard | `LanGuard-app` | Version in `Config/Shared.xcconfig`; xcodebuild Release + ditto zip; wiki live but not cloned locally yet |
-| MaccyPlus | `Maccay` | Remote `padina`, never `origin`; version in the pbxproj; prepend an `appcast.xml` item (length = zip bytes, `sparkle:version` = build) |
+| MaccyPlus | `Maccay` | Remote `padina`, never `origin`; version in the pbxproj; prepend an `appcast.xml` item (length = zip bytes, `sparkle:version` = build) after the release asset exists; wiki clone is `maccyplus.wiki` (slug, not folder name) |
 | VaultBar | `VaultBar` | Push only `main`; privacy triple check before every public push; `RELEASE=1 Scripts/package_app.sh` |
 | Window Organizer | `window-organizer` | Version is a literal in the `Scripts/package_app.sh` plist heredoc; asset `Window-Organizer.zip` |
 | SmartHiddenBar | `SmartHiddenBar` | `RELEASE=1 ./build.sh`; local install is the dev-signed `./build.sh`, never `brew upgrade` |
