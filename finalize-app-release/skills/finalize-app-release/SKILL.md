@@ -152,12 +152,18 @@ Top to bottom. Skip what Step 1 already shows as OK.
 ### G. Wrap-up
 
 17. Update the user's memory note for the app: current version, release date, new gotchas.
-18. List the temp files you created (build dirs, zips in `/tmp` or `dist/`, worktrees) and ask before
+18. **Obsidian Mac inventory** (personal vault `~/Obsidian/Padina`, `mac-app-inventory` conventions): update
+    `MAC/Apps/<Category>/<App>.md` (find it with `grep -rli <app> ~/Obsidian/Padina/MAC`) — version, "Last
+    updated", `updated:` frontmatter, a dated Changelog line, and any system pieces the release installs
+    (helpers, LaunchDaemons, sudoers, scripts). No note → create one per the inventory README. Then show
+    `git status --short` in the vault (it may hold edits from other devices) and offer commit + push; never
+    touch `.git`, `.stignore*`, `.stfolder`, `.obsidian/`.
+19. List the temp files you created (build dirs, zips in `/tmp` or `dist/`, worktrees) and ask before
     deleting them.
-19. Re-run Step 1. Every GAP fixed, or accepted by the user → stamp it:
+20. Re-run Step 1. Every GAP fixed, or accepted by the user → stamp it:
     `release-state.sh <repo-dir> --stamp`. The next run then prints `STAMP MATCH` until the repo, the
     wiki or the tap changes.
-20. Report as a table, one row per item: ✅ done · ⏭ skipped (why) · ❗ needs the user. Include the
+21. Report as a table, one row per item: ✅ done · ⏭ skipped (why) · ❗ needs the user. Include the
     release URL and the repo, wiki and tap commits.
 
 ## New public app
