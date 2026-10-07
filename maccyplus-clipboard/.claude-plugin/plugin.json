@@ -1,0 +1,13 @@
+{
+  "name": "maccyplus-clipboard",
+  "version": "0.1.0",
+  "description": "Lets Claude leave SQL queries, shell commands and other values in your MaccyPlus clipboard history, labelled with the session that produced them and a note on where to run them, and read, pin, move, copy, relabel or delete history items.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins",
+  "license": "MIT",
+  "keywords": ["maccyplus", "maccy", "clipboard", "macos", "sessions"]
+}

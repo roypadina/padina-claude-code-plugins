@@ -90,6 +90,19 @@
         "wiki",
         "ko-fi"
       ]
+    },
+    {
+      "name": "maccyplus-clipboard",
+      "source": "./maccyplus-clipboard",
+      "description": "Lets Claude leave SQL queries and commands in your MaccyPlus clipboard history, labelled with the session that produced them and a note on where to run them, and manage history items.",
+      "category": "productivity",
+      "keywords": [
+        "maccyplus",
+        "maccy",
+        "clipboard",
+        "macos",
+        "sessions"
+      ]
     }
   ]
 }

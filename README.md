@@ -1,10 +1,11 @@
 # Padina Claude Code plugins
 
-A [Claude Code](https://claude.com/claude-code) plugin marketplace. Seven plugins so far: one that
+A [Claude Code](https://claude.com/claude-code) plugin marketplace. Eight plugins so far: one that
 wires Claude into the cmux terminal, one that gives your sessions a memory of themselves, one that
 recaps and closes out sessions so nothing falls through the cracks, one that runs the release
 checklist for my Mac apps, one that repairs Hebrew/English layout typos, one that teaches Claude the
-Espanso text-expander CLI, one that researches recipes with parallel subagents.
+Espanso text-expander CLI, one that researches recipes with parallel subagents, one that hands you
+values through your MaccyPlus clipboard history, labelled by session.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -20,6 +21,7 @@ Then install whichever you want:
 /plugin install heeng-keyboard-translator@padina
 /plugin install espanso-control@padina
 /plugin install recipe-research@padina
+/plugin install maccyplus-clipboard@padina
 ```
 
 📖 **[Full documentation is in the Wiki](https://github.com/roypadina/padina-claude-code-plugins/wiki)**
@@ -154,6 +156,19 @@ and language are configurable too (`/plugin configure recipe-research`).
 
 → [Plugin README](recipe-research/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/recipe-research)
 
+### [`maccyplus-clipboard`](maccyplus-clipboard) — values left in your clipboard history, labelled by session
+
+Several sessions each "copy a query to your clipboard", and by the time you get to it you can't
+tell which value came from where. Each `pbcopy` also overwrites what you were copying. With this
+plugin Claude adds the value to [MaccyPlus](https://github.com/roypadina/maccyplus) history instead.
+The value carries a label (the session name) and a note (`DataGrip → prod`, `run in pane: ~/repo`),
+and your live clipboard is not touched. Claude can also read, pin, move, copy, relabel and delete
+history items.
+
+**Requires** MaccyPlus 2.8.0+ (`brew install --cask roypadina/tap/maccyplus`), running.
+
+→ [Plugin README](maccyplus-clipboard/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/maccyplus-clipboard)
+
 ---
 
 ## Repository layout
@@ -167,6 +182,7 @@ finalize-app-release/             plugin: skills/ (with a bundled state script)
 heeng-keyboard-translator/        plugin: skills/ (with a bundled Python translator)
 espanso-control/                  plugin: commands/, scripts/, skills/
 recipe-research/                  plugin: commands/, skills/
+maccyplus-clipboard/              plugin: skills/
 ```
 
 Each plugin directory is self-contained and follows the standard Claude Code plugin layout —
