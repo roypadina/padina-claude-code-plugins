@@ -37,6 +37,9 @@ Only the checks that apply:
 - **Task/todo list** — read it with the tool; `pending` / `in_progress` items.
 - **Background subagents, background Bash, Workflow runs** — state from the harness: a completion
   notification arrived → finished; none yet → still running. Don't poll.
+- **Live processes** — `bash "${CLAUDE_PLUGIN_ROOT}/scripts/session-procs.sh"`: every process this
+  session started that still runs (pid, elapsed, command). Each belongs under Running — fold it into
+  the background job that started it, or list it on its own.
 - **Monitors, CronCreate, ScheduleWakeup, `/loop`** — id, schedule, what it does, last/next fire
   (list tool if available, else from the conversation).
 - **Other top-level agents this session launched** (new pane/workspace/session) — where it runs
@@ -54,39 +57,14 @@ Only the checks that apply:
 
 ## 3. Measure context
 
-Preferred — the status line's own numbers (the same `ctx` % the user sees), when the status line
-writes them (setup in the plugin README):
-
-```bash
-jq -c '{pct: .context_window.used_percentage, window: .context_window.context_window_size, ctx: (.context_window.current_usage | .input_tokens + .cache_read_input_tokens + .cache_creation_input_tokens), ts}' "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/context-window/$CLAUDE_CODE_SESSION_ID.json"
-```
-
-Use `pct` and `window` exactly as given; never recompute or second-guess the window.
-
-Fallback (file missing) — size from the transcript:
-
-```bash
-f=$(ls "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/projects/*/"$CLAUDE_CODE_SESSION_ID".jsonl | head -1)
-grep '"type":"assistant"' "$f" | tail -n 50 | jq -s -c '[.[] | select(.isSidechain != true and .message.model != "<synthetic>" and .message.usage != null)] | last | {model:.message.model, ctx:(.message.usage|.input_tokens+(.cache_read_input_tokens//0)+(.cache_creation_input_tokens//0))}'
-```
-
-`ctx` = current context size in tokens. Do not grep `"usage"` and take the last line — it matches
-prose and returns 0.
-
-In the fallback the window is unknown: neither the transcript nor the `model` setting reveals it
-(the same model can run with a 200k or a 1000k window). Never guess it. Report `ctx <n>k (window
-unknown)` and judge only by the absolute caps below.
-No transcript or no `jq` → estimate from conversation length and label the line `(estimate)`.
-
-Verdict from `pct` (only when known):
-- < 50% → `no`
-- 50–75% → `soon — at next break` (next finished sub-task; the line below is ready to paste)
-- ≥ 75% → `now`
-- Whatever the window: ctx ≥ 200k → at least `soon`; ≥ 400k → `now` (recall degrades long before a
-  1000k window fills).
+`bash "${CLAUDE_PLUGIN_ROOT}/scripts/context.sh"` prints the Context line with its base verdict
+(`no` / `soon — at next break` / `now`), from the status line's own numbers when the status line
+saves them, else from the transcript with the window unknown. Use its numbers exactly as given;
+never recompute or guess the window. Then adjust the verdict:
 - Bump one level up when the context is mostly stale bulk (file dumps, logs, finished sub-tasks).
 - Never advise compacting mid-step: if something in flight still needs details that only exist in
   context, `now` becomes `now — right after <step>`.
+- `Context: unknown` → estimate from conversation length and label the line `(estimate)`.
 
 You cannot run `/compact`; only the user can type it. For `soon`/`now` hand over ONE paste-ready
 line, no newlines, filled from this recap — everything in Running/Open/Waiting/You must survive:
@@ -130,7 +108,7 @@ Waiting on:
 You:
 1. <verb> ...
 
-Context: <ctx>k / <window>k (<pct>%)  — or <ctx>k (window unknown) in the fallback → <no | soon — at next break | now | now — right after <step>>
+<the Context line from context.sh, verdict adjusted>
 /compact <paste-ready line>                      ← only for soon / now
 
 → Next: <one concrete action to take right now — the user's first You item, or what you will do on "go">

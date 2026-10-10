@@ -1,0 +1,16 @@
+{
+  "description": "session-management: a bare `close` reply after /finish-session gets the close instructions injected, so it works even after /compact.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f \"${CLAUDE_PLUGIN_ROOT}/scripts/close-trigger.sh\" && bash \"${CLAUDE_PLUGIN_ROOT}/scripts/close-trigger.sh\" || exit 0",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
