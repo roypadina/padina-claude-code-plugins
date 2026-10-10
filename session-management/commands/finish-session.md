@@ -1,6 +1,6 @@
 ---
 description: Close out this session — full recap, everything still open, un-done, un-cleaned, or owed to someone, with proposed actions; then "close" marks it done and closes this cmux pane
-argument-hint: "[close | force | optional focus or extra notes]"
+argument-hint: "[cleanup] [close] [force] [optional focus or extra notes]"
 ---
 
 The user is about to close this session. Before they do, review the ENTIRE session and produce a
@@ -11,9 +11,20 @@ then says `close`, close the session (step 5).
 Arguments: $ARGUMENTS
 - First word `force` or `-f` → skip steps 1–4 and 5.1: no report, no checks, no questions. Run
   step 5.2 with the reply `Force-closed. Closing <what the dry run said>.`
-- First word `close` (rest = notes) → steps 1–3, then step 5 in the same turn, as if the user had
-  replied `close` to the report.
+- Contains the word `cleanup` → after steps 1–3, run every **local cleanup** item at once, no
+  question (rules below), as if the user had picked them.
+- Contains the word `close` → after steps 1–3 (and the cleanup, if asked), close in the same turn
+  (step 5) **only if nothing is left open**. Anything still open → show the report and wait; the
+  user decides.
 - Anything else → extra notes / focus for the report.
+
+**Local cleanup** = only things this session created that nothing needs any more: scratch / temp
+files and dirs (`/tmp`, `$TMPDIR`, throwaway research downloads and test fixtures), leftover test
+resources it made, local branches it created that are already merged (`git branch -d`, never `-D`,
+never a remote branch). Never delete: anything under `~/ClaudWork/` (deliverables and artifacts
+stay), anything needed to resume this session later (notes, handoff files, reports, configs it
+wrote), worktrees, other sessions' files, anything outside this machine. Unsure → it is not
+cleanup; list it as an open item.
 
 ## Rules
 
