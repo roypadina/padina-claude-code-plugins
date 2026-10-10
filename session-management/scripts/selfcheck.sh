@@ -103,13 +103,13 @@ ARGS=--dry-run check "dry run: closes nothing, exit 0" last 0 ""
 ARGS=--dry-run FAKE_TTY=tty-parent check "dry run, not our pane: exit 1" last 1 ""
 
 # close-trigger.sh (UserPromptSubmit hook): fires only on a whole-message session-close reply.
-fires() { jq -nc --arg p "$1" '{prompt: $p}' | CLAUDE_PLUGIN_ROOT="$here/.." bash "$here/close-trigger.sh" |
+fires() { jq -nc --arg p "$1" '{prompt: $p}' | env -u CLAUDE_PLUGIN_ROOT bash "$here/close-trigger.sh" |
     jq -e '.hookSpecificOutput.additionalContext | test("close-own-pane.sh\" --dry-run")' >/dev/null 2>&1; }
-for m in close 'Close.' 'close it' '1,3 then close' 'ok, close it' 'all, close'; do
+for m in close 'Close.' 'close it' '1,3 then close' 'ok, close it' 'all, close' 'close it please' 'close, thanks'; do
     if fires "$m"; then printf 'ok    trigger fires on "%s"\n' "$m"; else
         printf 'FAIL  trigger should fire on "%s"\n' "$m"; fails=$((fails + 1)); fi
 done
-for m in 'close the PR' 'close RD-123' '/finish-session close' 'please close the file' 'closed'; do
+for m in 'close the PR' 'close RD-123' '/finish-session close' 'please close the file' 'closed' 'enclose it'; do
     if fires "$m"; then printf 'FAIL  trigger should not fire on "%s"\n' "$m"; fails=$((fails + 1))
     else printf 'ok    trigger ignores "%s"\n' "$m"; fi
 done

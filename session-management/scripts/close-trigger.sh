@@ -8,14 +8,15 @@
 p=$(jq -r '.prompt // empty' 2>/dev/null) || exit 0
 shopt -s nocasematch
 sep='[[:space:][:punct:]]'
-word='(ok|okay|yes|please|then|and|done|go|all|none|[0-9]+)'
-re="^${sep}*(${word}${sep}+)*close([[:space:]]+(it|this|session|pane|out))?${sep}*$"
+word='(ok|okay|yes|please|thanks|thx|then|and|done|go|all|none|[0-9]+)'
+re="^${sep}*(${word}${sep}+)*close([[:space:]]+(it|this|session|pane|out))?(${sep}+${word})*${sep}*$"
 [[ $p =~ $re ]] || exit 0
 
-f="${CLAUDE_PLUGIN_ROOT:-}/commands/finish-session.md"
+root=$(cd "$(dirname "$0")/.." && pwd) || exit 0  # self-located: don't rely on the hook's env
+f="$root/commands/finish-session.md"
 [ -r "$f" ] || exit 0
 body=$(awk 'NR == 1 && /^---$/ { fm = 1; next } fm && /^---$/ { fm = 0; next } !fm' "$f")
-body=${body//'${CLAUDE_PLUGIN_ROOT}'/$CLAUDE_PLUGIN_ROOT}
+body=${body//'${CLAUDE_PLUGIN_ROOT}'/$root}
 body=${body//'$ARGUMENTS'/(none — the user replied \`$p\`)}
 jq -n --arg c "The user's message looks like a reply to close this session. Below is /finish-session; \
 apply its step 5 Trigger rule to decide. If \`close\` plainly answers something else you just asked, ignore this.
