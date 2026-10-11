@@ -1,7 +1,7 @@
 # session-management
 
-Two slash commands for the life of a Claude Code session: a mid-session recap, and an
-end-of-session close-out that also closes the session when you say `close`.
+Three slash commands for the life of a Claude Code session: a mid-session recap, a resume check
+after a disruption, and an end-of-session close-out that also closes the session when you say `close`.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -19,6 +19,7 @@ what is waiting on you; at the end you close the window and something falls thro
 | Command | When | What it does |
 |---|---|---|
 | `/session-recap [focus]` | Mid-session | Done / now / next in a few lines, then open items and *how* each runs (background agent, other pane, workspace, session, cron), what's missing, not planned, waiting on, and what you need to do. Ends with a `/compact` verdict from the measured context size, plus a ready-to-paste `/compact` line when it's time. Read-only. |
+| `/resume-all [what happened]` | After the Mac slept, the network changed (Wi-Fi ⇄ LAN, VPN drop), or the account switched | Checks everything the session had running — background agents, shells, Monitors, crons, dev servers, port-forwards, auth, MCP — and restarts only what the disruption stopped, exactly as it was (same command, prompt, schedule). No plan changes; never repeats a push/post/deploy blind. Lists what needs you (reconnect `/mcp`, re-login), then continues the main task. |
 | `/finish-session [cleanup] [close] [force] [notes]` | Before closing | Recap, then every open, un-done, un-cleaned or owed item with a proposed action. Acts only on the items you pick. Then reply `close`: it re-checks the items, asks only about the `!` ones the close would kill or orphan (things still running, unsaved lessons, unsent drafts), marks the session done in `agentctl` and closes the cmux pane. `cleanup` deletes this session's own leftovers (temp files, merged local branches it created — never `~/ClaudWork`, never what you'd need to resume) without asking; `close` closes right after, but only if nothing else is open. `force` closes with no report or checks. |
 
 `close` works even after `/compact`: a `UserPromptSubmit` hook spots a reply that is only a close

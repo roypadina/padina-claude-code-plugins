@@ -1,7 +1,7 @@
 {
   "name": "session-management",
-  "version": "0.2.2",
-  "description": "Mid-session recap and an end-of-session close-out that closes the session on \"close\" — so nothing a Claude Code session started falls through the cracks.",
+  "version": "0.3.0",
+  "description": "Mid-session recap, a resume-all check after sleep/network/account disruptions, and an end-of-session close-out that closes the session on \"close\" — so nothing a Claude Code session started falls through the cracks.",
   "author": {
     "name": "Roy Padina",
     "url": "https://github.com/roypadina"
@@ -14,6 +14,7 @@
     "recap",
     "close-out",
     "handoff",
-    "compact"
+    "compact",
+    "resume"
   ]
 }
