@@ -82,7 +82,7 @@ Two commands keep track of it:
 
 - `/session-recap` — mid-session: done / now / next, then what's open and *how* each item runs
   (background agent, other pane or workspace, another session, a cron), what's missing, not planned,
-  waiting on, and what you need to do. Ends with a `/compact` verdict from the measured context size.
+  waiting on, and what you need to do.
 - `/finish-session` — before closing: every open, un-done, un-cleaned or owed item with a proposed
   action; acts only on what you pick. Then say `close`: it marks the session done in `agentctl` and
   closes the cmux pane — only its own, never someone else's.

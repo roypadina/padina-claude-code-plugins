@@ -18,7 +18,7 @@ what is waiting on you; at the end you close the window and something falls thro
 
 | Command | When | What it does |
 |---|---|---|
-| `/session-recap [focus]` | Mid-session | Done / now / next in a few lines, then open items and *how* each runs (background agent, other pane, workspace, session, cron), what's missing, not planned, waiting on, and what you need to do. Ends with a `/compact` verdict from the measured context size, plus a ready-to-paste `/compact` line when it's time. Read-only. |
+| `/session-recap [focus]` | Mid-session | Done / now / next in a few lines, then open items and *how* each runs (background agent, other pane, workspace, session, cron), what's missing, not planned, waiting on, and what you need to do. Read-only. |
 | `/resume-all [what happened]` | After the Mac slept, the network changed (Wi-Fi ⇄ LAN, VPN drop), or the account switched | Checks everything the session had running — background agents, shells, Monitors, crons, dev servers, port-forwards, auth, MCP — and restarts only what the disruption stopped, exactly as it was (same command, prompt, schedule). No plan changes; never repeats a push/post/deploy blind. Lists what needs you (reconnect `/mcp`, re-login), then continues the main task. |
 | `/finish-session [cleanup] [close] [force] [notes]` | Before closing | Recap, then every open, un-done, un-cleaned or owed item with a proposed action. Acts only on the items you pick. Then reply `close`: it re-checks the items, asks only about the `!` ones the close would kill or orphan (things still running, unsaved lessons, unsent drafts), marks the session done in `agentctl` and closes the cmux pane. `cleanup` deletes this session's own leftovers (temp files, merged local branches it created — never `~/ClaudWork`, never what you'd need to resume) without asking; `close` closes right after, but only if nothing else is open. `force` closes with no report or checks. |
 
@@ -31,23 +31,7 @@ started that are still running (`scripts/session-procs.sh`) — the close would 
 
 None for the recap and close-out. Optional:
 
-- [`jq`](https://jqlang.org) — `/session-recap` reads the current context size
-  (`scripts/context.sh`); without it the size is an estimate. The pane close and the `close` hook
-  need it too.
-- A status-line tap — the transcript shows tokens used but not the window size, so for a real
-  percentage add this to your status-line script (it receives Claude Code's status JSON on stdin as
-  `$input`):
-
-  ```bash
-  sid=$(echo "$input" | jq -r '.session_id // empty')
-  if [ -n "$sid" ]; then
-    mkdir -p "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/context-window"
-    echo "$input" | jq -c '{ts: now|todate, model: .model.id, context_window: .context_window}' \
-      > "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/context-window/$sid.json" 2>/dev/null
-  fi
-  ```
-
-  Without it, `/session-recap` reports the token count with "window unknown".
+- [`jq`](https://jqlang.org) — the pane close and the `close` hook need it.
 - [`agentctl`](https://github.com/roypadina/agentctl) — the close marks the session done.
 - [cmux](https://cmux.com) — the close closes the pane. Outside cmux it tells you to close the
   window yourself. It closes only its own pane: found by `$CMUX_SURFACE_ID` (needs `jq`) and

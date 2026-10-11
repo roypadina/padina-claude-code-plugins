@@ -1,5 +1,5 @@
 ---
-description: Mid-session recap — done / now / next, then what is running and where, open items, gaps, what is waiting on whom, what you must do, and a /compact verdict. Read-only.
+description: Mid-session recap — done / now / next, then what is running and where, open items, gaps, what is waiting on whom, and what you must do. Read-only.
 argument-hint: "[optional focus]"
 ---
 
@@ -7,7 +7,7 @@ The user wants to re-orient mid-session: where are we, what is in flight and whe
 blocking, what they owe, what comes next. Produce a short recap and stop. This is NOT a close-out —
 nothing gets stopped, cleaned, pushed or posted here; that is `/finish-session`.
 
-Focus from the user (narrows the middle groups; the header and the Context verdict always appear): $ARGUMENTS
+Focus from the user (narrows the middle groups; the header always appears): $ARGUMENTS
 
 ## Rules
 
@@ -55,22 +55,7 @@ Only the checks that apply:
   `agentctl annotations --json | jq --arg id "$CLAUDE_CODE_SESSION_ID" '.[] | select(.sessionId==$id)'`;
   report only a reminder/due that has passed or a flag that no longer matches reality.
 
-## 3. Measure context
-
-`bash "${CLAUDE_PLUGIN_ROOT}/scripts/context.sh"` prints the Context line with its base verdict
-(`no` / `soon — at next break` / `now`), from the status line's own numbers when the status line
-saves them, else from the transcript with the window unknown. Use its numbers exactly as given;
-never recompute or guess the window. Then adjust the verdict:
-- Bump one level up when the context is mostly stale bulk (file dumps, logs, finished sub-tasks).
-- Never advise compacting mid-step: if something in flight still needs details that only exist in
-  context, `now` becomes `now — right after <step>`.
-- `Context: unknown` → estimate from conversation length and label the line `(estimate)`.
-
-You cannot run `/compact`; only the user can type it. For `soon`/`now` hand over ONE paste-ready
-line, no newlines, filled from this recap — everything in Running/Open/Waiting/You must survive:
-`/compact Keep: goal <…>; current step <…>; decisions <…>; in flight <what — how/where — state, …>; open <…>; waiting on <…>; user owes <…>; key paths/ids/PRs <…>. Drop: finished sub-tasks, file contents, logs, tool output.`
-
-## 4. Report — one screen
+## 3. Report — one screen
 
 Numbered lines, ≤5 per group (merge, or end with `+n more`), no evidence dumps, no explanations,
 omit empty groups. Each item appears in exactly one group:
@@ -88,7 +73,7 @@ omit empty groups. Each item appears in exactly one group:
 - **Waiting on** — blocked on something external to both of you: `<what> ← <who/what>, since <when>`.
   Blocker is the user → it goes under **You** instead.
 - **You** — only what the user alone can do, verb first: answer (quote the question), approve,
-  provide, test manually, run (sudo), type /compact.
+  provide, test manually, run (sudo).
 
 ```
 Done: <1–3 lines>
@@ -108,10 +93,7 @@ Waiting on:
 You:
 1. <verb> ...
 
-<the Context line from context.sh, verdict adjusted>
-/compact <paste-ready line>                      ← only for soon / now
-
 → Next: <one concrete action to take right now — the user's first You item, or what you will do on "go">
 ```
 
-Nothing running, open, missing or waiting: header + `Context` line + `→ Next` only.
+Nothing running, open, missing or waiting: header + `→ Next` only.
