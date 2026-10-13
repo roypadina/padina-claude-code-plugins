@@ -180,6 +180,14 @@ Source of truth, if you would rather read it by hand:
 **After a bad restart, reach for `-previous.json`** — the current file is rewritten to match whatever
 actually came up, so a workspace that failed to restore may exist only in the previous one.
 
+**After a kernel panic, layout comes back but Claude does not** (2026-10-13, cmux 0.64.21): every
+workspace/group/colour restored, yet 9 of 11 Claude panes were bare shells, `wasAgentRunning: false`,
+no auto-resume, even after showing them. `check`'s per-pane "running" column is unreliable here
+(flagged the caller's own live pane NOT RUNNING); confirm with `read-screen` + `ps`. Panes never
+shown since launch need `send-key backspace` before they have a shell. Faithful resume = the saved
+panel's `terminal.agent.launchCommand`: `cd <workingDirectory> && <environment…> claude --resume
+<sessionId> <arguments[1:]>`. ccpool may then move the session to another profile; history still loads.
+
 A resume command is `[CLAUDE_CONFIG_DIR=<dir>] claude --resume <id> --permission-mode <mode>`. The
 env prefix is the part people forget: a session launched under a non-default `CLAUDE_CONFIG_DIR` is a
 **different account**, and resuming it under the default profile fails with
