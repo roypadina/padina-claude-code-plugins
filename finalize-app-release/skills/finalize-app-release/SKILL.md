@@ -128,7 +128,8 @@ Top to bottom. Skip what Step 1 already shows as OK.
     Keep `desc` current. New app → new cask from the template in the reference file.
 13. Tap `README.md`: the app has a row in the Casks (or Formulae) table and its description names the
     current headline features.
-14. `brew style roypadina/tap/<token>` clean. Commit `<token> X.Y.Z`, then push by URL:
+14. `brew style ~/Code/Padina/homebrew-tap/Casks/<token>.rb` clean (the file path — `brew style roypadina/tap/<token>`
+    lints brew's own clone under `/opt/homebrew/Library/Taps`, i.e. the old, unedited cask). Commit `<token> X.Y.Z`, then push by URL:
     `git push git@github-padina:roypadina/homebrew-tap.git HEAD:main`.
 15. Verify on the server, not a local ref: re-run Step 1 (`tap working copy = server`), then
     `brew update` so brew's own clone (`brew --repository roypadina/homebrew-tap`) matches. A green
@@ -185,7 +186,7 @@ Summary only — the app's `CLAUDE.md` and memory note win.
 | Window Organizer | `window-organizer` | Version is a literal in the `Scripts/package_app.sh` plist heredoc; asset `Window-Organizer.zip` |
 | SmartHiddenBar | `SmartHiddenBar` | `RELEASE=1 ./build.sh`; local install is the dev-signed `./build.sh`, never `brew upgrade` |
 | MeetAlert | `MeetAlert` | Wiki is the nested clone `MeetAlert/wiki`; `build.sh` makes no zip — ditto it |
-| Agents Monitor | `AgentsMonitor` | Asset must be `AgentsMonitor.zip`; never commit work or topic strings |
+| Agents Monitor | `AgentsMonitor` | Asset must be `AgentsMonitor.zip`; never commit work or topic strings; local install: after `brew upgrade`, extract the release zip to `/tmp`, clear quarantine there, `ditto` it over `/Applications` before launch (Gatekeeper trashes the brew copy) |
 | agentctl | `agentctl` | `main` protected: bump `package.json` + lock + CHANGELOG in a PR, admin-merge; build the zip in a throwaway worktree at the merge sha |
 | claude-jam | `claude-jam` | Formula from the tag tarball; README and wiki quote the npm tarball version — bump them |
 
