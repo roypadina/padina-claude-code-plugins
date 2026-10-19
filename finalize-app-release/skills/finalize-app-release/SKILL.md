@@ -188,6 +188,7 @@ Summary only — the app's `CLAUDE.md` and memory note win.
 | MeetAlert | `MeetAlert` | Wiki is the nested clone `MeetAlert/wiki`; `build.sh` makes no zip — ditto it |
 | Agents Monitor | `AgentsMonitor` | Asset must be `AgentsMonitor.zip`; never commit work or topic strings; local install: after `brew upgrade`, extract the release zip to `/tmp`, clear quarantine there, `ditto` it over `/Applications` before launch (Gatekeeper trashes the brew copy) |
 | agentctl | `agentctl` | `main` protected: bump `package.json` + lock + CHANGELOG in a PR, admin-merge; build the zip in a throwaway worktree at the merge sha |
+| Obsidian Vault Git Watcher | `ObsidianVaultGitWatcher` | Plain `swiftc` via `build.sh` (no SwiftPM/Xcode), version in `Info.plist`; `./build.sh dist` → `dist/ObsidianVaultGitWatcher.zip`; `main` protected; never push local `backup/pre-public`; after `brew upgrade` reload the LaunchAgent (copy repo plist, `bootout` exact label, `bootstrap`) |
 | claude-jam | `claude-jam` | Formula from the tag tarball; README and wiki quote the npm tarball version — bump them |
 
 ## Self-update

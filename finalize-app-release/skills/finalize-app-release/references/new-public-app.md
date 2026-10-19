@@ -25,8 +25,12 @@ Also:
   PNG files can embed the monitor's ICC profile with its name: keep only the IHDR/IDAT/IEND chunks.
 - Release builds strip paths: `strip -S -x` and `-file-prefix-map`, so no home path ships in the binary.
 - A leak in history → squash to one initial commit and keep a local `backup/*` branch that is never
-  pushed. If the repo was already public once, delete and recreate it: GitHub keeps unreferenced
-  commits reachable by sha.
+  pushed. Don't force-push the squash into the existing repo: once public, its Activity page lists
+  the force-push with the old sha, and GitHub keeps unreferenced commits reachable by sha. Instead
+  rename the old repo to `<Repo>-private-archive` (stays private, nothing deleted; needs an
+  explicit OK), create a fresh public repo under the old name and push the squashed `main`. The
+  fresh repo's wiki needs "Create the first page" again; push the prepared pages on top of it with
+  `git fetch <wiki url> master && git reset --soft FETCH_HEAD`, then commit (no force-push).
 
 ## 2. Repo
 
@@ -76,6 +80,8 @@ window-organizer `Sources/WindowOrganizerApp/WindowOrganizerApp.swift` and `Sett
 - Menu: "About <App>" and "Support on Ko-fi ☕" above Quit.
 - Settings: a compact About row with "About <App>…" and "Support on Ko-fi ☕".
 - CLI-only tool: put "Made by Roy Padina", the bio and the Ko-fi URL in `--help` (as claude-jam does).
+- CI runs an older Swift than the local toolchain: push early and read the first CI run (a local
+  `typealias State` compiled on 6.4 but shadowed SwiftUI's `@State` on 6.3).
 - Verify by rendering the view standalone — a tiny `main.swift` that shows the window, then
   `screencapture -l <window id>` — and check nothing clips. Do not click around the user's live Mac.
 

@@ -43,7 +43,7 @@ case "$R/" in "$APPS_ROOT"/*) ;; *) echo "SKIP  $R is not under $APPS_ROOT — n
 [ -z "$REMOTE" ] && { echo "SKIP  no $OWNER/* remote — not on the personal GitHub account"; exit 0; }
 case $SLUG in homebrew-tap|*.wiki) echo "SKIP  $SLUG is not an app repo"; exit 0 ;; esac
 grep -qisE "github\.com/$OWNER/$SLUG([/\"]|\.git)" "$TAP_WORK"/Casks/*.rb "$TAP_WORK"/Formula/*.rb 2>/dev/null \
-  || ls Package.swift ./*.xcodeproj Info.plist >/dev/null 2>&1 \
+  || [ -e Package.swift ] || [ -e Info.plist ] || compgen -G '*.xcodeproj' >/dev/null \
   || { echo "SKIP  $OWNER/$SLUG is not in the tap and has no Mac app project"; exit 0; }
 BRANCH=$(git branch --show-current)
 echo "== $(basename "$R")  repo=$OWNER/$SLUG remote=$REMOTE visibility=${VIS:-?} branch=$BRANCH"
