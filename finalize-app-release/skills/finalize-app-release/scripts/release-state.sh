@@ -222,7 +222,9 @@ if [ -n "$APP" ] && [ "$KIND" = Casks ]; then
     EXE=$(pl CFBundleExecutable "$A/Contents/Info.plist")
     PIDS=$(pgrep -x "$EXE" | tr '\n' ' ')
     if [ -z "$PIDS" ]; then warn "$EXE not running"
-    else for p in $PIDS; do C=$(ps -o comm= -p "$p"); case $C in "$A"/*) ok "running pid $p from /Applications" ;;
+    else for p in $PIDS; do C=$(ps -o comm= -p "$p"); case $C in "$A"/*) ok "running pid $p from /Applications"
+        ST=$(LC_ALL=C date -j -f "%a %b %e %T %Y" "$(LC_ALL=C ps -o lstart= -p "$p")" +%s 2>/dev/null)
+        [ -n "$ST" ] && [ "$ST" -lt "$(stat -f %m "$A/Contents/MacOS/$EXE")" ] && warn "pid $p started before the installed binary was built — still the old version; relaunch" ;;
       *) warn "pid $p runs from $C (not /Applications)" ;; esac; done
       [ "$(echo $PIDS | wc -w)" -gt 1 ] && warn "more than one $EXE running"
     fi
