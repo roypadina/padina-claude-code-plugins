@@ -10,8 +10,13 @@ panes, split surfaces, launch coding agents inside panes, drive the embedded bro
 notifications and progress into the sidebar, inspect topology, and recover Claude Code sessions that
 did not survive a restart.
 
-Verified against **cmux 0.64.22**. `cmux <command> --help` is always the authority — check it before
-you trust anything below.
+Verified on **cmux 0.64.21** (Roy's pin, `~/.config/cmux/PINNED-VERSION`). **0.64.22+ has a pane-size
+bug**: a `new-split` pty stays stuck at 31x91. Do not unpin without re-running the pane-size checks.
+`cmux <command> --help` is always the authority — check it before you trust anything below.
+
+Spawning a new top-level agent in a pane → use the `invoke-new-agent` skill. Closing out your own
+session → `session-management:finish-session`. `cmux sessions` (hidden built-in, not in `--help`)
+lists Claude sessions with their fork command.
 
 ## Self-Update Rule (READ FIRST)
 
@@ -349,13 +354,21 @@ with `list-panels` if in doubt.
    `--workspace` + `--surface`. Close the workspace only when the tree shows it holds exactly this one
    surface. Unsure → close nothing. Never chain `close-surface … || close-workspace
    --workspace "$CMUX_WORKSPACE_ID"`: on 2026-10-05 the first call failed on a stale env and the
-   fallback closed the parent session's workspace. session-management's `close-own-pane.sh` does it
-   right.
+   fallback closed the parent session's workspace. Your own session's pane closes only via
+   `/finish-session` → `close` (session-management's `close-own-pane.sh`). Panes you created close
+   only by their exact UUID; never a bare `close-surface` (it hits the user's focused pane) and never
+   `$CMUX_WORKSPACE_ID` for closing (stale after a move).
 4. **Clean up.** Ask before closing helper panes you spawned; the user may still want the output.
 5. **Reads first.** `read-screen --surface surface:N --lines 200` before assuming agent state.
 6. **Refs are runtime.** `surface:7` is reassigned on every relaunch. UUIDs are stable — use
    `--id-format uuids` when persisting anything.
 7. **The user's checklist is the user's.** See `cmux todo` above.
+8. **Never restart cmux** or any menu-bar/terminal app from a Claude session: the relaunched app
+   inherits `CLAUDE_CODE_CHILD_SESSION` and every pane loses transcript saving. Ask Roy to relaunch it
+   from Raycast/Dock.
+9. **`sudo` only in a separate pane.** It cannot take a password via Bash. Check
+   `cmux identify --json`, open `cmux new-split <dir>`, run it there, read back with
+   `cmux read-screen --surface <ref>`.
 
 ## Pane Sizing & GUI Keybindings
 
