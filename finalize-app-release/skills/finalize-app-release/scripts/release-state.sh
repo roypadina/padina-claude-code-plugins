@@ -7,12 +7,14 @@
 #
 # Prints OK / GAP / WARN / INFO lines and a summary. Always exits 0 — it reports, the agent decides.
 # Only network/side effects: `git fetch --tags`, `git ls-remote`, `gh` reads.
-# Overrides: APPS_ROOT (where personal apps live), TAP_WORK (tap working copy), FAR_STATE_DIR (stamp dir).
+# Overrides: APPS_ROOT (where personal apps live), TAP_WORK (tap working copy), SITE_WORK (marketing-site
+# repo, default $APPS_ROOT/roypadina-apps), FAR_STATE_DIR (stamp dir).
 
 OWNER=roypadina
 TAP_SLUG=$OWNER/homebrew-tap
 TAP_WORK=${TAP_WORK:-$HOME/Code/Padina/homebrew-tap}
 APPS_ROOT=${APPS_ROOT:-$HOME/Code/Padina}
+SITE_WORK=${SITE_WORK:-$APPS_ROOT/roypadina-apps}
 KOFI="ko-fi.com/$OWNER"
 STATE_DIR=${FAR_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/finalize-app-release}
 
@@ -152,6 +154,20 @@ if [ -n "$SLUG" ] && [ -d "$TAP_WORK" ]; then
   else
     info "not in the tap (repo ${VIS:-?})"
   fi
+fi
+
+# ---------- marketing site (data/apps.json) ----------
+# SKIP cleanly when the site repo is absent or the app has no entry there.
+if [ -n "$SLUG" ] && [ -f "$SITE_WORK/data/apps.json" ] && command -v node >/dev/null; then
+  SV=$(node -e 'const d=require(process.argv[1]),a=d.apps.find(a=>(a.repo||"").toLowerCase().endsWith("/"+process.argv[2].toLowerCase()));console.log(a?a.slug+" "+a.version:"")' "$SITE_WORK/data/apps.json" "$SLUG" 2>/dev/null)
+  if [ -z "$SV" ]; then info "site: $SLUG has no entry in $SITE_WORK/data/apps.json (skipped)"
+  elif [ -n "$LATEST" ]; then
+    SS=${SV% *}; SVER=${SV#* }
+    if [ "$SVER" = "$LATEST" ] || [ "$(printf '%s\n%s\n' "$SVER" "$LATEST" | sort -V | tail -1)" = "$SVER" ]; then ok "site apps.json $SS at $SVER (latest tag v$LATEST)"
+    else gap "site apps.json $SS at $SVER, latest tag v$LATEST — update version + released in $SITE_WORK/data/apps.json, commit, push"; fi
+  fi
+else
+  info "site: no $SITE_WORK/data/apps.json (skipped)"
 fi
 
 # ---------- docs ----------

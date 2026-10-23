@@ -26,9 +26,11 @@ forgotten — and a tap push that silently failed still upgrades your own Mac, s
   release asset name and sha256 vs the cask, tap and wiki pushed **to the server** (not just a local
   ref), tap README row, CHANGELOG/appcast top entry, README install line, Ko-fi in the README,
   `FUNDING.yml`, wiki and app, stale mentions of the previous version, and the installed copy in
-  `/Applications` (version, quarantine, running from where).
+  `/Applications` (version, quarantine, running from where), and that the app's entry on my
+  marketing site (`roypadina-apps/data/apps.json`, override `SITE_WORK`) is not behind the latest tag
+  (skipped for apps not on the site or when the site repo is absent).
 - **The checklist** Claude works through for the gaps: docs, Ko-fi and About window, release, tap,
-  local install, memory note, cleanup, report.
+  marketing-site data, local install, memory note, cleanup, report.
 - **"Already done" memory** — after a clean run the script stamps the state
   (`~/.local/state/finalize-app-release/`). Next time, if the repo, wiki and tap haven't changed, it
   says so and skips the review. `recheck` forces a full pass.
