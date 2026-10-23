@@ -112,7 +112,9 @@ fi
 # ---------- GitHub release ----------
 REL_TAG=""; REL_DATE=""; ASSETS=""
 if [ -n "$SLUG" ]; then
-  J=$(GH release view --repo "$OWNER/$SLUG" --json tagName,publishedAt,assets \
+  # `release view` without a tag skips pre-releases (BETA apps ship only those): take the newest from `list`.
+  LAST=$(GH release list --repo "$OWNER/$SLUG" --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null)
+  J=$(GH release view $LAST --repo "$OWNER/$SLUG" --json tagName,publishedAt,assets \
        -q '.tagName+" "+.publishedAt+" "+([.assets[]|.name+"="+(.digest//"")]|join(","))' 2>/dev/null)
   read -r REL_TAG REL_DATE ASSETS <<<"$J"
   if [ -z "$REL_TAG" ]; then [ "$VIS" = PUBLIC ] && gap "no GitHub release"
@@ -121,7 +123,7 @@ if [ -n "$SLUG" ]; then
   if [ "$REL_TAG" = "v$VER" ]; then  # the site promises every release lists its zip SHA-256
     ZH=$(echo "$ASSETS" | tr ',' '\n' | sed -nE 's/^[^=]*\.(zip|tar\.gz)=sha256:([0-9a-f]+)$/\2/p' | head -1)
     if [ -n "$ZH" ]; then
-      GH release view "$REL_TAG" --repo "$OWNER/$SLUG" --json body -q .body 2>/dev/null | grep -qi "SHA-256: *$ZH" \
+      GH release view "$REL_TAG" --repo "$OWNER/$SLUG" --json body -q .body 2>/dev/null | grep -qi "SHA-256: *.\?$ZH" \
         && ok "release notes list SHA-256 $ZH" || gap "release notes lack 'SHA-256: $ZH' — gh release edit $REL_TAG --notes-file (prepend the line)"
     fi
   fi
