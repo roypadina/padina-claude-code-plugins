@@ -7,7 +7,7 @@ description: Use when naming, labelling, flagging, annotating, closing out, or s
 
 Claude Code sessions are named after your first prompt, which ages badly, and nothing else about
 them is recorded. `agentctl` attaches the missing metadata — a real name, notes, labels, flags, a
-done state, reminders and due dates — and shows it in its session picker (TUI and menu-bar app).
+done state, reminders and due dates — and shows it in its session picker (the `agentctl` TUI).
 
 Everything is stored in `~/.config/agentctl/annotations/<session-id>.json`, one small file per
 session, outside `~/.claude`, so nothing here can corrupt a transcript.

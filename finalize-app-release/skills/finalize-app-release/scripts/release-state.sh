@@ -233,6 +233,10 @@ if [ -n "$APP" ] && [ "$KIND" = Casks ]; then
   fi
   BV=$(brew list --cask --versions "$TOKEN_RB" 2>/dev/null | awk '{print $2}')
   [ -n "$BV" ] && [ "$BV" != "$VER" ] && info "brew records $TOKEN_RB $BV (fine only if this app is installed another way on purpose)"
+elif [ "$KIND" = Casks ]; then
+  # binary-only cask (no `app` stanza): the brew record is the install
+  BV=$(brew list --cask --versions "$TOKEN_RB" 2>/dev/null | awk '{print $2}')
+  [ "$BV" = "$VER" ] && ok "brew cask $TOKEN_RB $BV installed (no app bundle)" || gap "brew cask $TOKEN_RB is ${BV:-not installed}, source $VER"
 elif [ "$KIND" = Formula ]; then
   BV=$(brew list --versions "$TOKEN_RB" 2>/dev/null | awk '{print $2}')
   [ "$BV" = "$VER" ] && ok "brew formula $TOKEN_RB $BV installed" || gap "brew formula $TOKEN_RB is ${BV:-not installed}, source $VER"

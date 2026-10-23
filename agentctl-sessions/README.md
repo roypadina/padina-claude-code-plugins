@@ -41,7 +41,7 @@ removes anything from `~/.claude` — a hidden or deleted session still resumes 
 address it by id.
 
 - **Hidden** — out of the default list, still under `agentctl ls --hidden` (`v` cycles views in the
-  TUI, and the GUI has a view menu). For sessions you want out of the way.
+  TUI). For sessions you want out of the way.
 - **Deleted** — out of every list except `agentctl ls --deleted`. `agentctl delete --undo` restores
   it.
 

@@ -1,6 +1,6 @@
 {
   "name": "agentctl-sessions",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Name, note, flag and set reminders on the current Claude Code session; Agentctl shows them in its Resume picker.",
   "author": {
     "name": "Roy Padina",
