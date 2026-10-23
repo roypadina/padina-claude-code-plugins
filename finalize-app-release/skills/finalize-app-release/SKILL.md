@@ -142,7 +142,10 @@ Top to bottom. Skip what Step 1 already shows as OK.
     `version` (tag without `v`), `released` (ISO date) and, if changed, `requirements`, then validate and push
     (the site's GitHub Action deploys it; never commit anything but `data/apps.json`):
     `cd ~/Code/Padina/roypadina-apps && git pull --rebase -q && node -e 'const f="data/apps.json",d=require("./"+f),a=d.apps.find(a=>a.slug==process.argv[1]);a.version=process.argv[2];a.released=process.argv[3];require("fs").writeFileSync(f,JSON.stringify(d,null,2)+"\n")' <slug> X.Y.Z YYYY-MM-DD && node build.mjs`,
-    then `git add data/apps.json`, commit `<slug> X.Y.Z`, `git push git@github-padina:roypadina/roypadina-apps.git main`.
+    then check `git diff --stat` shows only a few changed lines: the one-liner re-serialises the whole file,
+    and if the file's formatting has drifted from `JSON.stringify(d,null,2)` it rewrites hundreds of lines.
+    Then `git checkout -- data/apps.json` and edit just the `version`/`released` lines in place (sed on the line number).
+    Then `git add data/apps.json`, commit `<slug> X.Y.Z`, `git push git@github-padina:roypadina/roypadina-apps.git main`.
     Step 1 shows a GAP when the site lags the latest tag and skips apps not on the site.
 
 ### F. Local install — part of the release, not optional
