@@ -3,12 +3,7 @@
 [![Website](https://img.shields.io/badge/website-apps.roypadina-2F62E6)](https://apps.roypadina.synology.me/)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/roypadina)
 
-A [Claude Code](https://claude.com/claude-code) plugin marketplace. Eight plugins so far: one that
-wires Claude into the cmux terminal, one that gives your sessions a memory of themselves, one that
-recaps and closes out sessions so nothing falls through the cracks, one that runs the release
-checklist for my Mac apps, one that repairs Hebrew/English layout typos, one that teaches Claude the
-Espanso text-expander CLI, one that researches recipes with parallel subagents, one that hands you
-values through your MaccyPlus clipboard history, labelled by session.
+A [Claude Code](https://claude.com/claude-code) plugin marketplace. Small plugins for a terminal-heavy Claude Code workflow: cmux integration, session memory, recaps and close-out, the release checklist for my Mac apps, Hebrew/English layout repair, Espanso control, recipe research with parallel subagents, and a MaccyPlus clipboard bridge.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
