@@ -1,5 +1,6 @@
 # Padina Claude Code plugins
 
+[![Website](https://img.shields.io/badge/website-apps.roypadina-2F62E6)](https://apps.roypadina.synology.me/)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/roypadina)
 
 A [Claude Code](https://claude.com/claude-code) plugin marketplace. Eight plugins so far: one that
@@ -211,6 +212,15 @@ needs.
 Issues and pull requests welcome. If you are adding a plugin, it needs its own directory, a
 `.claude-plugin/plugin.json`, a README, and an entry in `.claude-plugin/marketplace.json`. CI checks
 the manifests (valid JSON, required fields, every plugin listed).
+
+## More Mac apps by Roy
+
+Free, open-source Mac menu-bar apps and terminal tools, all on one site: **[apps.roypadina.synology.me](https://apps.roypadina.synology.me/)**.
+
+- [agentctl](https://apps.roypadina.synology.me/apps/agentctl/) — Find and resume any Claude Code or Codex session from one terminal menu.
+- [Agents Monitor](https://apps.roypadina.synology.me/apps/agents-monitor/) — See your Claude Code and Codex usage limits before you hit them.
+- [claude-jam](https://apps.roypadina.synology.me/apps/claude-jam/) — Share one real Claude Code session with other humans.
+- [MaccyPlus](https://apps.roypadina.synology.me/apps/maccyplus/) — Maccy, plus automation: rules, hotkeys, plugins and a CLI for AI agents.
 
 ## Support
 
