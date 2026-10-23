@@ -1,5 +1,7 @@
 # Padina Claude Code plugins
 
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/roypadina)
+
 A [Claude Code](https://claude.com/claude-code) plugin marketplace. Eight plugins so far: one that
 wires Claude into the cmux terminal, one that gives your sessions a memory of themselves, one that
 recaps and closes out sessions so nothing falls through the cracks, one that runs the release
@@ -25,6 +27,22 @@ Then install whichever you want:
 ```
 
 📖 **[Full documentation is in the Wiki](https://github.com/roypadina/padina-claude-code-plugins/wiki)**
+
+## At a glance
+
+| Plugin | What it does | Needs | Works with |
+|---|---|---|---|
+| [`cmux-control`](cmux-control) | Notifications, progress and a session inventory for Claude inside cmux | macOS, cmux CLI, `jq`, Python 3 | cmux |
+| [`agentctl-sessions`](agentctl-sessions) | Name, label, flag, remind and close out sessions | `agentctl` 0.5.0+ | agentctl |
+| [`session-management`](session-management) | `/session-recap`, `/resume-all`, `/finish-session` | nothing (`jq` for the pane close) | cmux, agentctl (optional) |
+| [`finalize-app-release`](finalize-app-release) | Release checklist for Roy's own Mac apps, not a general tool | macOS, `gh`, Homebrew, the tap checked out | the roypadina tap |
+| [`heeng-keyboard-translator`](heeng-keyboard-translator) | Repairs Hebrew/English wrong-layout typing, per word | Python 3 | any OS |
+| [`espanso-control`](espanso-control) | Teaches Claude the Espanso CLI, plus `/espanso-doctor` | macOS, Espanso | Espanso |
+| [`recipe-research`](recipe-research) | Restaurant-level recipes from three parallel subagents | nothing (Obsidian optional) | any OS |
+| [`maccyplus-clipboard`](maccyplus-clipboard) | Leaves labelled values in MaccyPlus history | macOS, MaccyPlus 2.8.0+ | MaccyPlus |
+
+Minimum Claude Code version: not pinned. The plugins use only commands, skills, hooks and agents, so any
+release with plugin marketplaces works.
 
 ---
 
@@ -191,7 +209,14 @@ needs.
 ## Contributing
 
 Issues and pull requests welcome. If you are adding a plugin, it needs its own directory, a
-`.claude-plugin/plugin.json`, a README, and an entry in `.claude-plugin/marketplace.json`.
+`.claude-plugin/plugin.json`, a README, and an entry in `.claude-plugin/marketplace.json`. CI checks
+the manifests (valid JSON, required fields, every plugin listed).
+
+## Support
+
+Free and open source, built in my spare time. If a plugin saves you time, a coffee keeps the next one coming.
+
+[![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/roypadina)
 
 ## License
 
