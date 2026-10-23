@@ -116,7 +116,8 @@ Top to bottom. Skip what Step 1 already shows as OK.
     `gh release create vX.Y.Z <zip> --repo roypadina/<Repo> --target main --title vX.Y.Z --notes "…"`.
     `--target` takes `main` or a full sha, never a short one. Notes in house style: short and
     user-facing — one line for a small release, bullets with bold lead-ins for a bigger one; reuse the
-    CHANGELOG section.
+    CHANGELOG section. **First line of the notes: `SHA-256: <zip sha256>`** (`shasum -a 256 <zip>`; the
+    site promises it; Step 1 flags a release without it). claude-jam: the tag tarball's hash.
 11. Download the asset with a cache-busting query (`?x=$RANDOM`; a fresh asset can 404 for 1–2 min,
     retry) and check its sha256 equals the local zip.
     claude-jam is a formula: the release has no asset; hash the tag tarball
