@@ -118,6 +118,13 @@ if [ -n "$SLUG" ]; then
   if [ -z "$REL_TAG" ]; then [ "$VIS" = PUBLIC ] && gap "no GitHub release"
   elif [ "$REL_TAG" = "v$VER" ]; then ok "GitHub release $REL_TAG (${REL_DATE%%T*}) assets: $(echo "${ASSETS:-none}" | sed -E 's/=[^,]*//g')"
   else gap "latest GitHub release $REL_TAG ≠ source v$VER"; fi
+  if [ "$REL_TAG" = "v$VER" ]; then  # the site promises every release lists its zip SHA-256
+    ZH=$(echo "$ASSETS" | tr ',' '\n' | sed -nE 's/^[^=]*\.(zip|tar\.gz)=sha256:([0-9a-f]+)$/\2/p' | head -1)
+    if [ -n "$ZH" ]; then
+      GH release view "$REL_TAG" --repo "$OWNER/$SLUG" --json body -q .body 2>/dev/null | grep -qi "SHA-256: *$ZH" \
+        && ok "release notes list SHA-256 $ZH" || gap "release notes lack 'SHA-256: $ZH' — gh release edit $REL_TAG --notes-file (prepend the line)"
+    fi
+  fi
 fi
 
 # ---------- tap ----------
