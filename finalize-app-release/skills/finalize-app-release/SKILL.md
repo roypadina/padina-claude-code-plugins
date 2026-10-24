@@ -136,17 +136,33 @@ Top to bottom. Skip what Step 1 already shows as OK.
     `brew update` so brew's own clone (`brew --repository roypadina/homebrew-tap`) matches. A green
     `brew upgrade` proves nothing — brew reads its local clone, so a failed push still upgrades this Mac.
 
-### E2. Marketing site — apps on the site
+### E2. Marketing site + repo marketing — every release (pre-releases and BETA too)
 
-15a. If the app has an entry in `~/Code/Padina/roypadina-apps/data/apps.json` (match on `repo`), set its
-    `version` (tag without `v`), `released` (ISO date) and, if changed, `requirements`, then validate and push
-    (the site's GitHub Action deploys it; never commit anything but `data/apps.json`):
-    `cd ~/Code/Padina/roypadina-apps && git pull --rebase -q && node -e 'const f="data/apps.json",d=require("./"+f),a=d.apps.find(a=>a.slug==process.argv[1]);a.version=process.argv[2];a.released=process.argv[3];require("fs").writeFileSync(f,JSON.stringify(d,null,2)+"\n")' <slug> X.Y.Z YYYY-MM-DD && node build.mjs`,
-    then check `git diff --stat` shows only a few changed lines: the one-liner re-serialises the whole file,
-    and if the file's formatting has drifted from `JSON.stringify(d,null,2)` it rewrites hundreds of lines.
-    Then `git checkout -- data/apps.json` and edit just the `version`/`released` lines in place (sed on the line number).
-    Then `git add data/apps.json`, commit `<slug> X.Y.Z`, `git push git@github-padina:roypadina/roypadina-apps.git main`.
-    Step 1 shows a GAP when the site lags the latest tag and skips apps not on the site.
+Site repo `~/Code/Padina/roypadina-apps` (PRIVATE; `main` unprotected, push by SSH; the push deploys: CI
+publishes `deploy`, NAS git-sync pulls it, the `verify` job polls `/version.txt`). Contract and page
+how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no entry in
+`data/apps.json` (match on `repo`); a new app → [references/new-public-app.md](references/new-public-app.md) § 7.
+
+15a. **Facts.** Set `version` (tag without `v`), `released` (ISO date) and, if changed, `requirements`,
+    `badge` (alpha/beta, drop it at stable), `installNpm`, `tagline`/`pitch`/`features`. Validate with
+    `node build.mjs`. Never commit anything but the files this release needs.
+    One-liner: `cd ~/Code/Padina/roypadina-apps && git pull --rebase -q && node -e 'const f="data/apps.json",d=require("./"+f),a=d.apps.find(a=>a.slug==process.argv[1]);a.version=process.argv[2];a.released=process.argv[3];require("fs").writeFileSync(f,JSON.stringify(d,null,2)+"\n")' <slug> X.Y.Z YYYY-MM-DD && node build.mjs`,
+    then check `git diff --stat` shows only a few changed lines: it re-serialises the whole file and, if the
+    formatting drifted, rewrites hundreds of lines. Then `git checkout -- data/apps.json` and edit just the
+    `version`/`released` lines in place (sed on the line number).
+15b. **Prose + screenshots.** The release changes user-facing features or the UI → update the page prose
+    `src/pages/<slug>.mjs` and `static/screenshots/<slug>/` (WebP, offscreen renders, fake data, public-clean;
+    list them in `apps.json`). Keep the page section order from `docs/design.md`.
+15c. **Social preview.** Tagline, name or badge changed → `sh og/render.sh <slug>` in the site repo, copy
+    `og/out/<slug>.png` to `docs/social-preview.png` in the app repo (commit via the app's own PR/push), and
+    commit `og/out/<slug>.png` in the site repo. GitHub has no upload API: tell Roy the click path
+    "repo → Settings → Social preview → Edit → Upload an image → `docs/social-preview.png`", then verify
+    after his upload: `curl -sL "$(gh api graphql -f query='{repository(owner:"roypadina",name:"<Repo>"){openGraphImageUrl}}' -q .data.repository.openGraphImageUrl)" -o /tmp/og.png && cmp /tmp/og.png docs/social-preview.png`
+    (`gh` as the personal account; a default avatar-style URL means no upload yet).
+15d. `git add` the named files, commit `<slug> X.Y.Z`, `git push git@github-padina:roypadina/roypadina-apps.git main`,
+    then wait for the `deploy` run (`gh run watch`) and check `curl -s https://apps.roypadina.synology.me/version.txt`
+    equals the pushed sha. Step 1 GAPs when the site lags the latest tag and WARNs when the app's GitHub
+    homepage is not its site page or the README lacks the site link. Release notes keep the `SHA-256:` first line (D10).
 
 ### F. Local install — part of the release, not optional
 
@@ -184,7 +200,7 @@ Top to bottom. Skip what Step 1 already shows as OK.
 
 Repo going public or first cask → [references/new-public-app.md](references/new-public-app.md): privacy
 triple check, history squash, community files, CI and branch protection, repo metadata, icons, About
-window and Ko-fi, wiki, first cask and tap README row. Every step there is net-new: show the plan, get
+window and Ko-fi, wiki, first cask and tap README row, marketing site + repo marketing (site entry and page, website badge, feature-request block, More Mac apps, social preview). Every step there is net-new: show the plan, get
 an explicit OK.
 
 ## Per-app notes

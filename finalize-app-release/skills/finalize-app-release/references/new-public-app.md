@@ -46,7 +46,7 @@ Also:
     `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/{bug_report,feature_request,config}.yml`,
     `.github/workflows/ci.yml` (job "Build and test").
 - Create the repo public under `roypadina`, remote `git@github-padina:roypadina/<Repo>.git`, push `main`.
-- Metadata: description, homepage = the wiki URL, topics (`macos`, `menu-bar`, `swift`, …).
+- Metadata: description, homepage = `https://apps.roypadina.synology.me/apps/<slug>/` (the site page, not the wiki; set it after § 8 deploys), topics (`macos`, `menu-bar`, `swift`, …).
 - Branch protection on `main`: the CI job as required check, code-owner review, admins can bypass
   (`enforce_admins` off — the sole owner cannot approve their own PR).
 
@@ -135,7 +135,43 @@ window-organizer `Sources/WindowOrganizerApp/WindowOrganizerApp.swift` and `Sett
   `| **<token>** | <one line> [Repo](https://github.com/roypadina/<Repo>) |`.
 - Push the tap by URL, verify on the server, install locally (SKILL.md § E–F).
 
-## 7. Optional — ask first
+## 7. Marketing site + repo marketing
+
+Site repo `~/Code/Padina/roypadina-apps` (private; `README.md` = apps.json contract, `docs/design.md` =
+page how-to, `CLAUDE.md`). Copy blocks from [feature-requests-spec.md](feature-requests-spec.md). Public-clean
+rules apply to every image and file.
+
+1. **Site entry + page.** New object in `data/apps.json` (keys in README order; `badge` alpha/beta if not
+   stable; `hasPage: true`), `src/pages/<slug>.mjs` copied from a sibling per `docs/design.md`, icon
+   (256 px WebP in `static/icons/`) and screenshots (`static/screenshots/<slug>/`, WebP, offscreen renders,
+   fake data, nothing personal). Add the app's 16x16 glyph in `src/glyphs.mjs` if the build asks.
+   `node build.mjs`, review light + dark, desktop + 390 px (recipe in the site `CLAUDE.md`). Never hard-code
+   an app count anywhere (site, READMEs, wiki, tap, plugin docs): count nothing, or derive it.
+2. **Deploy = push to `main`** (unprotected): CI builds and publishes `deploy`, NAS git-sync pulls it
+   within ~1 min, `verify` polls `/version.txt` = the pushed sha. Check the page is live:
+   `curl -sI https://apps.roypadina.synology.me/apps/<slug>/ | head -1`. Never touch the NAS stack.
+3. **Repo homepage** = `https://apps.roypadina.synology.me/apps/<slug>/`:
+   `gh repo edit roypadina/<Repo> --homepage …` (personal account).
+4. **README:** a "website" badge in the header row
+   (`[![Website](https://img.shields.io/badge/website-apps.roypadina.synology.me-2F62E6)](https://apps.roypadina.synology.me/apps/<slug>/)`),
+   then, **above `## Support`**: the "Feature requests and contributions" block (spec § 3a; ALPHA/BETA/CLI
+   variants in § 4) and `## More Mac apps by Roy` with 3-4 sibling apps (each linking its site page;
+   pick the closest in purpose). Keep the order: Feature requests, More Mac apps, Support.
+5. **Siblings:** add the new app to the "More Mac apps" list of the sibling READMEs where it is relevant
+   (their repos; a protected `main` → PR). Update the tap README row.
+6. **Wiki:** footer and sidebar link to the site page; add `Feature-requests-and-contributing.md` (spec § 3b)
+   and its sidebar line. `CONTRIBUTING.md` section from spec § 3e.
+7. **Issue form + label:** `.github/ISSUE_TEMPLATE/feature_request.yml` from spec § 3d, then
+   `gh label create supporter -R roypadina/<Repo> -c F16061 -d "Requested by a Ko-fi supporter: front of the queue"`.
+8. **About window / `--help`:** the "Have an idea, or want to help build it?" block + two bordered buttons
+   (spec § 3c) in the About view, after "Report an issue"; CLI tools get the `--help` footer (spec § 4).
+9. **Stage tags:** an alpha/beta app shows an ALPHA/BETA tag on its icon everywhere (site card and page via
+   `badge`, README header, social preview, wiki, tap `desc`).
+10. **Social preview:** `sh og/render.sh <slug>` in the site repo, commit `docs/social-preview.png` in the app
+    repo and `og/out/<slug>.png` in the site repo; Roy uploads it by hand (SKILL.md § E2 15c has the click path
+    and the `cmp` check).
+
+## 8. Optional — ask first
 
 Awesome-list submissions from the `roypadina` account: `jaywcjlove/awesome-mac`,
 `serhii-londar/open-source-mac-os-apps`, `jaywcjlove/awesome-swift-macos-apps`. Skip
