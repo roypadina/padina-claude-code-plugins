@@ -100,6 +100,10 @@ window-organizer `Sources/WindowOrganizerApp/WindowOrganizerApp.swift` and `Sett
 ## 6. First release and cask
 
 - Release per SKILL.md § D.
+- Build/release script signs with the stable identity from day one: use `KeyLayoutSwitcher Dev` when
+  `security find-identity -v -p codesigning | grep -q "KeyLayoutSwitcher Dev"`, env override
+  `<APP>_SIGN_IDENTITY`; ad-hoc (`-`) fallback only when the identity is missing (CI, contributors), and
+  print it. Sign nested Mach-Os inner-first, then the app. Reference: `~/Code/Padina/Maccay/Scripts/build-release.sh`.
 - `~/Code/Padina/homebrew-tap/Casks/<token>.rb`:
 
   ```ruby
@@ -119,14 +123,14 @@ window-organizer `Sources/WindowOrganizerApp/WindowOrganizerApp.swift` and `Sett
     zap trash: "~/Library/Preferences/<bundle id>.plist"
 
     caveats <<~EOS
-      <App> is ad-hoc signed (not notarized), so on first launch macOS may block it.
+      <App> is self-signed with a stable identity (not notarized), so on first launch macOS may block it.
       Right-click <App> in /Applications and choose Open, or run once:
         xattr -dr com.apple.quarantine "/Applications/<App>.app"
     EOS
   end
   ```
 
-  Say "self-signed" instead of "ad-hoc signed" when the release is signed with a local identity. Add
+  Add
   `binary "#{appdir}/<App>.app/Contents/MacOS/<cli>", target: "<cli>"` only if the app ships a CLI.
   Never `uninstall quit:` or `launchctl:` for an app that runs a login item — they kill the running
   copy on every upgrade; put login jobs under `zap` only.

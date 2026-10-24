@@ -129,6 +129,24 @@ if [ -n "$SLUG" ]; then
   fi
 fi
 
+# ---------- signing: latest release asset must carry the stable identity (CLIs have no .app: skipped) ----------
+if [ -n "$SLUG" ] && [ -n "$REL_TAG" ]; then
+  SC="$HOME/.cache/release-state-sign/$SLUG-$REL_TAG"; mkdir -p "${SC%/*}"
+  if [ ! -s "$SC" ]; then
+    ZN=$(echo "$ASSETS" | tr ',' '\n' | sed -nE 's/^([^=]*\.zip)=.*/\1/p' | head -1)
+    SD=$(mktemp -d) && if [ -n "$ZN" ] && GH release download "$REL_TAG" --repo "$OWNER/$SLUG" -p "$ZN" -D "$SD" >/dev/null 2>&1 \
+         && unzip -q "$SD/$ZN" -d "$SD/x" 2>/dev/null && APPB=$(ls -d "$SD"/x/*.app 2>/dev/null | head -1) && [ -n "$APPB" ]; then
+      if codesign -dvv "$APPB" 2>&1 | grep -q "^Authority=KeyLayoutSwitcher Dev"; then echo signed >"$SC"
+      else echo adhoc >"$SC"; fi
+    else echo noapp >"$SC"; fi
+    rm -rf "$SD"
+  fi
+  case $(cat "$SC") in
+    signed) ok "release $REL_TAG app signed with KeyLayoutSwitcher Dev" ;;
+    adhoc)  gap "release $REL_TAG app is NOT signed with 'KeyLayoutSwitcher Dev' (ad-hoc?) — rebuild signed, see SKILL.md § D step 9" ;;
+  esac
+fi
+
 # ---------- tap ----------
 TOKEN_RB=""; KIND=""; APP=""
 if [ -n "$SLUG" ] && [ -d "$TAP_WORK" ]; then
