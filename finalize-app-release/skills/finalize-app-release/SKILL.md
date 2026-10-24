@@ -77,10 +77,13 @@ Top to bottom. Skip what Step 1 already shows as OK.
 
 ### B. Docs — every app
 
-3. **CHANGELOG.md** — add `## [X.Y.Z] - YYYY-MM-DD` with `### Added / Changed / Fixed / Removed`
+3. **CHANGELOG.md** — required for every version built and every release, also patch and
+   pre-releases: add `## [X.Y.Z] - YYYY-MM-DD` with `### Added / Changed / Fixed / Removed`
    (Keep a Changelog, as LanGuard). Keep the file's existing heading style if it has one. No file →
    create it once, seeded from past releases (`gh release list`, `gh release view <tag> --json body`),
-   newest first, under `## [Unreleased]`.
+   newest first, under `## [Unreleased]`. User-facing and public-clean: this text is published
+   three times (repo, release notes, the site's "What's new"). Step 1 GAPs when the top entry is not
+   the source version or the latest tag has no entry.
 4. **README** — matches the new behaviour: features, settings, shortcuts, permissions, limitations,
    install, uninstall. Screenshots retaken if the UI changed (privacy-check the image). Install line
    `brew install --cask roypadina/tap/<token>`. No stale version strings (Step 1 lists mentions of the
@@ -116,7 +119,7 @@ Top to bottom. Skip what Step 1 already shows as OK.
     `gh release create vX.Y.Z <zip> --repo roypadina/<Repo> --target main --title vX.Y.Z --notes "…"`.
     `--target` takes `main` or a full sha, never a short one. Notes in house style: short and
     user-facing — one line for a small release, bullets with bold lead-ins for a bigger one; reuse the
-    CHANGELOG section. **First line of the notes: `SHA-256: <zip sha256>`** (`shasum -a 256 <zip>`; the
+    CHANGELOG section (never empty notes; Step 1 GAPs on them). **First line of the notes: `SHA-256: <zip sha256>`** (`shasum -a 256 <zip>`; the
     site promises it; Step 1 flags a release without it). claude-jam: the tag tarball's hash.
     **Signing (apps, not CLIs):** the build must use the stable identity `KeyLayoutSwitcher Dev`
     (ad-hoc only in CI). Before tagging, unzip the built zip and check the app and every nested
@@ -131,7 +134,9 @@ Top to bottom. Skip what Step 1 already shows as OK.
 ### E. Tap — public repos
 
 12. In `~/Code/Padina/homebrew-tap`: bump the cask `version` + `sha256` (formula: `url` + `sha256`).
-    Keep `desc` current. New app → new cask from the template in the reference file.
+    Keep `desc` current. New app → new cask from the template in the reference file. Add
+    ``- `<token>` X.Y.Z`` under `### Changed` (new cask: `### Added`) in today's `## YYYY-MM-DD`
+    section of the tap's `CHANGELOG.md` (create the section at the top, below `## [Unreleased]`).
 13. Tap `README.md`: the app has a row in the Casks (or Formulae) table and its description names the
     current headline features.
 14. `brew style ~/Code/Padina/homebrew-tap/Casks/<token>.rb` clean (the file path — `brew style roypadina/tap/<token>`
@@ -166,7 +171,9 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
     (`gh` as the personal account; a default avatar-style URL means no upload yet).
 15d. `git add` the named files, commit `<slug> X.Y.Z`, `git push git@github-padina:roypadina/roypadina-apps.git main`,
     then wait for the `deploy` run (`gh run watch`) and check `curl -s https://apps.roypadina.synology.me/version.txt`
-    equals the pushed sha. Step 1 GAPs when the site lags the latest tag and WARNs when the app's GitHub
+    equals the pushed sha. The page's **"What's new"** is built from the app repo's `CHANGELOG.md` at deploy
+    time, so push the CHANGELOG entry (B3) before the site; a CHANGELOG fix after the deploy needs a redeploy
+    (`gh workflow run deploy --repo roypadina/roypadina-apps`). Step 1 GAPs when the live page lacks the latest tag. Step 1 GAPs when the site lags the latest tag and WARNs when the app's GitHub
     homepage is not its site page or the README lacks the site link. Release notes keep the `SHA-256:` first line (D10).
 
 ### F. Local install — part of the release, not optional
