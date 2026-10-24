@@ -175,8 +175,10 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
     - Quit the old copy by exact PID (`pgrep -x <Executable>` → `kill <pid>`, or
       `osascript -e 'quit app id "<bundle id>"'`). Relaunch from `/Applications` with the session
       environment stripped —
-      `env -u CLAUDECODE -u CLAUDE_CODE_CHILD_SESSION -u CLAUDE_CODE_SESSION_ID -u CLAUDE_PID open "/Applications/<App>.app"` —
+      `env $(env | grep -o '^CLAUDE[A-Z0-9_]*' | sort -u | sed 's/^/-u /') -u CLAUDECODE open "/Applications/<App>.app"` —
       only if the user's rules allow relaunching apps from a session; otherwise ask them to open it.
+      Stripping only the 4 session vars still leaks ~12 `CLAUDE*` vars (incl. a messaging token) into
+      the app; check `ps eww -o command= -p <pid> | tr ' ' '\n' | grep -c '^CLAUDE'` prints `0`.
     - Verify with Step 1: `installed … is X.Y.Z`, one PID running from `/Applications`, no quarantine.
 
 ### G. Wrap-up
@@ -210,7 +212,7 @@ Summary only — the app's `CLAUDE.md` and memory note win.
 | App | Dir in `~/Code/Padina` | Quirks |
 |---|---|---|
 | LanGuard | `LanGuard-app` | Version in `Config/Shared.xcconfig`; xcodebuild Release + ditto zip; universal build needs `-destination 'generic/platform=macOS'`; wiki clone `LanGuard.wiki` next to the repo; helper script/plist changed → after `brew upgrade` the user relaunches it (Raycast) and clicks Settings › Protection › Update helper, then `launchctl print system/com.roypadina.languard-net` shows `runs = 1` staying at 1 |
-| MaccyPlus | `Maccay` | Remote `padina`, never `origin`; version in the pbxproj; prepend an `appcast.xml` item (length = zip bytes, `sparkle:version` = build) after the release asset exists; wiki clone is `maccyplus.wiki` (slug, not folder name) |
+| MaccyPlus | `Maccay` | Remote `padina`, never `origin`; version in the pbxproj; prepend an `appcast.xml` item (length = zip bytes, `sparkle:version` = build) after the release asset exists; wiki clone is `maccyplus.wiki` (slug, not folder name); upstream-sync PRs merge with `--merge`, never `--squash`; build with `MACCYPLUS_SIGN_IDENTITY` set (see memory) |
 | VaultBar | `VaultBar` | Push only `main`; privacy triple check before every public push; `RELEASE=1 Scripts/package_app.sh` |
 | Window Organizer | `window-organizer` | Version is a literal in the `Scripts/package_app.sh` plist heredoc; asset `Window-Organizer.zip` |
 | SmartHiddenBar | `SmartHiddenBar` | `RELEASE=1 ./build.sh`; local install is the dev-signed `./build.sh`, never `brew upgrade` |
