@@ -170,6 +170,16 @@ fi
 if [ -n "$SLUG" ] && [ -f "$SITE_WORK/data/apps.json" ] && command -v node >/dev/null; then
   SV=$(node -e 'const d=require(process.argv[1]),a=d.apps.find(a=>(a.repo||"").toLowerCase().endsWith("/"+process.argv[2].toLowerCase()));console.log(a?a.slug+" "+a.version:"")' "$SITE_WORK/data/apps.json" "$SLUG" 2>/dev/null)
   if [ -z "$SV" ]; then info "site: $SLUG has no entry in $SITE_WORK/data/apps.json (skipped)"
+  else
+    SSLUG=${SV% *}; SITEURL="https://apps.roypadina.synology.me/apps/$SSLUG/"
+    if [ "$VIS" = PUBLIC ]; then
+      HP=$(GH repo view "$OWNER/$SLUG" --json homepageUrl -q .homepageUrl 2>/dev/null)
+      [ "${HP%/}/" = "$SITEURL" ] && ok "GitHub homepage = site page" || warn "GitHub homepage is '${HP:-empty}', should be $SITEURL (gh repo edit --homepage)"
+      grep -qF "apps.roypadina.synology.me/apps/$SSLUG" README.md 2>/dev/null && ok "README links the site page" \
+        || warn "README lacks the site link $SITEURL (website badge, spec in references/new-public-app.md § 7)"
+    fi
+  fi
+  if [ -z "$SV" ]; then :
   elif [ -n "$LATEST" ]; then
     SS=${SV% *}; SVER=${SV#* }
     if [ "$SVER" = "$LATEST" ] || [ "$(printf '%s\n%s\n' "$SVER" "$LATEST" | sort -V | tail -1)" = "$SVER" ]; then ok "site apps.json $SS at $SVER (latest tag v$LATEST)"
