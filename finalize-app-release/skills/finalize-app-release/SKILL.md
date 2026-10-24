@@ -118,6 +118,11 @@ Top to bottom. Skip what Step 1 already shows as OK.
     user-facing — one line for a small release, bullets with bold lead-ins for a bigger one; reuse the
     CHANGELOG section. **First line of the notes: `SHA-256: <zip sha256>`** (`shasum -a 256 <zip>`; the
     site promises it; Step 1 flags a release without it). claude-jam: the tag tarball's hash.
+    **Signing (apps, not CLIs):** the build must use the stable identity `KeyLayoutSwitcher Dev`
+    (ad-hoc only in CI). Before tagging, unzip the built zip and check the app and every nested
+    Mach-O: `codesign -dvv <path> 2>&1 | grep ^Authority=` shows `KeyLayoutSwitcher Dev`, and
+    `codesign --verify --deep --strict <App>.app` passes. Reference: `Maccay/Scripts/build-release.sh`.
+    Step 1 flags a latest release whose app is not signed with it.
 11. Download the asset with a cache-busting query (`?x=$RANDOM`; a fresh asset can 404 for 1–2 min,
     retry) and check its sha256 equals the local zip.
     claude-jam is a formula: the release has no asset; hash the tag tarball
@@ -168,7 +173,7 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
 
 16. Put the released version on the user's Mac:
     - Default: `brew upgrade --cask roypadina/tap/<token>`, then
-      `xattr -dr com.apple.quarantine "/Applications/<App>.app"` (ad-hoc signed; Gatekeeper may
+      `xattr -dr com.apple.quarantine "/Applications/<App>.app"` (self-signed with a stable identity; Gatekeeper may
       otherwise offer to move it to the Trash).
     - Exception: an app whose Accessibility grant belongs to a local signing identity (SmartHiddenBar)
       is installed with its dev build script, never `brew upgrade` — the app's memory note says which.
