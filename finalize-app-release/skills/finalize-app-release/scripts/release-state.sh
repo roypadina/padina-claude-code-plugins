@@ -120,12 +120,18 @@ if [ -n "$SLUG" ]; then
   if [ -z "$REL_TAG" ]; then [ "$VIS" = PUBLIC ] && gap "no GitHub release"
   elif [ "$REL_TAG" = "v$VER" ]; then ok "GitHub release $REL_TAG (${REL_DATE%%T*}) assets: $(echo "${ASSETS:-none}" | sed -E 's/=[^,]*//g')"
   else gap "latest GitHub release $REL_TAG ≠ source v$VER"; fi
-  if [ "$REL_TAG" = "v$VER" ]; then  # the site promises every release lists its zip SHA-256
+  if [ -n "$REL_TAG" ]; then  # notes = the CHANGELOG section, first line the SHA-256 the site promises
+    BODY=$(GH release view "$REL_TAG" --repo "$OWNER/$SLUG" --json body -q .body 2>/dev/null)
     ZH=$(echo "$ASSETS" | tr ',' '\n' | sed -nE 's/^[^=]*\.(zip|tar\.gz)=sha256:([0-9a-f]+)$/\2/p' | head -1)
     if [ -n "$ZH" ]; then
-      GH release view "$REL_TAG" --repo "$OWNER/$SLUG" --json body -q .body 2>/dev/null | grep -qi "SHA-256: *.\?$ZH" \
+      echo "$BODY" | grep -qi "SHA-256: *.\?$ZH" \
         && ok "release notes list SHA-256 $ZH" || gap "release notes lack 'SHA-256: $ZH' — gh release edit $REL_TAG --notes-file (prepend the line)"
+    else  # no asset (claude-jam): the tag tarball's hash
+      echo "$BODY" | grep -qiE "^SHA-256: *.?[0-9a-f]{64}" \
+        && ok "release notes list a SHA-256" || gap "release notes of $REL_TAG lack the 'SHA-256: <hash>' first line (no asset: hash the tag tarball)"
     fi
+    [ -n "$(echo "$BODY" | grep -viE '^SHA-256:' | tr -d '[:space:]')" ] && ok "release notes of $REL_TAG have text" \
+      || gap "release notes of $REL_TAG are empty — gh release edit $REL_TAG --notes-file (SHA-256 line + the CHANGELOG section)"
   fi
 fi
 
@@ -169,6 +175,8 @@ if [ -n "$SLUG" ] && [ -d "$TAP_WORK" ]; then
     fi
     [ "$CV" = "$VER" ] && ok "tap $KIND/$TOKEN_RB.rb at $CV" || gap "tap $KIND/$TOKEN_RB.rb at ${CV:-?}, source $VER"
     grep -q "\*\*$TOKEN_RB\*\*" "$TAP_WORK/README.md" && ok "tap README lists $TOKEN_RB" || gap "tap README has no row for $TOKEN_RB"
+    grep -qF "\`$TOKEN_RB\` $CV" "$TAP_WORK/CHANGELOG.md" 2>/dev/null && ok "tap CHANGELOG lists $TOKEN_RB $CV" \
+      || gap "tap CHANGELOG.md has no '- \`$TOKEN_RB\` $CV' line under today's date"
     TSRV=$(git ls-remote "https://github.com/$TAP_SLUG.git" refs/heads/main 2>/dev/null | cut -f1)
     [ "$(git -C "$TAP_WORK" rev-parse HEAD)" = "$TSRV" ] && ok "tap working copy = server" \
       || gap "tap working copy ≠ server main (unpushed, or needs pull)"
@@ -202,6 +210,11 @@ if [ -n "$SLUG" ] && [ -f "$SITE_WORK/data/apps.json" ] && command -v node >/dev
     SS=${SV% *}; SVER=${SV#* }
     if [ "$SVER" = "$LATEST" ] || [ "$(printf '%s\n%s\n' "$SVER" "$LATEST" | sort -V | tail -1)" = "$SVER" ]; then ok "site apps.json $SS at $SVER (latest tag v$LATEST)"
     else gap "site apps.json $SS at $SVER, latest tag v$LATEST — update version + released in $SITE_WORK/data/apps.json, commit, push"; fi
+    # "What's new" is built from CHANGELOG.md at deploy time: the live page must show the latest tag.
+    PAGE=$(curl -sf --max-time 15 "https://apps.roypadina.synology.me/apps/$SS/")
+    if [ -z "$PAGE" ]; then warn "site page https://apps.roypadina.synology.me/apps/$SS/ unreachable — What's new not checked"
+    elif echo "$PAGE" | grep -qF "<summary><span>$LATEST<"; then ok "site What's new shows $LATEST"
+    else gap "site What's new lacks $LATEST — CHANGELOG entry pushed? then redeploy the site (push its main, or gh workflow run deploy)"; fi
   fi
 else
   info "site: no $SITE_WORK/data/apps.json (skipped)"
@@ -211,6 +224,10 @@ fi
 if [ -f CHANGELOG.md ]; then
   CL=$(grep -m1 -E '^## \[?v?[0-9]' CHANGELOG.md | sed -E 's/^## \[?v?([0-9][^] ]*).*/\1/')
   [ "$CL" = "$VER" ] && ok "CHANGELOG top entry $CL" || gap "CHANGELOG top entry ${CL:-none} ≠ $VER"
+  if [ -n "$LATEST" ] && [ "$LATEST" != "$CL" ]; then
+    grep -qE "^## \[?v?${LATEST//./\\.}\]?( |$)" CHANGELOG.md && ok "CHANGELOG has latest tag $LATEST" \
+      || gap "CHANGELOG has no entry for latest tag v$LATEST"
+  fi
 elif [ "$VIS" = PUBLIC ]; then
   gap "no CHANGELOG.md"
 else
