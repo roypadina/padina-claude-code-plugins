@@ -103,6 +103,19 @@
         "macos",
         "sessions"
       ]
+    },
+    {
+      "name": "agents-session-hopper",
+      "source": "./agents-session-hopper",
+      "description": "Teaches Claude to steer AgentsSessionHopper: which of your Claude accounts this session runs on, usage left, switch or hold, and how to pick work back up after a move.",
+      "category": "productivity",
+      "keywords": [
+        "claude-accounts",
+        "profiles",
+        "usage-limits",
+        "sessionhopper",
+        "macos"
+      ]
     }
   ]
 }

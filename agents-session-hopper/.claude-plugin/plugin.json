@@ -1,0 +1,13 @@
+{
+  "name": "agents-session-hopper",
+  "version": "0.1.0",
+  "description": "Teaches Claude to steer AgentsSessionHopper: which account this session runs on, usage left, switch or hold, and what to do when a moved session resumes.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/AgentsSessionHopper",
+  "repository": "https://github.com/roypadina/AgentsSessionHopper",
+  "license": "MIT",
+  "keywords": ["claude-accounts", "profiles", "usage-limits", "sessionhopper"]
+}
