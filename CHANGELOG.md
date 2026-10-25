@@ -9,7 +9,13 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## 2026-10-25
 
+### Added
+- agents-session-hopper 0.1.0: a skill that teaches Claude to steer AgentsSessionHopper (account,
+  usage, switch, hold, picking work back up after a move).
+
 ### Changed
+- finalize-app-release 0.4.1: the state script reads a Swift `static let version` as the
+  source version (AgentsSessionHopper).
 - finalize-app-release 0.4.0: every version and release needs a CHANGELOG entry, non-empty release
   notes and the site's "What's new"; the state script GAPs when the CHANGELOG lacks the latest tag,
   the release notes are empty, the tap CHANGELOG lacks the cask version or the live site page does

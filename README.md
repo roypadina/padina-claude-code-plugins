@@ -36,6 +36,7 @@ Then install whichever you want:
 | [`espanso-control`](espanso-control) | Teaches Claude the Espanso CLI, plus `/espanso-doctor` | macOS, Espanso | Espanso |
 | [`recipe-research`](recipe-research) | Restaurant-level recipes from three parallel subagents | nothing (Obsidian optional) | any OS |
 | [`maccyplus-clipboard`](maccyplus-clipboard) | Leaves labelled values in MaccyPlus history | macOS, MaccyPlus 2.8.0+ | MaccyPlus |
+| [`agents-session-hopper`](agents-session-hopper) | Claude steers AgentsSessionHopper: account, usage, switch, hold, resume after a move | macOS, AgentsSessionHopper 0.1.8+ | AgentsSessionHopper |
 
 Minimum Claude Code version: not pinned. The plugins use only commands, skills, hooks and agents, so any
 release with plugin marketplaces works.
@@ -88,6 +89,20 @@ a skill that teaches Claude the whole toolset.
 offers to install it if it is missing.
 
 → [Plugin README](agentctl-sessions/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/agentctl-sessions)
+
+### [`agents-session-hopper`](agents-session-hopper) — your Claude accounts, one conversation
+
+[AgentsSessionHopper](https://github.com/roypadina/AgentsSessionHopper) keeps your own Claude accounts
+side by side and continues the same conversation on another one near a usage limit. This skill tells
+Claude how: which account the session is on, usage left, `switch` / `hold`, ending its turn so a move
+lands cleanly, and picking the work back up when a moved session resumes.
+
+> "which account am I on?" · "switch to work" · "stay on this account"
+
+**Requires** AgentsSessionHopper 0.1.8+ (`brew install --cask roypadina/tap/agents-session-hopper`).
+Install the plugin in every profile; the app's setup can do it for you.
+
+→ [Plugin README](agents-session-hopper/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/agents-session-hopper)
 
 ### [`session-management`](session-management) — recap mid-session, close out at the end
 
@@ -196,6 +211,7 @@ heeng-keyboard-translator/        plugin: skills/ (with a bundled Python transla
 espanso-control/                  plugin: commands/, scripts/, skills/
 recipe-research/                  plugin: commands/, skills/
 maccyplus-clipboard/              plugin: skills/
+agents-session-hopper/            plugin: skills/
 ```
 
 Each plugin directory is self-contained and follows the standard Claude Code plugin layout —
