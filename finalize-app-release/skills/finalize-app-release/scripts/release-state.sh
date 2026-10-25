@@ -84,6 +84,11 @@ if [ -z "$VER" ]; then
   done
 fi
 if [ -z "$VER" ]; then
+  # Swift constant read by the package script (AgentsSessionHopper: HopperInfo.version)
+  f=$(grep -rlsE 'static let version = "[0-9]' Sources 2>/dev/null | head -1)
+  [ -n "$f" ] && VER=$(sed -nE 's/.*static let version = "([0-9][^"]*)".*/\1/p' "$f" | head -1) VSRC=$f
+fi
+if [ -z "$VER" ]; then
   for f in Info.plist; do
     v=$(pl CFBundleShortVersionString "$f"); case $v in [0-9]*) VER=$v VSRC=$f; break ;; esac
   done
