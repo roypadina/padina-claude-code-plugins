@@ -12,7 +12,7 @@
 # Doesn't trust $CMUX_SURFACE_ID alone either: cmux has no caller identity of its own, and an env
 # var can leak into a process started from another pane (tmux server, copied env). The surface's
 # tty must sit on this process's own ancestor chain — every ancestor, since claude may run under a
-# pty wrapper such as ccpool whose tty differs from the pane's.
+# pty wrapper (a draft saver, a supervisor such as sessionhopper) whose tty differs from the pane's.
 #
 # A pinned workspace is kept: when this pane is its only one, a fresh shell tab opens there first.
 #
