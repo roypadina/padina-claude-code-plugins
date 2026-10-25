@@ -191,7 +191,8 @@ no auto-resume, even after showing them. `check`'s per-pane "running" column is 
 (flagged the caller's own live pane NOT RUNNING); confirm with `read-screen` + `ps`. Panes never
 shown since launch need `send-key backspace` before they have a shell. Faithful resume = the saved
 panel's `terminal.agent.launchCommand`: `cd <workingDirectory> && <environment…> claude --resume
-<sessionId> <arguments[1:]>`. ccpool may then move the session to another profile; history still loads.
+<sessionId> <arguments[1:]>`. It replays the wrapper the pane was first opened with (an old binary path
+stays until the pane is restarted by hand); an account switcher such as sessionhopper may then move the session to another profile; history still loads.
 
 A resume command is `[CLAUDE_CONFIG_DIR=<dir>] claude --resume <id> --permission-mode <mode>`. The
 env prefix is the part people forget: a session launched under a non-default `CLAUDE_CONFIG_DIR` is a

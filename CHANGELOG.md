@@ -9,6 +9,10 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## 2026-10-25
 
+### Changed
+- cmux-control 0.2.4, session-management 0.3.2: wording no longer names the retired ccpool; cmux-control notes
+  that a restored pane replays the wrapper it was first opened with.
+
 ### Added
 - agents-session-hopper 0.1.0: a skill that teaches Claude to steer AgentsSessionHopper (account,
   usage, switch, hold, picking work back up after a move).
