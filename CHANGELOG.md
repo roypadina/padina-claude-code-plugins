@@ -7,6 +7,12 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-10-26
+
+### Added
+- session-management 0.3.3: a `Stop` hook and the `/finish-session` close call `~/.claude/bin/claudwork touch`
+  when that script exists, so a per-session work folder keeps its last-update / status stamp.
+
 ## 2026-10-25
 
 ### Changed

@@ -125,7 +125,7 @@ from a summary.
    Otherwise reply one line — `Closed: <n> done, <m> skipped. Closing <what the dry run said>.` —
    then in ONE Bash call, the last tool call of the session, from this main session (never a
    subagent):
-   `command -v agentctl >/dev/null && agentctl done; bash "${CLAUDE_PLUGIN_ROOT}/scripts/close-own-pane.sh"`
+   `command -v agentctl >/dev/null && agentctl done; test -x "$HOME/.claude/bin/claudwork" && "$HOME/.claude/bin/claudwork" touch; bash "${CLAUDE_PLUGIN_ROOT}/scripts/close-own-pane.sh"`
    On success the session ends. The script closes only this session's own pane — found by
    `$CMUX_SURFACE_ID`, confirmed by its tty — and the workspace only when this pane is provably
    its single surface; a pinned workspace is kept with a fresh shell. Outside cmux it prints

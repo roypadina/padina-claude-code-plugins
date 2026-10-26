@@ -42,6 +42,9 @@ None for the recap and close-out. Optional:
   (`scripts/close-own-pane.sh --dry-run`).
   `scripts/selfcheck.sh` (fake cmux) and `scripts/livecheck.sh` (real cmux, throwaway
   `zz-close-test-*` workspaces) prove it after any change.
+- `~/.claude/bin/claudwork` (your own script, any contents) — when it exists, `claudwork touch` runs at
+  every turn end (`Stop` hook) and right after `agentctl done` on close, so a per-session work folder
+  can keep its own last-update / status stamp. Absent → nothing runs.
 
 Every command is read-only until you approve an action, and all the gates in your own `CLAUDE.md`
 still apply.
