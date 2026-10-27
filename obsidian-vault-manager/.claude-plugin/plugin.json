@@ -1,0 +1,21 @@
+{
+  "name": "obsidian-vault-manager",
+  "version": "0.1.0",
+  "description": "Keeps any Obsidian vault's structure under control: a Vault Structure note (taxonomy, folder map, rules, writers registry, last-review marker), a regenerable root index, safe history-preserving restructuring, and a reference-update step that fixes every outside consumer and in-vault link after a move.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins",
+  "license": "MIT",
+  "keywords": [
+    "obsidian",
+    "vault",
+    "structure",
+    "index",
+    "taxonomy",
+    "refactor",
+    "notes"
+  ]
+}

@@ -9,6 +9,10 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## 2026-10-27
 
+### Added
+- obsidian-vault-manager 0.1.0: new plugin. Vault Structure note with a writers registry and a last-review
+  marker, regenerable index, safe restructuring, reference updates after moves; git and non-git vaults.
+
 ### Changed
 - finalize-app-release 0.4.2: the Mac inventory note path follows the vault restructure (`MAC/` is now
   `Setup/Mac/`).

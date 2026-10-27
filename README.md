@@ -37,6 +37,7 @@ Then install whichever you want:
 | [`recipe-research`](recipe-research) | Restaurant-level recipes from three parallel subagents | nothing (Obsidian optional) | any OS |
 | [`maccyplus-clipboard`](maccyplus-clipboard) | Leaves labelled values in MaccyPlus history | macOS, MaccyPlus 2.8.0+ | MaccyPlus |
 | [`agents-session-hopper`](agents-session-hopper) | Claude steers AgentsSessionHopper: account, usage, switch, hold, resume after a move | macOS, AgentsSessionHopper 0.1.8+ | AgentsSessionHopper |
+| [`obsidian-vault-manager`](obsidian-vault-manager) | Structure note, index, safe restructuring and reference updates for any Obsidian vault | Python 3 (git optional) | Obsidian |
 
 Minimum Claude Code version: not pinned. The plugins use only commands, skills, hooks and agents, so any
 release with plugin marketplaces works.
@@ -197,6 +198,21 @@ history items.
 
 → [Plugin README](maccyplus-clipboard/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/maccyplus-clipboard)
 
+### [`obsidian-vault-manager`](obsidian-vault-manager) — keep a vault's structure under control
+
+Vaults drift: folders sorted two ways at once, typos in folder names, notes nobody can place, and
+scripts or skills that write to a fixed path and break silently when a folder moves. This plugin
+gives a vault a `_Vault/Vault Structure.md` note (taxonomy, folder map, rules for new content, a
+**writers registry** of everything that reads or writes a fixed path, and a last-review marker), a
+regenerable root `Index.md`, and a review workflow that proposes moves with their real cost, applies
+them history-preserving, and rewrites every outside reference and in-vault link they break.
+
+Four skills: `vault-review` (init + full review), `vault-add` (where new content goes),
+`vault-writers` (register a writer), `vault-update-refs` (after any move, by an agent or a human).
+Works on git and non-git vaults; one stdlib Python script does the mechanical parts.
+
+→ [Plugin README](obsidian-vault-manager/README.md)
+
 ---
 
 ## Repository layout
@@ -212,6 +228,7 @@ espanso-control/                  plugin: commands/, scripts/, skills/
 recipe-research/                  plugin: commands/, skills/
 maccyplus-clipboard/              plugin: skills/
 agents-session-hopper/            plugin: skills/
+obsidian-vault-manager/           plugin: scripts/, skills/
 ```
 
 Each plugin directory is self-contained and follows the standard Claude Code plugin layout —

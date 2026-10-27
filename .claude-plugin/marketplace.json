@@ -116,6 +116,19 @@
         "sessionhopper",
         "macos"
       ]
+    },
+    {
+      "name": "obsidian-vault-manager",
+      "source": "./obsidian-vault-manager",
+      "description": "Keeps any Obsidian vault's structure under control: a Vault Structure note with rules and a writers registry, a regenerable index, safe restructuring, and reference updates in everything that points into the vault.",
+      "category": "productivity",
+      "keywords": [
+        "obsidian",
+        "vault",
+        "structure",
+        "index",
+        "notes"
+      ]
     }
   ]
 }
