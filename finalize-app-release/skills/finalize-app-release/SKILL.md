@@ -197,7 +197,7 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
 
 17. Update the user's memory note for the app: current version, release date, new gotchas.
 18. **Obsidian Mac inventory** (personal vault `~/Obsidian/Padina`, `mac-app-inventory` conventions): update
-    `MAC/Apps/<Category>/<App>.md` (find it with `grep -rli <app> ~/Obsidian/Padina/MAC`) — version, "Last
+    `Setup/Mac/Apps/<Category>/<App>.md` (find it with `grep -rli <app> ~/Obsidian/Padina/Setup/Mac`) — version, "Last
     updated", `updated:` frontmatter, a dated Changelog line, and any system pieces the release installs
     (helpers, LaunchDaemons, sudoers, scripts). No note → create one per the inventory README. Then show
     `git status --short` in the vault (it may hold edits from other devices) and offer commit + push; never

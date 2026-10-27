@@ -7,6 +7,12 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-10-27
+
+### Changed
+- finalize-app-release 0.4.2: the Mac inventory note path follows the vault restructure (`MAC/` is now
+  `Setup/Mac/`).
+
 ## 2026-10-26
 
 ### Added
