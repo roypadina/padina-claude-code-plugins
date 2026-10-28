@@ -219,7 +219,7 @@ Works on git and non-git vaults; one stdlib Python script does the mechanical pa
 
 Claude knows SwiftUI, but left alone it writes iOS-flavoured Mac apps: 44 pt buttons, a gear in the
 toolbar, glass on every card, a menu bar with half the commands missing. This skill gives it the Mac
-rulebook — 241 checkable rules with IDs, severities, version gates and sources, from Liquid Glass and
+rulebook — 243 checkable rules with IDs, severities, version gates and sources, from Liquid Glass and
 toolbars to menu-bar apps, permission flows, accessibility and Icon Composer icons — plus topic
 references with type-checked SwiftUI/AppKit code. Three modes: **Design** (a plan before any view
 code), **Build** (rules and version gates while coding) and **Review** (an audit of your code or

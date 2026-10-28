@@ -153,7 +153,7 @@ Numbers from the HIG Accessibility page:
 | Control size | 28 x 28 pt default, 20 x 20 pt minimum |
 | Padding | about 12 pt around bezeled controls, about 24 pt around bezel-less ones |
 | Text | 13 pt default, never under 10 pt; thin weights need larger sizes |
-| Contrast | 4.5:1 up to 17 pt; 3:1 at 18 pt, or bold |
+| Contrast | 4.5:1 up to 17 pt (all weights); 3:1 at 18 pt (all weights) and for bold at any size |
 
 - If default colors miss the minimum, a higher-contrast scheme must appear when Increase Contrast is on. Check light and dark. Prefer system semantic colors; they carry accessible variants.
 - **A11Y-15** Truncated text shows its full value in `.help`.

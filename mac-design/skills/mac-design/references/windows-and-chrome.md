@@ -273,6 +273,7 @@ AppKit: `NSAlert` with `addButton(withTitle:)` (first = default, trailing) then 
 - App active: panels come to front. App inactive: they hide (`hidesOnDeactivate`).
 - HUD style (`.hudWindow`) only in media apps, when a normal panel would hide essential content and few controls are needed.
 - A Spotlight-style quick panel or corner card is another kind: borderless, non-activating, closes on `resignKey`, `hidesOnDeactivate = false`. Code: `QuickPanel` in [swiftui-appkit.md](swiftui-appkit.md).
+- Gotcha (verify on a real screen): controls in a non-activating panel of an inactive app may draw the inactive (gray) accent look. Custom button styles are then justified (PRN-5), but they must handle Increase Contrast, focus and hover themselves.
 
 AppKit flags: `.utilityWindow` mask, `isFloatingPanel`, `hidesOnDeactivate`, `becomesKeyOnlyIfNeeded`.
 

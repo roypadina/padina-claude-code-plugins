@@ -1,8 +1,8 @@
 # Menu-bar apps (status items)
 
-Read this when you build or review an app whose main entry is a status item. Explains MBX-1 to MBX-21 in [rules.md](rules.md). Code marked "house code" is not SDK.
+Read this when you build or review an app whose main entry is a status item. Explains MBX-1 to MBX-22 in [rules.md](rules.md). Code marked "house code" is not SDK.
 
-Contents: decision guide · MenuBarExtra limits · status item + popover · panel variant · clicks · icon, text, states · macOS 26/27 facts · activation policy · Settings · menu order · launch at login · welcome window · data freshness · notifications · ControlWidget · test checklist · sources
+Contents: decision guide · MenuBarExtra limits · status item + popover · panel variant · clicks · icon, text, states · macOS 26/27 facts · activation policy · Settings · menu order · launch at login · welcome window · data freshness · notifications · ControlWidget · alert-window actions in the menu · test checklist · sources
 
 ## Decision guide (MBX-1, MBX-2)
 
@@ -21,7 +21,7 @@ HIG: show a menu, not a popover, unless the content is too complex for one. Let 
 
 ## MenuBarExtra limits (MBX-3)
 
-- `.menu` holds only `Button`, `Toggle`, `Picker`, `Divider`, `Menu` and `Text`. It does not refresh while open (community): never put live data in one.
+- `.menu` holds only `Button`, `Toggle`, `Picker`, `Divider`, `Menu`, `Text`, `Section` headers and non-button `Label` rows. It does not refresh while open (community): never put live data in one.
 - No first-party open or close from code (the docs list only `isInserted` initializers). For a hotkey-opened UI use `NSStatusItem`.
 - `.window` style: fixed width, bounded height, own `ScrollView`, Escape and close-after-action.
 - A menu-bar-only SwiftUI app terminates when the user removes the extra (docs). Keep it alive another way if it has other jobs (MBX-9).
@@ -197,25 +197,50 @@ Set `LSUIElement` to `YES` in Info.plist for a menu-bar-only app (clean launch n
 
 Normal apps use the `Settings` scene ([settings.md](settings.md)). In a menu-bar-only app `SettingsLink` and `openSettings` (macOS 14) are unreliable: they need a live scene and a policy switch. Reports cover macOS 14 to 26; 27 unknown. Verify per macOS.
 
-Default: open your own window, with Settings conventions (title "Settings", closable, tabs; see [settings.md](settings.md)). House code, not SDK. Compiles for macOS 14.
+Default: open your own window, with Settings conventions (title follows the selected pane, closable, tabs as toolbar icons; see [settings.md](settings.md)). Host the panes in an `NSTabViewController` with `tabStyle = .toolbar`. A SwiftUI `TabView` inside a plain `NSWindow` draws in-window tabs and breaks SET-2. House code, not SDK. Compiles for macOS 14.
 
 ```swift
+@MainActor
+final class SettingsTabs: NSTabViewController {
+    override func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
+        super.tabView(tabView, didSelect: tabViewItem)
+        view.window?.title = tabViewItem?.label ?? "Settings"   // title follows the pane
+    }
+}
+
 @MainActor
 final class SettingsWindow: NSObject, NSWindowDelegate {
     static let shared = SettingsWindow()
     private var window: NSWindow?
 
+    private func add(_ tabs: NSTabViewController, _ label: String, _ symbol: String, _ pane: some View) {
+        let host = NSHostingController(rootView: pane)
+        host.sizingOptions = .preferredContentSize      // window follows the pane (SET-8)
+        host.title = label
+        let item = NSTabViewItem(viewController: host)
+        item.label = label
+        item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: label)
+        tabs.addTabViewItem(item)
+    }
+
     func show() {
         if window == nil {
-            let w = NSWindow(contentViewController: NSHostingController(rootView: SettingsView()))
-            w.title = "Settings"
-            w.styleMask = [.titled, .closable]
+            let tabs = SettingsTabs()
+            tabs.tabStyle = .toolbar                    // icons in the toolbar (SET-2)
+            add(tabs, "General", "gearshape", GeneralPane())
+            add(tabs, "Advanced", "gearshape.2", AdvancedPane())
+            let w = NSWindow(contentViewController: tabs)
+            w.styleMask = [.titled, .closable, .miniaturizable]   // keep .miniaturizable so the button dims
+            w.title = "General"
             w.isReleasedWhenClosed = false
+            w.standardWindowButton(.miniaturizeButton)?.isEnabled = false
+            w.standardWindowButton(.zoomButton)?.isEnabled = false
+            w.setFrameAutosaveName("SettingsWindow")
             w.delegate = self
             w.center()
             window = w
         }
-        NSApp.setActivationPolicy(.regular)         // Dock icon, menu bar, focus
+        NSApp.setActivationPolicy(.regular)             // Dock icon, menu bar, focus
         if #available(macOS 14, *) { NSApp.activate() } else { NSApp.activate(ignoringOtherApps: true) }
         window?.makeKeyAndOrderFront(nil)
     }
@@ -227,6 +252,8 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
     }
 }
 ```
+
+Each pane gets its own height (SET-8): grouped forms have no intrinsic height.
 
 Call it from the status menu and the gear menu. Keeping the `Settings` scene needs the community hidden-window workaround (Sources, steipete): a 1 by 1 `Window(id: "hidden")` declared before `MenuBarExtra` and `Settings`, which switches to `.regular`, waits about 100 ms, calls `openSettings`, then orders the `com.apple.SwiftUI.Settings` window front. Timing dependent: prefer the own window.
 
@@ -278,7 +305,7 @@ struct LaunchAtLoginToggle: View {
 On first launch show one small welcome window (house convention; policy steps as above; `.accessory` again on "Done"). 
 
 - Show where the icon is (screenshot or arrow) and name it.
-- Offer: "Show in menu bar", "Open at Login", a hotkey recorder.
+- Offer: "Show in the Menu Bar", "Open at Login", a hotkey recorder.
 - Say how to open the app without the icon: hotkey, relaunch from Applications, Dock menu if any (MBX-8, MBX-10).
 - Permissions: one at a time, at first use ([ux-flows.md](ux-flows.md)).
 
@@ -297,12 +324,17 @@ Only for a state change the person cannot see, never to repeat the icon. Ask for
 
 When the core of the app is one toggle or button, offer a `ControlWidget` (macOS 26, WidgetKit controls). People place it in Control Center or as a menu bar item. It needs a widget extension. It complements a status item and does not replace the app's other entry points.
 
+## Actions on floating windows (MBX-22)
+
+Every action on a floating panel or alert window (Join, Snooze, Dismiss…) is also an item in the status menu, so keyboard-only and VoiceOver users can act without reaching the window. Enable or disable the items with the state of the window (dimmed when nothing is pending). Compare the window's button titles with the menu items (review.md, MNU-2 parity).
+
 ## Test checklist
 
 On a clean launch, notched display, crowded bar:
 
 - Icon reads in light, dark and tinted bars; states differ by shape; tooltip and VoiceOver give name and state (MBX-4 to MBX-6).
 - Left click opens the UI, right and Control-click the menu, Escape closes a popover (MBX-13). Menu ends Settings…, About, Quit; a panel has Settings and Quit (MBX-11, MBX-12).
+- Every action on a floating window also sits in the status menu (MBX-22).
 - Settings opens in front; the Dock icon shows while it is open, then goes (MBX-15, MBX-16).
 - Drag the icon out or turn it off in System Settings > Menu Bar: the app lives, the toggle shows off, you can still reach it (MBX-8 to 10).
 - Launch at login: on, off, requires approval (MBX-17). Reduce Motion: no animation (MBX-20).

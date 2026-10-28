@@ -139,7 +139,7 @@ Add a text line that names where to click; the fallback only opens the app.
 
 ### Denied, restart, taps, pasteboard, signing
 
-- **FLW-11** A denied or revoked feature stays visible and disabled, with the reason and "Open System Settings". The system prompt does not reappear. A grant that needs a relaunch shows "Needs restart" and a Restart button. Show it only when the preflight call stays false after the grant. Screen Recording is the usual case (community reports).
+- **FLW-11** A denied or revoked feature stays visible and disabled, with the reason and "Open System Settings". The system prompt does not reappear. A grant that needs a relaunch shows "Needs restart" and a Restart button. Show it only when the preflight call stays false after the grant. Screen Recording is the usual case (community reports). Severity: `P2`; raise to `P1` when the denied feature is the app's only job.
 - **FLW-12** Read `NSPasteboard.general` only on a user paste or action, never on a timer. Since macOS 15.4, `detectPatterns(for:)` and `detectValues(for:)` tell what is on the pasteboard without reading it, and `accessBehavior` reports the person's choice. The SDK header says the General pasteboard asks on programmatic access; macOS may alert the person (27, verify the exact alert).
 - **FLW-13** An event tap can hang system input when Accessibility is revoked while a `.defaultTap` runs (Apple Developer Forums, reported on 15, 26 and 27). Prefer no tap, then `.listenOnly`. Stop and release the tap the moment `AXIsProcessTrusted()` turns false.
 - macOS 15 re-prompts monthly for the legacy Screen Recording capture path; check current releases. The picker avoids it.

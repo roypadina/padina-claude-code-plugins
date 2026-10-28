@@ -89,7 +89,7 @@ The full list is in [rules.md](references/rules.md). These catch most real probl
 
 **Look**
 - GLS-1, GLS-2: glass only on the control layer; delete custom backgrounds behind toolbars, sidebars and sheets.
-- CLR-1, CLR-5: semantic colors only; text contrast 4.5:1 (3:1 at 18 pt or bold) in light and dark.
+- CLR-1, CLR-5: semantic colors only; text contrast 4.5:1 up to 17 pt (3:1 at 18 pt, and for bold) in light and dark.
 - TYP-1: macOS text styles, body 13 pt, nothing under 10 pt, no iOS sizes.
 - NAT-4: no iOS idioms (44 pt targets, bottom tab bars, floating + buttons, large titles).
 

@@ -41,10 +41,10 @@ Pick the archetype from the signals. A menu-bar-only app has `LSUIElement` and a
 
 ## Step 2: Code smell sweep
 
-Use one helper so every search stays bounded. Each hit is a lead, not a finding: open the file and confirm before you list it.
+Use one helper so every search stays bounded. Each hit is a lead, not a finding: open the file and confirm before you list it. Hits are capped per file and in total, so a full output may hide more.
 
 ```bash
-S() { rg -n -m 3 -g '*.swift' -g '!**/*Tests*/**' -e "$1" . | head -n 12; }
+S() { rg -n -m 6 -g '*.swift' -g '!**/*Tests*/**' -e "$1" . | head -n 20; }
 ```
 
 Each line: pattern to pass to `S` (plus what to confirm by hand) → rule IDs. Pass every pattern in single quotes, so `"` and `$` stay literal: `S '\.alert\("(Error|Warning)"'`.
@@ -53,11 +53,11 @@ Each line: pattern to pass to `S` (plus what to confirm by hand) → rule IDs. P
 - `\.glassEffect\(` with no `#available\(macOS 26` nearby, target < 26 → IMP-1, IMP-2
 - `NSVisualEffectView` in sidebar, inspector, sheet or popover code → GLS-2
 - `\.background\(.*(Material|Color)` on a sidebar or toolbar container → GLS-2
-- `Color\.(white|black|gray)|Color\(red:|Color\(hex|#[0-9A-Fa-f]{6}` → CLR-1
+- `Color\.(white|black|gray)|Color\(red:|Color\(hex|#[0-9A-Fa-f]{6}` (a `Color(red:`/`NSColor(red:` inside an `NSColor(name:dynamicProvider:)` helper is CLR-2-compliant: check that it flips in dark) → CLR-1
 - `\.foregroundColor\(\.gray\)|\.opacity\(0\.[1-6]\)` on text → CLR-1
 - `preferredColorScheme` outside `#Preview` → CLR-6
 - `Circle\(\)\.fill\(|\.foregroundStyle\(\.(red|green)\)` as status with no word or symbol → CLR-4
-- `\.font\(\.system\(size: *([0-9]|1[0-2])\b` → TYP-1
+- `(\.font\(|Font)\.system\(size: *[0-9](\.[0-9]+)?\b` (sizes below 10, also `Font.system(size:)` constants) → TYP-1
 - `\.(ultraLight|thin|light)\b` in a font weight → TYP-2
 - `dynamicTypeSize` → TYP-3
 - `\.tracking\(|\.kerning\(` on system text → TYP-4
@@ -108,9 +108,10 @@ Each line: pattern to pass to `S` (plus what to confirm by hand) → rule IDs. P
 - `registerUndo` with no `setActionName` nearby → UND-2
 - `dropDestination\(for:.*isTargeted|\.onDrop\(of:` on a 26+ target → DND-6
 - `\.onTapGesture` on a control → A11Y-2
+- `Button\("",` → A11Y-1 (fix: `.accessibilityHidden(true)` on invisible helper buttons)
 - `focusEffectDisabled` → A11Y-9
 - `accessibilityVoiceOverEnabled|isVoiceOverEnabled` gating a feature → A11Y-16
-- `applicationIconImage` → ICN-8
+- `applicationIconImage *=` (assignments only) → ICN-8
 - `NSCursor\.pointingHand|pointerStyle\(\.link\)` on buttons or rows → NAT-1
 - `scrollIndicators\(\.hidden\)|hasVerticalScroller = false` → NAT-2
 - `WKWebView` (then check NAT-8 by hand) → NAT-8
@@ -120,16 +121,17 @@ Absence checks (each prints at most 10 files):
 ```bash
 # Animations with no Reduce Motion check (A11Y-10)
 comm -23 <(rg -l 'withAnimation|\.transition\(' -g '*.swift' . | sort) <(rg -l 'accessibilityReduceMotion' -g '*.swift' . | sort) | head -10
-# Materials or glass with no Reduce Transparency check (A11Y-11)
-comm -23 <(rg -l 'Material\b|glassEffect' -g '*.swift' . | sort) <(rg -l 'accessibilityReduceTransparency' -g '*.swift' . | sort) | head -10
+# Custom translucency with no Reduce Transparency check (A11Y-11): opacity fills on Color, custom NSVisualEffectView, glassEffect. Comment lines skipped. System SwiftUI materials already go opaque under Reduce Transparency.
+comm -23 <(rg -l '^[^/]*(Color[^/]*\.opacity\(|NSVisualEffectView|glassEffect)' -g '*.swift' . | sort) <(rg -l 'accessibilityReduceTransparency' -g '*.swift' . | sort) | head -10
 # Custom NSViews with no accessibility (A11Y-14)
 comm -23 <(rg -l 'class \w+: NSView\b' -g '*.swift' . | sort) <(rg -l 'isAccessibilityElement|accessibilityRole|NSAccessibilityElement' -g '*.swift' . | sort) | head -10
-# Hover-only actions (A11Y-7): onHover files with no named accessibility action
+# Hover that shows or reveals controls (A11Y-7; a hover highlight alone is fine): onHover files with no named accessibility action
 comm -23 <(rg -l '\.onHover' -g '*.swift' . | sort) <(rg -l 'accessibilityAction' -g '*.swift' . | sort) | head -10
 # Status item files with no template image or symbol (MBX-4)
 comm -23 <(rg -l 'NSStatusItem|MenuBarExtra' -g '*.swift' . | sort) <(rg -l 'isTemplate|systemSymbolName|systemImage:' -g '*.swift' . | sort) | head -10
 # Icon-only buttons to triage by hand (A11Y-1)
 rg -n -A2 'Button *\{' -g '*.swift' . | rg 'Image\(systemName' | head -10
+rg -U -n 'label: *\{\s*Image\(systemName' -g '*.swift' . | head -10
 ```
 
 Project checks:
@@ -141,12 +143,20 @@ find . -maxdepth 6 \( -name '*.icon' -o -name 'AppIcon.appiconset' \) -not -path
 rg -l 'performAccessibilityAudit' -g '*.swift' . | head -3   # A11Y-17 (empty = finding)
 ```
 
-Commands parity (MNU-2): button titles that appear in no `Commands` file. Each is a lead: the menu item may use another title or a `Toggle`, so confirm by hand.
+Commands parity (MNU-2, and MBX-22 for actions on floating windows): button titles that appear in no `Commands` file. For `LSUIElement` apps compare against the `MenuBarExtra` or status-menu file instead (second command). Each is a lead: the menu item may use another title or a `Toggle`, so confirm by hand.
 
 ```bash
 comm -23 \
   <(rg -o --no-filename 'Button\("[^"]+"' -g '*.swift' . | sort -u) \
   <(rg -l 'CommandGroup|CommandMenu|: Commands' -g '*.swift' . | while IFS= read -r f; do rg -o --no-filename 'Button\("[^"]+"' "$f"; done | sort -u) \
+  | head -40
+```
+
+```bash
+# LSUIElement apps: same check against the status-menu files
+comm -23 \
+  <(rg -o --no-filename 'Button\("[^"]+"' -g '*.swift' . | sort -u) \
+  <(rg -l 'MenuBarExtra|NSStatusItem|NSMenuItem' -g '*.swift' . | while IFS= read -r f; do rg -o --no-filename 'Button\("[^"]+"|NSMenuItem\(title: *"[^"]+"' "$f"; done | sed 's/NSMenuItem(title: *"/Button("/' | sort -u) \
   | head -40
 ```
 
@@ -163,6 +173,8 @@ Get the images in this order of preference:
 swift -e 'import CoreGraphics; let l = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as? [[String: Any]] ?? []; for w in l where (w[kCGWindowOwnerName as String] as? String) == "MyApp" { print(w[kCGWindowNumber as String] ?? "") }' | head -5
 screencapture -x -o -l <window-id> /tmp/review-main-light.png
 ```
+
+Offscreen renders are a valid no-GUI capture for single views: host the view in an `NSHostingView`, then `cacheDisplay(in:to:)` into an `NSBitmapImageRep`. Limits: no real chrome, glass, menu bar or menus; offscreen windows are never key, so accent fills render gray; Increase Contrast cannot be simulated (`colorSchemeContrast` is read-only, and a high-contrast `NSAppearance` changed nothing).
 
 Never change system settings to capture. Use the appearance the user already has; for the other mode, Increase Contrast or Reduce Transparency, give the user the steps (System Settings > Appearance, System Settings > Accessibility > Display) and ask for screenshots. Key-window shots, menu bar menus, context menus and status menus come from the user (Shift-Command-4, then Space, then click, while the app is frontmost; Shift-Command-5 with a timer for open menus). Without them, list those rules as not checked.
 

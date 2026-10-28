@@ -128,8 +128,8 @@ Use `ColorPicker` (macOS 11) when people pick colors, and Display P3 for wide-ga
 
 **CLR-5** Contrast floor, in light, dark and Increase Contrast:
 
-- Text up to 17 pt: 4.5:1.
-- Text at 18 pt or larger, or any bold: 3:1.
+- Text up to 17 pt, all weights: 4.5:1.
+- Text at 18 pt, all weights: 3:1. Bold text at any size: 3:1.
 - Small custom text: aim for 7:1 (a target, not the floor).
 
 If default colors miss the floor, show a higher-contrast scheme under Increase Contrast. System colors already do.
@@ -187,7 +187,7 @@ func compact(_ v: NSView) { v.prefersCompactControlSizeMetrics = true }
 
 **LAY-2** Click targets are at least 20 x 20 pt, and 28 x 28 pt by default. Leave about 12 pt around bezeled controls and about 24 pt around borderless ones. 44 pt targets are an iOS idiom (NAT-4).
 
-**LAY-6** Put key content top-leading. Put no controls or critical info on a window's or sidebar's bottom edge. A bottom status bar may show small facts (a count, free space).
+**LAY-6** Put key content top-leading. Put no controls or critical info on a window's or sidebar's bottom edge. A bottom status bar may show small facts (a count, free space). The rule targets bottom toolbars and status bars, not the button row of a dialog, alert or panel.
 
 **LAY-7** (house convention) Take spacing from system containers: `Form`, `LabeledContent`, `Grid`, default stack spacing, `.scenePadding()`. Apple publishes no margin numbers for macOS beyond control and hit-target sizes. A project grid is a convention, for example 20 pt window margins, 8 pt between related controls, 20 pt between groups. Never lint system metrics against it: system type sizes are not on a 4 pt grid.
 
@@ -245,6 +245,7 @@ Copy `document.on.document`, Paste `document.on.clipboard`, Cut `scissors`, Dupl
 - Variable color shows a level (volume, signal), not depth: `Image(systemName:variableValue:)` (macOS 13). Variable draw shows progress: `symbolVariableValueMode(_:)` (macOS 26). One symbol uses color or draw, not both.
 - Gradient rendering, `symbolColorRenderingMode(.gradient)` (macOS 26), suits large symbols; at 11 to 13 pt use flat.
 - Custom symbols start from a template exported in the SF Symbols app. Annotate layers so all modes work, draw whole shapes (no cutouts), keep Regular as the master weight, and test every animation preset. Apple-product symbols cannot be customized or used in an icon or logo.
+- **SYM-8** Symbols that depict Apple products (`iphone`, `macbook`, `applewatch`…) refer to that product only. Never use them as a generic "phone" or "computer" icon: pick `phone`, `desktopcomputer` or `laptopcomputer`. The HIG calls them copyrighted and not customizable; the SF Symbols app shows each one's usage restrictions in its inspector. Source: https://developer.apple.com/design/human-interface-guidelines/sf-symbols
 
 ```swift
 @Environment(\.accessibilityReduceMotion) private var reduceMotion

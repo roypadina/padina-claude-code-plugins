@@ -57,8 +57,21 @@ How to build and structure the Settings window. Explains the SET rules in [rules
 
 **SET-6.** One grouped `Form` per tab (`.formStyle(.grouped)`, macOS 13).
 
-- Group rows in `Section("Name")`. Put help text in the section footer, never in the label.
-- Label the setting by its on state, as a statement: "Show in the menu bar", not "Enable menu bar". People infer the off state. Link to a system setting instead of describing where it is.
+- Group rows in `Section("Name")` (title case, FLW-22). Put help text in the section footer. A row label may carry one short subtitle line (a second `Text`, as in System Settings); paragraphs go in the footer.
+- Footer style (27, verify: the default footer style was seen only in offscreen renders): force the System Settings look with a small modifier. House code; compiles for macOS 14.
+
+```swift
+extension View {
+    func formFooter() -> some View {
+        font(.subheadline).foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .multilineTextAlignment(.leading)
+    }
+}
+// Section { … } footer: { Text("Turn this off to use the Dock icon only.").formFooter() }
+```
+
+- Label the setting by its on state, as a statement: "Show in the Menu Bar", not "Enable menu bar". People infer the off state. Link to a system setting instead of describing where it is.
 - `LabeledContent` (13) puts a value or custom control on the trailing edge. Trailing values then line up.
 - Use system controls so spacing, focus rings and VoiceOver come free.
 
@@ -66,7 +79,7 @@ How to build and structure the Settings window. Explains the SET rules in [rules
 
 | Choice | Control |
 |---|---|
-| One on/off row in a grouped form | `Toggle` with `.controlSize(.mini)`: a mini switch, whose height matches buttons so rows stay even (HIG Toggles) |
+| One on/off row in a grouped form | `Toggle` with `.controlSize(.mini)`: a mini switch, whose height matches buttons so rows stay even (HIG Toggles). (27, verify): a grouped `Form` may already size switches; check before adding `.controlSize(.mini)` |
 | A master setting that turns a group on | Regular switch |
 | A hierarchy of settings (a parent with sub-options) | Checkboxes: `.toggleStyle(.checkbox)` |
 | 2 to 5 exclusive choices | Radio group: `.pickerStyle(.radioGroup)` |
@@ -87,7 +100,8 @@ How to build and structure the Settings window. Explains the SET rules in [rules
 - Apple's own sample applies `.scenePadding()` and `.frame(maxWidth: 350, minHeight: 100)` to the `TabView`. No fixed Apple width exists.
 - A width of 520 pt (house convention) fits a grouped form with labels and trailing controls. Pick one width for all tabs, or the window jumps on every tab change.
 - Height follows each pane. A scroll bar appears only when a pane is taller than the screen allows. If a pane is taller than about 640 pt (house convention), split it into two tabs.
-- Do not use a fixed height or a hard-coded `.fitsContent()` (not an SDK API).
+- Grouped `Form`s scroll and have no intrinsic height, so a pane never sizes itself. Give each tab a fixed height chosen from its content: `.frame(width: 520, height: 260)` per pane (house convention for the width, no fixed Apple width). Or measure: host the pane once in an `NSHostingView`, read `fittingSize.height` and use that. Re-pick the height when rows change.
+- `.fitsContent()` is not an SDK API.
 
 ## Focus on open
 
@@ -95,7 +109,7 @@ A text field, shortcut recorder or button must not open with a focus ring or sel
 
 ## Common tabs
 
-- **General.** "Open at login" and "Show in the menu bar" toggles. The `SMAppService` code, status handling and `isInserted`/`isVisible` binding are in [menu-bar-apps.md](menu-bar-apps.md). Show the real state: re-read it each time the pane appears, because people change it in System Settings > General > Login Items.
+- **General.** "Open at Login" and "Show in the Menu Bar" toggles. The `SMAppService` code, status handling and `isInserted`/`isVisible` binding are in [menu-bar-apps.md](menu-bar-apps.md). Show the real state: re-read it each time the pane appears, because people change it in System Settings > General > Login Items.
 - **Shortcuts.** One row per global shortcut with a recorder, a Clear button and a default. Show a clash or registration failure next to the row (KBD rules in [menus-and-commands.md](menus-and-commands.md)). The system has no recorder control. Use the `KeyboardShortcuts` package (`KeyboardShortcuts.Recorder`) or draw one with an `NSViewRepresentable`; never a plain text field.
 - **Permissions.** Reason, live state and one deep link per permission. All details in [ux-flows.md](ux-flows.md).
 
@@ -110,21 +124,8 @@ For menu-bar-only apps (MBX-16) and any window that is not the `Settings` scene.
 - Title follows the visible pane ("General"). With one pane: "<App> Settings".
 - Dim minimize and zoom: `standardWindowButton(_:)?.isEnabled = false`. Keep `.miniaturizable` in the style mask, or the button vanishes instead of dimming.
 - Restore the last pane and the frame (`setFrameAutosaveName`).
-- Open it from the status menu's "Settings…" (Command-Comma). Switch activation policy and activate first: [menu-bar-apps.md](menu-bar-apps.md) holds the controller (`SettingsWindow`).
-
-```swift
-@MainActor final class SettingsWindowController: NSWindowController {
-    convenience init(root: some View) {
-        let window = NSWindow(contentViewController: NSHostingController(rootView: root))
-        window.styleMask = [.titled, .closable, .miniaturizable]
-        window.title = "General"                       // update when the pane changes
-        window.setFrameAutosaveName("SettingsWindow")
-        window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
-        window.standardWindowButton(.zoomButton)?.isEnabled = false
-        self.init(window: window)
-    }
-}
-```
+- Open it from the status menu's "Settings…" (Command-Comma). Switch activation policy and activate first.
+- Host the panes in an `NSTabViewController` (`tabStyle = .toolbar`), one `NSTabViewItem` per pane with a label and an `NSImage(systemSymbolName:accessibilityDescription:)`. A SwiftUI `TabView` in a plain `NSWindow` draws in-window tabs and breaks SET-2. The full controller (`SettingsWindow`) is in [menu-bar-apps.md](menu-bar-apps.md).
 
 ## Complete example
 
@@ -151,15 +152,16 @@ struct GeneralPane: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Open at login", isOn: $openAtLogin).controlSize(.mini)
-                Toggle("Show in the menu bar", isOn: $showInMenuBar).controlSize(.mini)
+                Toggle("Open at Login", isOn: $openAtLogin).controlSize(.mini)
+                Toggle("Show in the Menu Bar", isOn: $showInMenuBar).controlSize(.mini)
             } footer: { Text("Turn this off to use the Dock icon only.") }
-            Section("Default view") {
+            Section("Default View") {
                 Picker("Sort notes by", selection: $sort) {
                     Text("Date").tag("date"); Text("Title").tag("title")
                 }.pickerStyle(.radioGroup)
             }
         }.formStyle(.grouped)
+        .frame(height: 230)                             // per-pane height (SET-8), chosen from the rows
     }
 }
 
@@ -172,6 +174,7 @@ struct AdvancedPane: View {
             } footer: { Text("Restores every setting to its default.") }
         }
         .formStyle(.grouped)
+        .frame(height: 130)
         .confirmationDialog("Reset All Settings?", isPresented: $confirmReset) {
             Button("Reset", role: .destructive) { /* reset */ }
             Button("Cancel", role: .cancel) { }
