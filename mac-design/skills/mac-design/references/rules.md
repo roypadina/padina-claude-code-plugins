@@ -58,7 +58,7 @@ Format: `ID` rule. `severity` · version gate (only when version-specific) · [s
 - **CLR-2** Define custom colors as Color Sets with Any, Dark and High Contrast appearances, or `NSColor(name:dynamicProvider:)`. `P2` · [HIG Color] → design-language.md
 - **CLR-3** One accent from the `AccentColor` asset; the user's system accent overrides it unless set to Multicolor. `P3` · [HIG Color] → design-language.md
 - **CLR-4** Never show state by color alone: add a shape or a word; honor Differentiate Without Color. `P1` · [HIG Accessibility] → design-language.md
-- **CLR-5** Text contrast ≥ 4.5:1 up to 17 pt, ≥ 3:1 at 18 pt or bold, in light, dark and Increase Contrast. `P1` · [HIG Accessibility] → design-language.md
+- **CLR-5** Text contrast ≥ 4.5:1 up to 17 pt (all weights), ≥ 3:1 at 18 pt (all weights) and for bold text at any size, in light, dark and Increase Contrast. `P1` · [HIG Accessibility] → design-language.md
 - **CLR-6** Follow the system appearance: no Light/Dark picker by default, no `.preferredColorScheme` outside previews. `P2` · [HIG Dark Mode] → design-language.md
 - **CLR-7** Design dark mode as its own palette, not an inversion; check every surface in both modes. `P2` · [HIG Dark Mode] → design-language.md
 - **CLR-8** Accent text: deep shade in light, light shade in dark; text on an accent fill uses an on-accent color, not fixed white. `P2` · [House] → design-language.md
@@ -81,7 +81,7 @@ Format: `ID` rule. `severity` · version gate (only when version-specific) · [s
 - **LAY-3** Nested corners are concentric (`ConcentricRectangle`, `cornerConfiguration`); fixed radii only on small standalone parts. `P3` · macOS 26+ · [WWDC25-356] → design-language.md
 - **LAY-4** Mini–medium controls are rounded rectangles, large ones capsules; dense layouts keep capsules for the standout action. `P3` · macOS 26+ · [WWDC25-356] → design-language.md
 - **LAY-5** Never mask window corners or hard-code a window radius; keep content out of corners via the safe area. `P2` · macOS 26+ · [WWDC25-310] → design-language.md
-- **LAY-6** Key content top-leading; no controls or critical info on a window's or sidebar's bottom edge. `P2` · [HIG Layout] → design-language.md
+- **LAY-6** Key content top-leading; no controls or critical info on a window's or sidebar's bottom edge (targets bottom toolbars and status bars, not dialog, alert or panel button rows). `P2` · [HIG Layout] → design-language.md
 - **LAY-7** Take spacing from system containers (`Form`, `Grid`, default stack spacing); any fixed grid is a house convention. `P3` · [House] → design-language.md
 - **LAY-8** Line up trailing values, use one date format per view, show each status once per row. `P3` · [House] → design-language.md
 
@@ -94,6 +94,7 @@ Format: `ID` rule. `severity` · version gate (only when version-specific) · [s
 - **SYM-5** Gate or replace symbols newer than the deployment target (check in the SF Symbols app). `P1` · [HIG SF Symbols] → design-language.md
 - **SYM-6** Animate a symbol only to say something, one per region, no loops in lists, none under Reduce Motion. `P3` · macOS 14+ · [HIG SF Symbols] → design-language.md
 - **SYM-7** Variable color for levels, hierarchical for depth; no gradient rendering at 11–13 pt; custom symbols from the SF Symbols template. `P3` · [HIG SF Symbols] → design-language.md
+- **SYM-8** Apple-product symbols (`iphone`, `macbook`, `applewatch`…) only to refer to that product, never as generic "phone" or "computer" icons (SF Symbols terms). `P2` · [HIG SF Symbols] → design-language.md
 
 ## WIN · Windows
 
@@ -161,9 +162,9 @@ Format: `ID` rule. `severity` · version gate (only when version-specific) · [s
 - **SET-3** Reopen on the last pane; non-customizable toolbar; minimize and zoom dimmed. `P3` · [HIG Settings] → settings.md
 - **SET-4** Changes apply at once; no Save, Apply or OK button. `P2` · [House] → settings.md
 - **SET-5** Few app-wide options; view options stay in the view or View menu; no copies of system settings. `P2` · [HIG Settings] → settings.md
-- **SET-6** One grouped `Form` per tab; help text in section footers; labels state the on state, never "Enable…". `P3` · [House] → settings.md
+- **SET-6** One grouped `Form` per tab; help text in section footers; labels state the on state, never "Enable…"; a label may carry one short subtitle line, paragraphs go in the footer. `P3` · [House] → settings.md
 - **SET-7** Mini switches in grouped-form rows, a regular switch only for a master setting; radio group for 2–5 choices, else a pop-up. `P3` · [HIG Toggles] → settings.md
-- **SET-8** Each pane sizes to its content (`.windowResizability(.contentSize)`); no fixed Apple width exists. `P3` · [Docs] → settings.md
+- **SET-8** Each pane sizes to its content (`.windowResizability(.contentSize)`); grouped forms have no intrinsic height, so pick a height per pane; no fixed Apple width exists. `P3` · [Docs] → settings.md
 - **SET-9** Disabled settings say why in the footer; destructive resets sit last, with confirmation or Undo. `P2` · [House] → settings.md
 
 ## MNU · Menu bar, commands, context and Dock menus
@@ -199,7 +200,7 @@ Format: `ID` rule. `severity` · version gate (only when version-specific) · [s
 
 - **MBX-1** A click opens a menu; use a panel only when content needs a list, chart, field or search. `P2` · [HIG The menu bar] → menu-bar-apps.md
 - **MBX-2** `NSStatusItem` + popover or panel when it must open from code, handle right-click or keep focus elsewhere. `P2` · macOS 13+ · [Docs] → menu-bar-apps.md
-- **MBX-3** `.menu` style holds only menu content (Button, Toggle, Picker, Divider, Menu, Text) and does not refresh while open. `P2` · [Comm] → menu-bar-apps.md
+- **MBX-3** `.menu` style holds only menu content (Button, Toggle, Picker, Divider, Menu, Text, `Section` headers, non-button `Label` rows) and does not refresh while open. `P2` · [Comm] → menu-bar-apps.md
 - **MBX-4** Status icon is a template (black and clear) or SF Symbol, sized by the system; never a full-color idle icon. `P2` · [HIG The menu bar] → menu-bar-apps.md
 - **MBX-5** Icon states differ by shape (outline, fill, badge, slash), never color alone; `appearsDisabled` for paused. `P2` · [HIG SF Symbols] → menu-bar-apps.md
 - **MBX-6** Status button has an accessibility description and a tooltip with name and state. `P1` · [HIG The menu bar] → menu-bar-apps.md
@@ -218,6 +219,7 @@ Format: `ID` rule. `severity` · version gate (only when version-specific) · [s
 - **MBX-19** Refresh at a cadence fit for the data with `Timer.tolerance`, paused in sleep; show data age, never stale values as live. `P2` · [House] → menu-bar-apps.md
 - **MBX-20** Animate the icon only during real activity, honor Reduce Motion, no SwiftUI animation in the status item. `P3` · [Forum] → menu-bar-apps.md
 - **MBX-21** Offer a `ControlWidget` when the core is one toggle wanted in Control Center or the menu bar. `P3` · macOS 26+ · [Docs] → menu-bar-apps.md
+- **MBX-22** Every action on a floating panel or alert window (Join, Snooze, Dismiss…) is also in the status menu, so keyboard-only users can act. `P1` · [HIG Accessibility] → menu-bar-apps.md
 
 ## FLW · Onboarding, permissions, states, notifications, words
 
@@ -231,7 +233,7 @@ Format: `ID` rule. `severity` · version gate (only when version-specific) · [s
 - **FLW-8** A pre-permission explainer has one button to the system prompt; no Skip or Cancel, no fake system alert. `P2` · [HIG Privacy] → ux-flows.md
 - **FLW-9** Settings-only grants (Accessibility, Input Monitoring, Screen Recording): reason, text state, one deep-linked Open System Settings button; list all in Settings. `P1` · [House] → ux-flows.md
 - **FLW-10** Check with non-prompting calls (`AXIsProcessTrusted`, `CGPreflight…`); re-check on activation; poll ≤ 1/s only while visible. `P2` · [Docs] → ux-flows.md
-- **FLW-11** Denied features stay visible and disabled with the reason; a grant that needs a relaunch shows a Restart button. `P2` · [Forum] → ux-flows.md
+- **FLW-11** Denied features stay visible and disabled with the reason; a grant that needs a relaunch shows a Restart button. `P2` (raise to `P1` when the denied feature is the app's only job) · [Forum] → ux-flows.md
 - **FLW-12** Read the pasteboard only on a user paste or action, never on a timer. `P2` · macOS 15.4+ · [Docs] → ux-flows.md
 - **FLW-13** Stop event taps when Accessibility trust is lost; prefer `.listenOnly`. `P1` · [Forum] → ux-flows.md
 - **FLW-14** Every view has empty, loading, error, offline and partial states; empty = `ContentUnavailableView` + first action. `P2` · macOS 14+ · [HIG Loading] → ux-flows.md

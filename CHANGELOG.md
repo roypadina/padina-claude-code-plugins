@@ -17,7 +17,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ### Added
 - mac-design 0.1.0: new plugin. A skill to design, build and review native macOS app UI/UX (SwiftUI +
-  AppKit, macOS 14–27): 241 rules with IDs, severities, version gates and sources; topic references
+  AppKit, macOS 14–27): 243 rules with IDs, severities, version gates and sources; topic references
   (Liquid Glass, windows and toolbars, menus and keyboard, Settings, menu-bar apps, permission flows,
   accessibility, icons, SwiftUI/AppKit patterns, native feel); an audit mode with a ranked fix list;
   `hig.sh` for Apple's current HIG text. Built on BAMA's design skills (MIT).
