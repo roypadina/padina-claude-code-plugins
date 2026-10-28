@@ -129,6 +129,22 @@
         "index",
         "notes"
       ]
+    },
+    {
+      "name": "mac-design",
+      "source": "./mac-design",
+      "description": "Design, build and review native macOS app interfaces (SwiftUI + AppKit) to Apple quality — Liquid Glass, windows, toolbars, menus, Settings, menu-bar apps, permission flows, accessibility and app icons, with an audit mode that ranks fixes.",
+      "category": "development",
+      "keywords": [
+        "macos",
+        "swiftui",
+        "appkit",
+        "design",
+        "ux",
+        "hig",
+        "liquid-glass",
+        "menu-bar"
+      ]
     }
   ]
 }

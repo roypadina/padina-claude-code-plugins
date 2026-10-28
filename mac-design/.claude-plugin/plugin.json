@@ -1,0 +1,22 @@
+{
+  "name": "mac-design",
+  "version": "0.1.0",
+  "description": "Design, build and review native macOS app interfaces (SwiftUI + AppKit) to Apple quality: Liquid Glass, windows, toolbars, menus, Settings, menu-bar apps, permissions and onboarding flows, accessibility, app icons, plus an audit mode that ranks fixes for an existing app.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins",
+  "license": "MIT",
+  "keywords": [
+    "macos",
+    "swiftui",
+    "appkit",
+    "design",
+    "ux",
+    "hig",
+    "liquid-glass",
+    "menu-bar"
+  ]
+}
