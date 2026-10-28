@@ -7,6 +7,12 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-10-28
+
+### Changed
+- finalize-app-release 0.4.3: gh via a `ghp` function (a zsh variable leaks the token in its error), site page URL `/apps/<slug>/`,
+  site clone with another session's edit (fetch, no pull), MaccyPlus appcast in its own PR, MeetAlert plist bump with sed.
+
 ## 2026-10-27
 
 ### Added

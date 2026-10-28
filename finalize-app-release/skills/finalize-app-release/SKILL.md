@@ -35,7 +35,9 @@ line ("<repo>: not a personal app, skipped") and stop.
 - **The app's own notes win.** Read the repo's `CLAUDE.md` and the user's memory note for the app
   before acting; per-app quirks live there. The table at the end is a summary, not the source.
 - **Personal account only.** `gh` as `env -u GITHUB_TOKEN GH_TOKEN="$(command gh auth token -u roypadina)" command gh …`.
-  Push over the SSH alias `github-padina` only — an HTTPS push can authenticate as a different account
+  To reuse it, define a function: `ghp() { env -u GITHUB_TOKEN GH_TOKEN="$(command gh auth token -u roypadina)" command gh "$@"; }`.
+  Never store it in a variable (`GH="env … $(…)"; $GH …`): zsh does not split the variable, so the
+  "command not found" error prints the whole token into the transcript. Push over the SSH alias `github-padina` only — an HTTPS push can authenticate as a different account
   and fail with 403. Never the GitHub MCP tools for these repos (authenticated as another account).
 - **Commits.** `git status -sb` right before every commit, stage named files only (never `git add -A`).
   Repo-local `user.email` must be `4943097+roypadina@users.noreply.github.com` (GitHub email privacy
@@ -175,6 +177,10 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
     time, so push the CHANGELOG entry (B3) before the site; a CHANGELOG fix after the deploy needs a redeploy
     (`gh workflow run deploy --repo roypadina/roypadina-apps`). Step 1 GAPs when the live page lacks the latest tag. Step 1 GAPs when the site lags the latest tag and WARNs when the app's GitHub
     homepage is not its site page or the README lacks the site link. Release notes keep the `SHA-256:` first line (D10).
+    App pages live at `https://apps.roypadina.synology.me/apps/<slug>/` (not `/<slug>/`, which is a 404). The site
+    clone may hold another session's uncommitted edit, so `git pull --rebase` refuses. Then `git fetch` and
+    check `status -sb`: not behind means no pull is needed. Stage only `data/apps.json` and leave the other file.
+    Several apps released together → edit all their lines in one commit, one deploy.
 
 ### F. Local install — part of the release, not optional
 
@@ -224,11 +230,11 @@ Summary only — the app's `CLAUDE.md` and memory note win.
 | App | Dir in `~/Code/Padina` | Quirks |
 |---|---|---|
 | LanGuard | `LanGuard-app` | Version in `Config/Shared.xcconfig`; xcodebuild Release + ditto zip; universal build needs `-destination 'generic/platform=macOS'`; wiki clone `LanGuard.wiki` next to the repo; helper script/plist changed → after `brew upgrade` the user relaunches it (Raycast) and clicks Settings › Protection › Update helper, then `launchctl print system/com.roypadina.languard-net` shows `runs = 1` staying at 1 |
-| MaccyPlus | `Maccay` | Remote `padina`, never `origin`; version in the pbxproj; prepend an `appcast.xml` item (length = zip bytes, `sparkle:version` = build) after the release asset exists; wiki clone is `maccyplus.wiki` (slug, not folder name); upstream-sync PRs merge with `--merge`, never `--squash`; build with `MACCYPLUS_SIGN_IDENTITY` set (see memory) |
+| MaccyPlus | `Maccay` | Remote `padina`, never `origin`; version in the pbxproj; prepend an `appcast.xml` item (length = zip bytes, `sparkle:version` = build) after the release asset exists. `main` is protected, so it goes in its own PR `appcast: X.Y.Z`; `xmllint --noout appcast.xml` first; wiki clone is `maccyplus.wiki` (slug, not folder name); upstream-sync PRs merge with `--merge`, never `--squash`; build with `MACCYPLUS_SIGN_IDENTITY` set (see memory) |
 | VaultBar | `VaultBar` | Push only `main`; privacy triple check before every public push; `RELEASE=1 Scripts/package_app.sh` |
 | Window Organizer | `window-organizer` | Version is a literal in the `Scripts/package_app.sh` plist heredoc; asset `Window-Organizer.zip` |
 | SmartHiddenBar | `SmartHiddenBar` | `RELEASE=1 ./build.sh`; local install is the dev-signed `./build.sh`, never `brew upgrade` |
-| MeetAlert | `MeetAlert` | Wiki is the nested clone `MeetAlert/wiki`; `build.sh` makes no zip — ditto it |
+| MeetAlert | `MeetAlert` | Wiki is the nested clone `MeetAlert/wiki`; `build.sh` makes no zip — ditto it; bump `Info.plist` with `sed` on the two version lines, because `PlistBuddy` reformats the whole file |
 | Agents Monitor | `AgentsMonitor` | Asset must be `AgentsMonitor.zip`; never commit work or topic strings; local install: after `brew upgrade`, extract the release zip to `/tmp`, clear quarantine there, `ditto` it over `/Applications` before launch (Gatekeeper trashes the brew copy) |
 | agentctl | `agentctl` | CLI-only cask since 0.11.0 (`binary "agentctl/bin/agentctl"`, no app, no About window — Ko-fi lives in `--help`). `main` protected: bump `package.json` + lock + CHANGELOG in a PR, admin-merge; `sh scripts/build-release.sh` → `release/agentctl.zip` in a throwaway worktree at the merge sha; local install = `brew upgrade --cask agentctl` only (no xattr, no relaunch) |
 | Obsidian Vault Git Watcher | `ObsidianVaultGitWatcher` | Plain `swiftc` via `build.sh` (no SwiftPM/Xcode), version in `Info.plist`; `./build.sh dist` → `dist/ObsidianVaultGitWatcher.zip`; `main` protected; never push local `backup/pre-public`; after `brew upgrade` reload the LaunchAgent (copy repo plist, `bootout` exact label, `bootstrap`) |
