@@ -3,7 +3,7 @@
 [![Website](https://img.shields.io/badge/website-apps.roypadina-2F62E6)](https://apps.roypadina.synology.me/)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/roypadina)
 
-A [Claude Code](https://claude.com/claude-code) plugin marketplace. Small plugins for a terminal-heavy Claude Code workflow: cmux integration, session memory, recaps and close-out, the release checklist for my Mac apps, Hebrew/English layout repair, Espanso control, recipe research with parallel subagents, and a MaccyPlus clipboard bridge.
+A [Claude Code](https://claude.com/claude-code) plugin marketplace. Small plugins for a terminal-heavy Claude Code workflow: cmux integration, session memory, recaps and close-out, the release checklist for my Mac apps, Hebrew/English layout repair, Espanso control, recipe research with parallel subagents, a MaccyPlus clipboard bridge, and native macOS UI/UX design rules.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -20,6 +20,7 @@ Then install whichever you want:
 /plugin install espanso-control@padina
 /plugin install recipe-research@padina
 /plugin install maccyplus-clipboard@padina
+/plugin install mac-design@padina
 ```
 
 📖 **[Full documentation is in the Wiki](https://github.com/roypadina/padina-claude-code-plugins/wiki)**
@@ -38,6 +39,7 @@ Then install whichever you want:
 | [`maccyplus-clipboard`](maccyplus-clipboard) | Leaves labelled values in MaccyPlus history | macOS, MaccyPlus 2.8.0+ | MaccyPlus |
 | [`agents-session-hopper`](agents-session-hopper) | Claude steers AgentsSessionHopper: account, usage, switch, hold, resume after a move | macOS, AgentsSessionHopper 0.1.8+ | AgentsSessionHopper |
 | [`obsidian-vault-manager`](obsidian-vault-manager) | Structure note, index, safe restructuring and reference updates for any Obsidian vault | Python 3 (git optional) | Obsidian |
+| [`mac-design`](mac-design) | Design, build and review native macOS UI (SwiftUI + AppKit) to Apple quality, with a ranked-fix audit mode | nothing (`curl`, `jq`, `rg` for live checks and audits) | macOS 14–27 apps |
 
 Minimum Claude Code version: not pinned. The plugins use only commands, skills, hooks and agents, so any
 release with plugin marketplaces works.
@@ -213,6 +215,20 @@ Works on git and non-git vaults; one stdlib Python script does the mechanical pa
 
 → [Plugin README](obsidian-vault-manager/README.md)
 
+### [`mac-design`](mac-design) — Mac apps that feel like Apple built them
+
+Claude knows SwiftUI, but left alone it writes iOS-flavoured Mac apps: 44 pt buttons, a gear in the
+toolbar, glass on every card, a menu bar with half the commands missing. This skill gives it the Mac
+rulebook — 241 checkable rules with IDs, severities, version gates and sources, from Liquid Glass and
+toolbars to menu-bar apps, permission flows, accessibility and Icon Composer icons — plus topic
+references with type-checked SwiftUI/AppKit code. Three modes: **Design** (a plan before any view
+code), **Build** (rules and version gates while coding) and **Review** (an audit of your code or
+screenshots that returns one ranked fix list). A bundled script prints Apple's current HIG page, so
+rules can be checked against the source. Built on [BAMA](https://github.com/daveebbelaar/bama)'s design
+skills (MIT).
+
+→ [Plugin README](mac-design/README.md)
+
 ---
 
 ## Repository layout
@@ -229,6 +245,7 @@ recipe-research/                  plugin: commands/, skills/
 maccyplus-clipboard/              plugin: skills/
 agents-session-hopper/            plugin: skills/
 obsidian-vault-manager/           plugin: scripts/, skills/
+mac-design/                       plugin: skills/ (with references and a HIG fetch script)
 ```
 
 Each plugin directory is self-contained and follows the standard Claude Code plugin layout —
