@@ -42,6 +42,11 @@ Quote the verbatim error string when documenting a failure mode — future agent
 - macOS, cmux installed at `/Applications/cmux.app`.
 - CLI on PATH: `/Applications/cmux.app/Contents/Resources/bin/cmux`.
 - The cmux app must be running for socket commands. `cmux <path>` launches it.
+- **This shell must be inside cmux.** A request for "a pane" does not mean cmux: check the env first.
+  `CMUX_SURFACE_ID` set → cmux. `GHOSTEX_SESSION_ID` set → Ghostex: use its `ghostex` CLI
+  (`ghostex --help`: `session-groups`, `create-session`, `send-text`), not this skill. From outside cmux
+  every socket command fails with
+  `Error: ERROR: Access denied - only processes started inside cmux can connect`.
 
 ```bash
 cmux ping
