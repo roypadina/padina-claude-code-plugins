@@ -33,8 +33,8 @@ None for the recap and close-out. Optional:
 
 - [`jq`](https://jqlang.org) — the pane close and the `close` hook need it.
 - [`agentctl`](https://github.com/roypadina/agentctl) — the close marks the session done.
-- [cmux](https://cmux.com) — the close closes the pane. Outside cmux it tells you to close the
-  window yourself. It closes only its own pane: found by `$CMUX_SURFACE_ID` (needs `jq`) and
+- [cmux](https://cmux.com) — the close closes the pane. Outside cmux and Ghostex it tells you to
+  close the window yourself. It closes only its own pane: found by `$CMUX_SURFACE_ID` (needs `jq`) and
   confirmed by the pane's tty sitting on the session's own process chain, so an env var leaked
   from another pane can't aim it elsewhere. It closes the workspace only when that pane is its
   single surface; a pinned workspace is kept, with a fresh shell in place of the session. When
@@ -42,6 +42,10 @@ None for the recap and close-out. Optional:
   (`scripts/close-own-pane.sh --dry-run`).
   `scripts/selfcheck.sh` (fake cmux) and `scripts/livecheck.sh` (real cmux, throwaway
   `zz-close-test-*` workspaces) prove it after any change.
+- Ghostex — the close closes this Ghostex session (`ghostex kill`; Ghostex
+  can bring it back from its closed sessions). Found by `$GHOSTEX_SESSION_ID` and confirmed by
+  that session's `zmx run` process sitting on the session's own process chain; the name must
+  select exactly one listed session. `scripts/selfcheck.sh` (fake ghostex) covers it.
 - `~/.claude/bin/claudwork` (your own script, any contents) — when it exists, `claudwork touch` runs at
   every turn end (`Stop` hook) and right after `agentctl done` on close, so a per-session work folder
   can keep its own last-update / status stamp. Absent → nothing runs.

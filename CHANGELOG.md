@@ -7,6 +7,12 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-10-29
+
+### Added
+- session-management 0.4.0: the `/finish-session` close also closes a Ghostex session (`ghostex kill`),
+  confirmed by its `zmx run` process on the session's own process chain; selfcheck covers it.
+
 ## 2026-10-28
 
 ### Changed

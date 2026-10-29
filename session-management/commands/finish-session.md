@@ -1,5 +1,5 @@
 ---
-description: Close out this session — full recap, everything still open, un-done, un-cleaned, or owed to someone, with proposed actions; then "close" marks it done and closes this cmux pane
+description: Close out this session — full recap, everything still open, un-done, un-cleaned, or owed to someone, with proposed actions; then "close" marks it done and closes this cmux pane or Ghostex session
 argument-hint: "[cleanup] [close] [force] [optional focus or extra notes]"
 ---
 
@@ -128,10 +128,12 @@ from a summary.
    `command -v agentctl >/dev/null && agentctl done; test -x "$HOME/.claude/bin/claudwork" && "$HOME/.claude/bin/claudwork" touch; bash "${CLAUDE_PLUGIN_ROOT}/scripts/close-own-pane.sh"`
    On success the session ends. The script closes only this session's own pane — found by
    `$CMUX_SURFACE_ID`, confirmed by its tty — and the workspace only when this pane is provably
-   its single surface; a pinned workspace is kept with a fresh shell. Outside cmux it prints
-   `Not in cmux — close the window yourself.`
+   its single surface; a pinned workspace is kept with a fresh shell. In Ghostex it closes this
+   session (`ghostex kill`), found by `$GHOSTEX_SESSION_ID` and confirmed by its `zmx run` process
+   on the session's own process chain. Elsewhere it prints
+   `Not in cmux or Ghostex — close the window yourself.`
 3. If the session is still alive after that, the script printed `… — closed nothing.`: relay that
-   line verbatim and stop. Never close anything yourself — no `cmux close-surface` /
+   line verbatim and stop. Never close anything yourself — no `ghostex kill`, no `cmux close-surface` /
    `close-workspace` / unpin by hand (a bare `close-surface` closes the pane the user is looking
    at), and never use `$CMUX_WORKSPACE_ID` (it goes stale when a pane is moved; a fallback on it
    once closed the parent session's workspace).

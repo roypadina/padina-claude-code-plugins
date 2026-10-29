@@ -31,9 +31,28 @@ case "$*" in
     *) exit 2 ;;
 esac
 EOF
+cat >"$tmp/ghostex" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+    sessions) cat "$FAKE_GX" ;;
+    kill) echo "kill $2" >>"$FAKE_LOG"
+        [ -z "${FAKE_GX_KILL_FAIL:-}" ] || { echo "Error: $FAKE_GX_KILL_FAIL"; exit 1; }
+        echo "Killed $2" ;;
+    *) exit 2 ;;
+esac
+EOF
+# Fake ps answers every query with "1 $FAKE_TTY": ppid 1, and $FAKE_TTY as the tty or command.
 printf '#!/usr/bin/env bash\necho "1 $FAKE_TTY"\n' >"$tmp/ps"
-chmod +x "$tmp/cmux" "$tmp/ps"
-export PATH="$tmp:$PATH" FAKE_TREE="$tmp/tree.json" FAKE_LOG="$tmp/log"
+chmod +x "$tmp/cmux" "$tmp/ghostex" "$tmp/ps"
+unset GHOSTEX_SESSION_ID
+export PATH="$tmp:$PATH" FAKE_TREE="$tmp/tree.json" FAKE_LOG="$tmp/log" FAKE_GX="$tmp/gx.json" \
+    GHOSTEX_CLI_EXECUTABLE="$tmp/ghostex"
+
+# gxlist <provider name>:<title> ... -> canned `ghostex sessions --json --full`.
+gxlist() {
+    printf '%s\n' "$@" | jq -Rsc '{sessions: [split("\n")[] | select(. != "") | split(":") |
+        {providerSessionName: .[0], sessionId: ("id-" + .[0]), alias: 1, globalRef: ("g:" + .[0]), title: .[1]}]}' >"$FAKE_GX"
+}
 
 # tree [!]<workspace>:<surface>,<surface> ... -> canned `tree --json`. "!" pins the workspace.
 # Surface X has tty "tty-X"; a surface named "notty" has none.
@@ -101,6 +120,19 @@ check "pinned workspace, pane shares it: closes only its own surface" ok 0 \
 tree P:parent C:me
 ARGS=--dry-run check "dry run: closes nothing, exit 0" last 0 ""
 ARGS=--dry-run FAKE_TTY=tty-parent check "dry run, not our pane: exit 1" last 1 ""
+
+# Ghostex: the session's `zmx run <name>` must be on our ancestor chain and select only itself.
+export CMUX_SURFACE_ID='' GHOSTEX_SESSION_ID=gx-me FAKE_TTY="/x/zmx run gx-me -d"
+gxlist "gx-me:my work" "gx-other:other work"
+check "ghostex: kills its own session" ok 0 "kill gx-me"
+ARGS=--dry-run check "ghostex dry run: closes nothing, exit 0" ok 0 ""
+FAKE_GX_KILL_FAIL=boom check "ghostex kill fails: reports it, exit 1" ok 1 "kill gx-me"
+FAKE_TTY="/x/zmx run gx-other -d" check "ghostex env leaked from another session: closes nothing" ok 0 ""
+gxlist "gx-me:my work" "gx-other:gx-me"
+check "ghostex name also another session's title: closes nothing" ok 1 ""
+gxlist "gx-other:other work"
+check "ghostex session not listed: closes nothing" ok 1 ""
+unset GHOSTEX_SESSION_ID
 
 # close-trigger.sh (UserPromptSubmit hook): fires only on a whole-message session-close reply.
 fires() { jq -nc --arg p "$1" '{prompt: $p}' | env -u CLAUDE_PLUGIN_ROOT bash "$here/close-trigger.sh" |

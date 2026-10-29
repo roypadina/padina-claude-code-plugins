@@ -3,6 +3,11 @@
 # Close the cmux pane this Claude session runs in. Close its workspace only when that pane is
 # provably the workspace's single surface. When anything is uncertain, close nothing.
 #
+# In Ghostex, close this session instead (`ghostex kill`; Ghostex can bring it back from its
+# closed sessions). $GHOSTEX_SESSION_ID is an env var and can leak like the cmux ones below, so
+# its `zmx run <name>` process must sit on this process's own ancestor chain, and the name must
+# select exactly this one session (Ghostex matches alias, id, provider name or title).
+#
 # Never trusts $CMUX_WORKSPACE_ID. It is fixed when the shell starts, so it goes stale when the
 # pane is moved to another workspace, and cmux uses it as the default --workspace. A stale value
 # once made `close-surface` fail with "Surface not found", and a `|| close-workspace
@@ -29,8 +34,29 @@ fail() {
     echo "Don't close it by hand: a bare \`cmux close-surface\` closes the focused pane, not this one."
     exit 1
 }
+
+GX="${GHOSTEX_SESSION_ID:-}" p=$$ zmx=
+while [ -n "$GX" ] && [ "${p:-0}" -gt 1 ]; do
+    read -r p cmd <<<"$(ps -o ppid=,command= -p "$p" 2>/dev/null)"
+    case "$cmd " in *"zmx run $GX "*) zmx=1; break ;; esac
+done
+if [ -n "$zmx" ]; then
+    gxfail() { echo "$1 — closed nothing."; exit 1; }
+    gx="${GHOSTEX_CLI_EXECUTABLE:-ghostex}"
+    command -v "$gx" >/dev/null || gxfail "ghostex CLI not found"
+    command -v jq >/dev/null || gxfail "jq not found"
+    title=$("$gx" sessions --json --full 2>/dev/null | jq -r --arg g "$GX" '
+        [.sessions[] | select(.providerSessionName == $g or .sessionId == $g or .title == $g
+            or (.alias | tostring) == $g or .globalRef == $g)]
+        | if length == 1 and .[0].providerSessionName == $g then "= \(.[0].title // "")" else empty end')
+    [ -n "$title" ] || gxfail "Ghostex session $GX is not exactly one listed session"
+    [ "${1:-}" = --dry-run ] && { echo "Would close Ghostex session $GX \"${title#= }\"."; exit 0; }
+    out=$("$gx" kill "$GX" 2>&1) && { echo "$out"; exit 0; }
+    gxfail "$out"
+fi
+
 S="${CMUX_SURFACE_ID:-}"
-[ -n "$S" ] || { echo "Not in cmux — close the window yourself."; exit 0; }
+[ -n "$S" ] || { echo "Not in cmux or Ghostex — close the window yourself."; exit 0; }
 command -v cmux >/dev/null || fail "cmux CLI not found"
 command -v jq >/dev/null || fail "jq not found"
 export CMUX_QUIET=1
