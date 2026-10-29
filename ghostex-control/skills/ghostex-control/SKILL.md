@@ -112,6 +112,7 @@ aliases come from whichever `gx sessions` list was printed last on this machine 
 | Open a file in Ghostex | `ghostex edit --goto <file>:<line>` / `ghostex open <path>` — only when asked |
 | Extensions | `ghostex extensions list --json` (read); `install` / `uninstall` only on request |
 | App settings, "how does X work" | Read the bundled `ghostex-help` skill (section 7) |
+| Keyboard shortcut question | `ghostex settings hotkeys list [word]` (live keys, user rebinds included; `--terminal` for the keys while a terminal has focus); `ghostex guide hotkeys` for what each one does. Answer from these, no more calls |
 
 ## 5. Recipes
 
