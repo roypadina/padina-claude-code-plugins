@@ -16,6 +16,14 @@ and be in the tap or be a Mac app project headed there. Step 1 checks this and p
 anything else (work repos, the tap itself, wikis, private scripts, local-only projects) — then say one
 line ("<repo>: not a personal app, skipped") and stop.
 
+**Exception — the plugin marketplace `padina-claude-code-plugins`.** Step 1 prints `SKIP` (no tap,
+no app), but it is public and has docs to keep in step after a plugin change: the repo `CHANGELOG.md`
+(dated section, `- <plugin> X.Y.Z: …`), the root `README.md` (At a glance row + plugin section), the
+plugin's own `README.md`, the wiki (`padina-claude-code-plugins.wiki`: one page per plugin, a
+`Home.md` table row, a `_Sidebar.md` link; push by URL), and its site card in
+`roypadina-apps/data/apps.json` (slug `padina-claude-code-plugins`: `tagline`, `pitch` lists the
+plugins; no page, no version). Check each one instead of stopping.
+
 - **Unprompted:** dev work on one of these apps is wrapping up — the user says release / ship / push
   all / finalize / we're done, a version was bumped or a release built, or the session is ending
   (including `/finish-session`) after changes to an app repo. Run Step 1; if it shows gaps, offer the

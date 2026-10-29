@@ -20,6 +20,9 @@ version is in its `.claude-plugin/plugin.json`). Format follows
   confirmed by its `zmx run` process on the session's own process chain; selfcheck covers it.
 
 ### Changed
+- finalize-app-release 0.4.7: the plugin marketplace repo is no longer just `SKIP`ped — the skill lists
+  its docs to keep in step after a plugin change (CHANGELOG, root and plugin README, wiki page + Home +
+  sidebar, site card).
 - ghostex-control 0.1.3: keyboard-shortcut questions are answered from the live hotkey list
   (`ghostex settings hotkeys list [word]`, `--terminal` for terminal-focused keys) and
   `ghostex guide hotkeys`, in one call, instead of searching the bundled `ghostex-help` skill.
