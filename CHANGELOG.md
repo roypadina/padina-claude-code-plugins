@@ -20,6 +20,8 @@ version is in its `.claude-plugin/plugin.json`). Format follows
   confirmed by its `zmx run` process on the session's own process chain; selfcheck covers it.
 
 ### Changed
+- ghostex-control 0.1.2: pitfall — Session Chat's `$` skill picker lists only skill folders, never
+  Claude Code plugin skills or commands; type the full `/<plugin>:<name>` or use the terminal view.
 - ghostex-control 0.1.1: live runs settled three open points — `create-session --start` leaves focus
   on the caller, its result carries `session.globalRef`, and a `claude` child reaches its parent over
   Claude Code's `ListAgents` / `SendMessage`. New trap: a Claude Code child keeps only the visible

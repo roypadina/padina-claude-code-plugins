@@ -259,6 +259,11 @@ the `session-management` plugin's `/finish-session`), not to an ad-hoc `kill`.
 - `server stop-all` and Quit Ghostex & BG Service kill every session on the machine.
 - Codex 0.157+ draws full screen, so `read-text` of a Codex pane shows its current screen, not a
   scrollback history; use `read-session-chat` [guide].
+- Session Chat's `$` skill picker (and ⋯ → Skills) lists only skill folders — the agent's home
+  skills folders and the project's — never Claude Code plugin skills or commands, and no setting
+  adds folders [guide, live]. A user who "can't find" a plugin command in the chat box can still
+  type the full `/<plugin>:<name>` (Claude receives it as a slash command) or use the terminal
+  view's `/` menu.
 
 ## 7. Ghostex's bundled skills — route, don't duplicate
 
