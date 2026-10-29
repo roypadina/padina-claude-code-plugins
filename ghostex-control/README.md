@@ -68,11 +68,8 @@ Checked against Ghostex 10.40.0: the CLI help, the bundled skills, read-only com
 install, and the gxserver source on GitHub. Behaviour that would need a mutating live run is marked
 **[unverified]** in the skill:
 
-- whether `create-session --start` and `agents create` leave the user's focus where it was;
-- the exact `create-session` result fields beyond the session's project and id;
-- how multi-line `send-text` lands in a shell;
-- whether a Claude Code session started in Ghostex can reach its parent with Claude Code's own
-  cross-session messaging (inside Ghostex, `ghostex agents send` is the verified channel).
+- whether `agents create` leaves the user's focus where it was (`create-session --start` does);
+- how multi-line `send-text` lands in a shell.
 
 ## Prerequisites
 

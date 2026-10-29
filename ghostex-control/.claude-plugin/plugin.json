@@ -1,6 +1,6 @@
 {
   "name": "ghostex-control",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Drive the Ghostex agent workspace from Claude Code — find your own session, start terminal and agent sessions, type into them, read and wait on their output, and close only what you created, with the CLI's traps written down.",
   "author": {
     "name": "Roy Padina",

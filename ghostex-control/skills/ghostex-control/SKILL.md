@@ -74,8 +74,8 @@ aliases come from whichever `gx sessions` list was printed last on this machine 
    user names exactly.** Never `kill`, `sleep`, `wake` or `park` with `all`, a title, or an alias.
 3. **Never move the user's window unasked:** `focus`, `focus-session`, `focus-group`,
    `switch-project`, `open`, `edit`, `attach`, `floating-editor`, `settings open`, `toggle-sidebar`
-   all act on the visible app. Creating a session with `create-session --start` is meant to stay
-   off-screen [source, focus behaviour unverified].
+   all act on the visible app. Creating a session with `create-session --start` stays off-screen
+   [live: the calling session kept focus].
 4. **Never type into a session a person or another agent is using.** For agent sessions use
    `agents send` (it queues at the next input boundary and reports delivery); raw `send-text` into
    a live agent pane can land in the middle of someone's typing.
@@ -198,6 +198,10 @@ ghostex read-session-chat "$REF" --last 2 --format text    # agent sessions: the
   Anchor the pattern to the start of a line: an unanchored sentinel also matches an agent echoing
   your instructions. Reusing a session for a second round, change the sentinel (`ROUND 2 DONE`) —
   the old one is still in scrollback.
+- A Claude Code (full-screen TUI) child keeps little scrollback: `read-text --lines 200` returned only
+  the visible screen, and `wait-for-text` never matched the `Claude Code v…` banner line even though
+  `read-text` showed it [live]. Wait for a line of the prompt you sent instead, and on exit 1 run
+  `read-text` once before calling the launch failed: a live REPL may already have scrolled it away.
 - A session from recipe 5.1 needs no prompt wait: the command runs after `.zshrc` by construction.
   A session created **without** `--input` does: `wait-for-text "$NEW" '<your prompt char>\s*$'`
   before the first `send-text`. The prompt character is the user's own theme; read one screen first
@@ -280,11 +284,11 @@ Install them for every agent with `ghostex cli install-skill`,
 
 ## 8. Unverified (not exercised live)
 
-- Whether `create-session --start` and `agents create` leave the user's focus where it was. The
-  source says `--start` exists so orchestration does not focus panes; no live run confirmed it.
-- `create-session` result field names beyond `session.projectId` / `session.sessionId`.
+- Whether `agents create` leaves the user's focus where it was (`create-session --start` does —
+  verified live).
 - `send-text` of multi-line text into a shell: whether each line runs or it lands as one paste.
-- A full round trip over Claude Code's own `ListAgents` / `SendMessage` from a Ghostex-started
-  child. Seen: `ListAgents` run inside a Ghostex session lists the machine's other local Claude
-  sessions (the mechanism is not tied to the terminal); a send was not exercised. Inside Ghostex
-  the verified channel is `ghostex agents send <Reply-to ref>`.
+
+Verified live since 0.1.0: `create-session` returns `session.globalRef` (plus `sessionId`,
+`projectId`, `cwd`, `title`, `kind`, `zmxName`, …); a `claude` child started with
+`create-session --start --input` reaches its parent over Claude Code's own `ListAgents` /
+`SendMessage` (the mechanism is not tied to the terminal).

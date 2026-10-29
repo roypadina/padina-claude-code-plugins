@@ -19,6 +19,12 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 - session-management 0.4.0: the `/finish-session` close also closes a Ghostex session (`ghostex kill`),
   confirmed by its `zmx run` process on the session's own process chain; selfcheck covers it.
 
+### Changed
+- ghostex-control 0.1.1: live runs settled three open points — `create-session --start` leaves focus
+  on the caller, its result carries `session.globalRef`, and a `claude` child reaches its parent over
+  Claude Code's `ListAgents` / `SendMessage`. New trap: a Claude Code child keeps only the visible
+  screen and `wait-for-text` never matched its banner, so wait for a line of your own prompt.
+
 ## 2026-10-28
 
 ### Added
