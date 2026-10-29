@@ -1,6 +1,6 @@
 {
   "name": "mac-design",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Design, build and review native macOS app interfaces (SwiftUI + AppKit) to Apple quality: Liquid Glass, windows, toolbars, menus, Settings, menu-bar apps, permissions and onboarding flows, accessibility, app icons, plus an audit mode that ranks fixes for an existing app.",
   "author": {
     "name": "Roy Padina",

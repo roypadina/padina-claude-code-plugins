@@ -455,6 +455,8 @@ Add `#Preview("Dark") { ContentView().preferredColorScheme(.dark) }` next to the
 
 1. A hidden title bar still has a toolbar zone; content there overlaps the traffic lights.
 2. Glass legibility on 27 follows the user's transparency slider (27, verify). Use `.primary` and `.secondary`; test both ends.
+3. A window kept for reuse (`isReleasedWhenClosed = false`, held in a static) keeps its SwiftUI view alive after `close()`: `onReceive(timer)` and other periodic refreshes keep firing, and `onDisappear` / `.task` cancellation never run. If the window hosts a refreshing view, drop it on close: `Task { @MainActor [weak self] in for await _ in NotificationCenter.default.notifications(named: NSWindow.willCloseNotification, object: w) { break }; self?.window = nil }`, and restore size and pane with `setFrameAutosaveName` and a stored tab key.
+4. After Hide (⌘H) every window reports `isVisible == false`. Track "a window is open" by membership in your own window list (removed on `willClose`), not by `isVisible`, or a hidden form looks closed.
 
 ## Sources
 
