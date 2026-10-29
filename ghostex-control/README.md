@@ -34,6 +34,7 @@ help text alone, Claude reaches for the obvious verbs and hits the traps:
 | Start an agent session, message it, read and wait on it | skill recipe, routes to Ghostex's `ghostex-agents` skill | same |
 | Type into, read, wait on, rename, sleep, close, restore sessions | skill | same |
 | Notifications, hooks and the status line Ghostex installs | skill | same |
+| Answer keyboard-shortcut questions from the live hotkey list (your rebinds included) | skill (`ghostex settings hotkeys list`) | same |
 | Every CLI command with a risk class (read / state / UI / destructive / network) | reference, loaded on demand | `skills/ghostex-control/references/cli-reference.md` |
 | Routing to the skills Ghostex bundles in the app | skill | `SKILL.md` § 7 |
 

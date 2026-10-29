@@ -240,8 +240,8 @@ session that is not started (and may add a sidebar project), `send-message` from
 sender block a shell then tries to run, and titles and numeric aliases are not safe handles for
 `kill`. This skill gives Claude the verified recipes (start a shell that runs a command after
 `.zshrc` with no race, start and message agents, read and wait on output), hard safety rules about
-other people's sessions and the user's window, a full command reference with risk classes, and
-routing to the skills Ghostex bundles.
+other people's sessions and the user's window, a full command reference with risk classes,
+keyboard-shortcut answers from the live hotkey list, and routing to the skills Ghostex bundles.
 
 **Requires** macOS and Ghostex (`brew install --cask ghostex`).
 
