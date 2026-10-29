@@ -10,6 +10,12 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-10-29
 
 ### Added
+- ghostex-control 0.1.0: new plugin. A skill to drive the Ghostex agent workspace through its `ghostex`
+  / `gx` CLI: find your own session, start terminal and agent sessions (`create-session --input …
+  --start`, no `.zshrc` race), type into, read, wait on and close them, with hard safety rules, the
+  CLI's traps (`terminal` is not started, `send-message` signs and falls back to an agent id,
+  substring titles and shared numeric aliases), a full command reference with risk classes, and
+  routing to the skills Ghostex bundles in the app.
 - session-management 0.4.0: the `/finish-session` close also closes a Ghostex session (`ghostex kill`),
   confirmed by its `zmx run` process on the session's own process chain; selfcheck covers it.
 

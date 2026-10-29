@@ -3,7 +3,7 @@
 [![Website](https://img.shields.io/badge/website-apps.roypadina-2F62E6)](https://apps.roypadina.synology.me/)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/roypadina)
 
-A [Claude Code](https://claude.com/claude-code) plugin marketplace. Small plugins for a terminal-heavy Claude Code workflow: cmux integration, session memory, recaps and close-out, the release checklist for my Mac apps, Hebrew/English layout repair, Espanso control, recipe research with parallel subagents, a MaccyPlus clipboard bridge, and native macOS UI/UX design rules.
+A [Claude Code](https://claude.com/claude-code) plugin marketplace. Small plugins for a terminal-heavy Claude Code workflow: cmux and Ghostex integration, session memory, recaps and close-out, the release checklist for my Mac apps, Hebrew/English layout repair, Espanso control, recipe research with parallel subagents, a MaccyPlus clipboard bridge, and native macOS UI/UX design rules.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -21,6 +21,7 @@ Then install whichever you want:
 /plugin install recipe-research@padina
 /plugin install maccyplus-clipboard@padina
 /plugin install mac-design@padina
+/plugin install ghostex-control@padina
 ```
 
 📖 **[Full documentation is in the Wiki](https://github.com/roypadina/padina-claude-code-plugins/wiki)**
@@ -40,6 +41,7 @@ Then install whichever you want:
 | [`agents-session-hopper`](agents-session-hopper) | Claude steers AgentsSessionHopper: account, usage, switch, hold, resume after a move | macOS, AgentsSessionHopper 0.1.8+ | AgentsSessionHopper |
 | [`obsidian-vault-manager`](obsidian-vault-manager) | Structure note, index, safe restructuring and reference updates for any Obsidian vault | Python 3 (git optional) | Obsidian |
 | [`mac-design`](mac-design) | Design, build and review native macOS UI (SwiftUI + AppKit) to Apple quality, with a ranked-fix audit mode | nothing (`curl`, `jq`, `rg` for live checks and audits) | macOS 14–27 apps |
+| [`ghostex-control`](ghostex-control) | Teaches Claude the Ghostex CLI: own session, new terminal and agent sessions, send, read, wait, close — safely | macOS, Ghostex, `jq` | Ghostex |
 
 Minimum Claude Code version: not pinned. The plugins use only commands, skills, hooks and agents, so any
 release with plugin marketplaces works.
@@ -229,6 +231,22 @@ skills (MIT).
 
 → [Plugin README](mac-design/README.md)
 
+### [`ghostex-control`](ghostex-control) — the Ghostex CLI, for Claude
+
+[Ghostex](https://ghostex.dev) runs every coding agent in its own persistent terminal session and
+exposes it all through a large `ghostex` / `gx` CLI. Its own agent skills are help-first and, all but
+one, never load automatically, so Claude meets the CLI's traps unaided: `ghostex terminal` creates a
+session that is not started (and may add a sidebar project), `send-message` from an agent appends a
+sender block a shell then tries to run, and titles and numeric aliases are not safe handles for
+`kill`. This skill gives Claude the verified recipes (start a shell that runs a command after
+`.zshrc` with no race, start and message agents, read and wait on output), hard safety rules about
+other people's sessions and the user's window, a full command reference with risk classes, and
+routing to the skills Ghostex bundles.
+
+**Requires** macOS and Ghostex (`brew install --cask ghostex`).
+
+→ [Plugin README](ghostex-control/README.md)
+
 ---
 
 ## Repository layout
@@ -246,6 +264,7 @@ maccyplus-clipboard/              plugin: skills/
 agents-session-hopper/            plugin: skills/
 obsidian-vault-manager/           plugin: scripts/, skills/
 mac-design/                       plugin: skills/ (with references and a HIG fetch script)
+ghostex-control/                  plugin: skills/ (with a CLI reference)
 ```
 
 Each plugin directory is self-contained and follows the standard Claude Code plugin layout —

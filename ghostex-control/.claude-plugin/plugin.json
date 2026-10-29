@@ -1,0 +1,13 @@
+{
+  "name": "ghostex-control",
+  "version": "0.1.0",
+  "description": "Drive the Ghostex agent workspace from Claude Code — find your own session, start terminal and agent sessions, type into them, read and wait on their output, and close only what you created, with the CLI's traps written down.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins",
+  "license": "MIT",
+  "keywords": ["ghostex", "gx", "terminal", "agents", "sessions", "macos"]
+}

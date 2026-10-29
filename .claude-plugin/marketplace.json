@@ -145,6 +145,20 @@
         "liquid-glass",
         "menu-bar"
       ]
+    },
+    {
+      "name": "ghostex-control",
+      "source": "./ghostex-control",
+      "description": "Drive the Ghostex agent workspace from Claude Code — find your own session, start terminal and agent sessions, type into them, read and wait on their output, and close only what you created, with the CLI traps written down.",
+      "category": "productivity",
+      "keywords": [
+        "ghostex",
+        "gx",
+        "terminal",
+        "agents",
+        "sessions",
+        "macos"
+      ]
     }
   ]
 }
