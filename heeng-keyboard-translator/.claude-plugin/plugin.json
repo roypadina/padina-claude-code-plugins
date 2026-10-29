@@ -1,6 +1,6 @@
 {
   "name": "heeng-keyboard-translator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Detects text typed with the wrong active keyboard layout (Hebrew vs English) and offers a one-click fix. Useful when the user thought the layout was Hebrew but it was actually English (or vice versa) and ended up with garbled output.",
   "author": {
     "name": "Roy Padina"

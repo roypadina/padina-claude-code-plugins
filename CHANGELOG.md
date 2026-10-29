@@ -20,6 +20,17 @@ version is in its `.claude-plugin/plugin.json`). Format follows
   confirmed by its `zmx run` process on the session's own process chain; selfcheck covers it.
 
 ### Changed
+- finalize-app-release 0.5.0: plugin updates get the same pass as app releases. The state script has a
+  marketplace mode (a repo with `.claude-plugin/marketplace.json`): per plugin it GAPs on changes after the
+  last version bump, a missing CHANGELOG line, README row or section, wiki page, Home row or sidebar link,
+  and an older installed copy in any Claude config dir (`FAR_CLAUDE_DIRS`); it checks the wiki push and
+  prints the site card. The skill has a Plugin marketplace checklist: bump, CHANGELOG, READMEs, wiki, site
+  card, push + CI, install on every profile, inventory.
+- mac-design 0.1.1: ships the Review-mode feedback (Settings window snippet, rules MBX-22 and SYM-8, 243
+  rules) to installs made before it landed under 0.1.0.
+- heeng-keyboard-translator 0.1.1: ships the 2026-08-30 skill wording fix, which landed after the 0.1.0
+  bump, to existing installs.
+- cmux-control 0.2.5: check that the shell is inside cmux, not Ghostex, before pane work.
 - finalize-app-release 0.4.7: the plugin marketplace repo is no longer just `SKIP`ped — the skill lists
   its docs to keep in step after a plugin change (CHANGELOG, root and plugin README, wiki page + Home +
   sidebar, site card).
@@ -104,6 +115,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
   lags the latest tag.
 - agentctl is CLI-only (0.11.0): menu-bar mentions dropped; finalize-app-release checks binary-only
   casks.
+- agentctl-sessions 0.2.1: the session picker is the agentctl TUI only.
 - README: plugin table, Ko-fi, website badge, social preview; manifest-validation CI and CODEOWNERS.
 
 ## 2026-10-22
@@ -200,7 +212,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-08-30
 
 ### Added
-- espanso-control and recipe-research plugins.
+- espanso-control 0.1.0 and recipe-research 0.1.0 plugins.
 
 ### Changed
 - cmux-control: the SessionStart tab/workspace naming hook is gone (breaking).
@@ -213,4 +225,4 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ### Added
 - cmux-control: wires Claude Code into cmux.
 - agentctl-sessions: session names, labels, notes, flags, reminders, due dates; hide and delete.
-- heeng-keyboard-translator; READMEs for the marketplace and its plugins.
+- heeng-keyboard-translator 0.1.0; READMEs for the marketplace and its plugins.

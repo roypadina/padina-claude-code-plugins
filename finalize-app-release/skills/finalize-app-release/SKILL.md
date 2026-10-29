@@ -1,6 +1,6 @@
 ---
 name: finalize-app-release
-description: End-of-dev release checklist for the user's personal Mac apps (roypadina/* repos under ~/Code/Padina shipped through the roypadina/homebrew-tap Homebrew tap — LanGuard, MaccyPlus, VaultBar, Window Organizer, SmartHiddenBar, MeetAlert, Agents Monitor, agentctl, claude-jam — or a new app headed there). Checks and fixes version bump, CHANGELOG, README, wiki, Ko-fi (README, FUNDING.yml, wiki, in-app About), GitHub release + asset, tap cask + tap README, server-side push verification and the local install. Use when one of these apps gets a version bump, release build, tag or GitHub release, goes public, or when the user says "release", "full release", "ship it", "push all", "finalize", "wrap up", "update readme/wiki/tap", or a session that changed one of these apps is ending; also /finalize-app-release. Offer it unprompted at the end of dev work on these apps. Skips the review when its state script reports the app already finalized and unchanged, unless the user asks to recheck.
+description: End-of-dev release checklist for the user's personal Mac apps (roypadina/* repos under ~/Code/Padina shipped through the roypadina/homebrew-tap Homebrew tap — LanGuard, MaccyPlus, VaultBar, Window Organizer, SmartHiddenBar, MeetAlert, Agents Monitor, agentctl, claude-jam — or a new app headed there). Checks and fixes version bump, CHANGELOG, README, wiki, Ko-fi (README, FUNDING.yml, wiki, in-app About), GitHub release + asset, tap cask + tap README, server-side push verification and the local install. Use when one of these apps gets a version bump, release build, tag or GitHub release, goes public, or when the user says "release", "full release", "ship it", "push all", "finalize", "wrap up", "update readme/wiki/tap", or a session that changed one of these apps is ending; also /finalize-app-release. Also covers the plugin marketplace repo padina-claude-code-plugins: after a plugin change it keeps the plugin version, CHANGELOG, READMEs, wiki, site card and the installed copies on every Claude profile in step — use it when a plugin there was changed, bumped or added. Offer it unprompted at the end of dev work on these apps or plugins. Skips the review when its state script reports the app already finalized and unchanged, unless the user asks to recheck.
 ---
 
 # Finalize app release
@@ -16,17 +16,13 @@ and be in the tap or be a Mac app project headed there. Step 1 checks this and p
 anything else (work repos, the tap itself, wikis, private scripts, local-only projects) — then say one
 line ("<repo>: not a personal app, skipped") and stop.
 
-**Exception — the plugin marketplace `padina-claude-code-plugins`.** Step 1 prints `SKIP` (no tap,
-no app), but it is public and has docs to keep in step after a plugin change: the repo `CHANGELOG.md`
-(dated section, `- <plugin> X.Y.Z: …`), the root `README.md` (At a glance row + plugin section), the
-plugin's own `README.md`, the wiki (`padina-claude-code-plugins.wiki`: one page per plugin, a
-`Home.md` table row, a `_Sidebar.md` link; push by URL), and its site card in
-`roypadina-apps/data/apps.json` (slug `padina-claude-code-plugins`: `tagline`, `pitch` lists the
-plugins; no page, no version). Check each one instead of stopping.
+**Plugin marketplace** — a repo with `.claude-plugin/marketplace.json` (`padina-claude-code-plugins`):
+Step 1 runs the plugin checks instead of the app checks. Work through § Plugin marketplace instead of
+Steps 2–3.
 
 - **Unprompted:** dev work on one of these apps is wrapping up — the user says release / ship / push
   all / finalize / we're done, a version was bumped or a release built, or the session is ending
-  (including `/finish-session`) after changes to an app repo. Run Step 1; if it shows gaps, offer the
+  (including `/finish-session`) after changes to an app repo or a plugin in the marketplace repo. Run Step 1; if it shows gaps, offer the
   fix list in one line.
 - **Manual:** `/finalize-app-release [app dir or name] [recheck]`. No argument → the app repo(s) this
   session changed.
@@ -226,6 +222,48 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
     wiki or the tap changes.
 21. Report as a table, one row per item: ✅ done · ⏭ skipped (why) · ❗ needs the user. Include the
     release URL and the repo, wiki and tap commits.
+
+## Plugin marketplace
+
+`padina-claude-code-plugins` is public and ships by `git push`: no tag, no GitHub release, no tap. Step 1
+prints one line per plugin. Fix every GAP, then review what a script cannot judge: does each README and
+wiki page describe what the plugin does now?
+
+1. **Version.** Bump the changed plugin's `.claude-plugin/plugin.json`: patch for a fix or wording, minor
+   for a feature (minor for a breaking change before 1.0). The plugin cache is stored per version
+   (`plugins/cache/<marketplace>/<plugin>/<version>`), so an unbumped change does not reach existing
+   installs. Step 1 GAPs on commits that changed the plugin after its last bump (its `README.md`
+   excepted). `marketplace.json` entries carry no version.
+2. **CHANGELOG.md** (repo root): today's `## YYYY-MM-DD` section below `## [Unreleased]`, under
+   `### Added` / `### Changed` / `### Fixed`, newest first, one line per version:
+   `- <plugin> X.Y.Z: <what changed, user-facing>`. Step 1 GAPs when the line for the current version is
+   missing.
+3. **Plugin `README.md`**: features table, requirements and layout match the change.
+4. **Root `README.md`**: the At a glance row, the ``### [`<plugin>`](<plugin>)`` section and, for a new
+   plugin, the intro sentence and the Repository layout line. **`.claude-plugin/marketplace.json`**: a new
+   plugin gets an entry (`name`, `source`, `description`, `category`, `keywords`); keep the description
+   current.
+5. **Wiki** (`padina-claude-code-plugins.wiki` next to the repo, branch `master`): the plugin's page
+   `<plugin>.md` (same shape as the others: the problem, Setup, What you get, feature sections,
+   Uninstalling), its `Home.md` table row (and the intro sentence for a new plugin), its `_Sidebar.md`
+   link. Commit, then push by URL:
+   `git push git@github-padina:roypadina/padina-claude-code-plugins.wiki.git HEAD:master`.
+6. **Site card**: `roypadina-apps/data/apps.json`, slug `padina-claude-code-plugins` (Step 1 prints its
+   text). The home page card shows `tagline` and the install line; `pitch` names the plugins (rendered
+   only on a page, and this entry has `hasPage: false`, so keep it right for when it gets one). A new
+   plugin or a changed headline feature → edit those lines in place, `node build.mjs`, commit, push and
+   check the deploy as in 15d. No version, no page, no "What's new".
+7. **Push.** `git status -sb`, stage named files, commit `<plugin> X.Y.Z: <summary>`,
+   `git push origin main`. `main` is protected, and the owner's direct push bypasses it (the "Bypassed rule
+   violations" notice is expected). Then check CI:
+   `gh run list --repo roypadina/padina-claude-code-plugins -L 1` must end `success` (Validate manifests).
+8. **Install on every profile.** `claude-plugin-all marketplace update padina`, then
+   `claude-plugin-all plugin update <plugin>@padina` (a new plugin: `plugin install`), then
+   `claude-plugin-drift`. Tell the user to run `/reload-plugins`. Step 1 GAPs while any Claude config dir
+   (`FAR_CLAUDE_DIRS`) has an older version installed.
+9. **Wrap-up.** The `claude-setup-inventory` skill (offer it, then `sync` + `refresh` and a changelog line
+   on each changed plugin's note); the user's memory note for the plugin when it pins a version. Then
+   Step 3 G20–21: re-run Step 1, stamp, and report as a table.
 
 ## New public app
 

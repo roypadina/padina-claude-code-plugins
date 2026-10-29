@@ -1,6 +1,9 @@
 #!/bin/bash
 # release-state.sh — read-only snapshot of one app's release state: version everywhere, tag,
 # GitHub release, Homebrew tap, README/wiki/CHANGELOG, Ko-fi, local install, last stamp.
+# A plugin marketplace repo (.claude-plugin/marketplace.json) gets its own checks instead: per plugin —
+# listed, version bumped after its last change, CHANGELOG line, READMEs, wiki page + Home + sidebar, and
+# the installed version in each Claude config dir — plus wiki push state and the site card.
 #
 #   release-state.sh [repo-dir]            report (default: current dir)
 #   release-state.sh [repo-dir] --stamp    record "finalized" for the current state
@@ -8,7 +11,8 @@
 # Prints OK / GAP / WARN / INFO lines and a summary. Always exits 0 — it reports, the agent decides.
 # Only network/side effects: `git fetch --tags`, `git ls-remote`, `gh` reads.
 # Overrides: APPS_ROOT (where personal apps live), TAP_WORK (tap working copy), SITE_WORK (marketing-site
-# repo, default $APPS_ROOT/roypadina-apps), FAR_STATE_DIR (stamp dir).
+# repo, default $APPS_ROOT/roypadina-apps), FAR_STATE_DIR (stamp dir), FAR_CLAUDE_DIRS (Claude config
+# dirs whose installed plugin versions are compared, default ~/.claude ~/.claude-work2 ~/.claude3).
 
 OWNER=roypadina
 TAP_SLUG=$OWNER/homebrew-tap
@@ -26,6 +30,20 @@ ok()   { echo "OK    $*"; }
 gap()  { echo "GAP   $*"; GAPS=$((GAPS+1)); }
 warn() { echo "WARN  $*"; WARNS=$((WARNS+1)); }
 info() { echo "INFO  $*"; }
+# Stamp or compare the 4-field fingerprint $1, print the summary, exit.
+finish() {
+  local FP=$1 SF="$STATE_DIR/$(basename "$R")"
+  if [ $STAMP = 1 ]; then
+    mkdir -p "$STATE_DIR" && echo "$FP $(date +%F)" > "$SF" && info "stamped: $FP"
+    [ $GAPS -gt 0 ] && warn "stamped with $GAPS open GAP(s) — only right if the user accepted them"
+  elif [ -f "$SF" ] && [ "$(cut -d' ' -f1-4 "$SF")" = "$FP" ]; then
+    info "STAMP MATCH — finalized on $(cut -d' ' -f5 "$SF"), nothing changed since (repo, wiki, tap)"
+  else
+    info "stamp: ${SF/#$HOME/~} $( [ -f "$SF" ] && echo "is stale ($(cat "$SF"))" || echo "none")"
+  fi
+  echo "== $GAPS GAP, $WARNS WARN"
+  exit 0
+}
 
 R=$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null) || { echo "not a git repo: $DIR"; exit 0; }
 cd "$R" || exit 0
@@ -46,6 +64,7 @@ case "$R/" in "$APPS_ROOT"/*) ;; *) echo "SKIP  $R is not under $APPS_ROOT — n
 case $SLUG in homebrew-tap|*.wiki) echo "SKIP  $SLUG is not an app repo"; exit 0 ;; esac
 grep -qisE "github\.com/$OWNER/$SLUG([/\"]|\.git)" "$TAP_WORK"/Casks/*.rb "$TAP_WORK"/Formula/*.rb 2>/dev/null \
   || [ -e Package.swift ] || [ -e Info.plist ] || compgen -G '*.xcodeproj' >/dev/null \
+  || [ -f .claude-plugin/marketplace.json ] \
   || { echo "SKIP  $OWNER/$SLUG is not in the tap and has no Mac app project"; exit 0; }
 BRANCH=$(git branch --show-current)
 echo "== $(basename "$R")  repo=$OWNER/$SLUG remote=$REMOTE visibility=${VIS:-?} branch=$BRANCH"
@@ -63,6 +82,51 @@ if [ -n "$REMOTE" ]; then
   EMAIL=$(git config user.email)
   case $EMAIL in *@users.noreply.github.com) ok "commit email is the GitHub noreply address" ;;
     *) gap "commit email '$EMAIL' — GitHub email privacy rejects the push; set the repo-local noreply address" ;; esac
+fi
+
+# ---------- plugin marketplace: its own checks, then stop (the app sections below do not apply) ----------
+if [ -f .claude-plugin/marketplace.json ]; then
+  MKT=$(jq -r .name .claude-plugin/marketplace.json)
+  WIKI="$(dirname "$R")/$SLUG.wiki"; [ -d "$WIKI/.git" ] || WIKI=""
+  WSRV=$(git ls-remote "https://github.com/$OWNER/$SLUG.wiki.git" HEAD 2>/dev/null | cut -f1)
+  if [ -z "$WIKI" ]; then
+    [ -n "$WSRV" ] && gap "wiki live on GitHub but no local clone (clone github-padina:$OWNER/$SLUG.wiki.git next to the repo)"
+  else
+    [ -n "$(git -C "$WIKI" status --porcelain)" ] && gap "wiki clone $WIKI has uncommitted changes"
+    [ "$(git -C "$WIKI" rev-parse HEAD)" = "$WSRV" ] && ok "wiki pushed (server = local)" || gap "wiki local ≠ server — push (by URL) or pull"
+  fi
+  LISTED=$(jq -r '.plugins[].source' .claude-plugin/marketplace.json | sed 's#^\./##')
+  for PJ in */.claude-plugin/plugin.json; do
+    echo "$LISTED" | grep -qx "${PJ%%/*}" || gap "${PJ%%/*}: has a plugin.json but is not in .claude-plugin/marketplace.json"
+  done
+  for P in $LISTED; do
+    PJ="$P/.claude-plugin/plugin.json"
+    [ -f "$PJ" ] || { gap "$P: in marketplace.json but $PJ is missing"; continue; }
+    PV=$(jq -r .version "$PJ"); MISS=""
+    # A change committed after the last plugin.json edit never reaches `claude plugin update` (README excepted).
+    N=$(git rev-list --count "$(git log -1 --format=%H -- "$PJ")..HEAD" -- "$P" ":!$P/README.md")
+    [ "${N:-0}" -gt 0 ] && gap "$P: $N commit(s) changed $P/ after its last version bump ($PV) — bump $PJ"
+    grep -qF "$P $PV" CHANGELOG.md 2>/dev/null || MISS="$MISS CHANGELOG('$P $PV')"
+    [ -f "$P/README.md" ] || MISS="$MISS $P/README.md"
+    grep -qF "| [\`$P\`]($P) |" README.md || MISS="$MISS README-at-a-glance-row"
+    grep -qF "### [\`$P\`]($P)" README.md || MISS="$MISS README-section"
+    if [ -n "$WIKI" ]; then
+      [ -f "$WIKI/$P.md" ] || MISS="$MISS wiki-page"
+      grep -qF "[$P]($P)" "$WIKI/Home.md" || MISS="$MISS wiki-Home-row"
+      grep -qF "[$P]($P)" "$WIKI/_Sidebar.md" || MISS="$MISS wiki-sidebar-link"
+    fi
+    for C in ${FAR_CLAUDE_DIRS:-$HOME/.claude $HOME/.claude-work2 $HOME/.claude3}; do
+      F="$C/plugins/installed_plugins.json"; [ -f "$F" ] || continue
+      IV=$(jq -r --arg k "$P@$MKT" '.plugins[$k][0].version // empty' "$F")
+      [ -n "$IV" ] && [ "$IV" != "$PV" ] && MISS="$MISS installed-$IV-in-${C/#$HOME/~}"
+    done
+    [ -z "$MISS" ] && ok "$P $PV: CHANGELOG, READMEs, wiki, installed" || gap "$P $PV missing:$MISS"
+  done
+  if [ -f "$SITE_WORK/data/apps.json" ] && command -v node >/dev/null; then
+    CARD=$(node -e 'const a=require(process.argv[1]).apps.find(a=>(a.repo||"").toLowerCase().endsWith("/"+process.argv[2].toLowerCase()));if(a)console.log(a.tagline+" | "+a.pitch)' "$SITE_WORK/data/apps.json" "$SLUG" 2>/dev/null)
+    [ -n "$CARD" ] && info "site card — must name the current plugins: $CARD" || info "site: $SLUG has no entry in $SITE_WORK/data/apps.json"
+  fi
+  finish "plugins head=$(git rev-parse --short HEAD) wiki=$( [ -n "$WIKI" ] && git -C "$WIKI" rev-parse --short HEAD || echo -) tap=-"
 fi
 
 # ---------- version ----------
@@ -318,15 +382,4 @@ elif [ "$KIND" = Formula ]; then
 fi
 
 # ---------- stamp ----------
-FP="v$VER head=$(git rev-parse --short HEAD) wiki=$( [ -n "$WIKI" ] && git -C "$WIKI" rev-parse --short HEAD || echo -) tap=${CV:--}"
-SF="$STATE_DIR/$(basename "$R")"
-if [ $STAMP = 1 ]; then
-  mkdir -p "$STATE_DIR" && echo "$FP $(date +%F)" > "$SF" && info "stamped: $FP"
-  [ $GAPS -gt 0 ] && warn "stamped with $GAPS open GAP(s) — only right if the user accepted them"
-elif [ -f "$SF" ] && [ "$(cut -d' ' -f1-4 "$SF")" = "$FP" ]; then
-  info "STAMP MATCH — finalized on $(cut -d' ' -f5 "$SF"), nothing changed since (repo, wiki, tap)"
-else
-  info "stamp: ${SF/#$HOME/~} $( [ -f "$SF" ] && echo "is stale ($(cat "$SF"))" || echo "none")"
-fi
-echo "== $GAPS GAP, $WARNS WARN"
-exit 0
+finish "v$VER head=$(git rev-parse --short HEAD) wiki=$( [ -n "$WIKI" ] && git -C "$WIKI" rev-parse --short HEAD || echo -) tap=${CV:--}"

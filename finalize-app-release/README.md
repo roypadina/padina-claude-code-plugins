@@ -2,7 +2,8 @@
 
 One skill that runs the end-of-dev release checklist for my Mac apps (LanGuard, MaccyPlus, VaultBar,
 Window Organizer, SmartHiddenBar, MeetAlert, Agents Monitor, agentctl, claude-jam — and the next one),
-so nothing gets missed when a version ships.
+so nothing gets missed when a version ships — and the same pass for a plugin change in this
+marketplace.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -36,6 +37,11 @@ forgotten — and a tap push that silently failed still upgrades your own Mac, s
 - **"Already done" memory** — after a clean run the script stamps the state
   (`~/.local/state/finalize-app-release/`). Next time, if the repo, wiki and tap haven't changed, it
   says so and skips the review. `recheck` forces a full pass.
+- **Plugin marketplace mode** — run on this marketplace repo, the script checks each plugin instead:
+  commits after its last version bump, its CHANGELOG line, README row and section, wiki page, Home row
+  and sidebar link, the wiki push, and an older installed copy in any Claude config dir
+  (`FAR_CLAUDE_DIRS`, default `~/.claude ~/.claude-work2 ~/.claude3`). It prints the site card's text
+  for review. The skill's checklist adds the push, CI and the install on every profile.
 - **A first-publish guide** for a new public app: privacy triple check, community files, branch
   protection, icons, About window with Ko-fi, wiki, first cask.
 
