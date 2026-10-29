@@ -19,7 +19,7 @@ What it maintains in the vault:
 
 ## Script
 
-`scripts/vault.py` (python3, stdlib only; needs `git` and `grep`). `python3 scripts/vault.py --help`.
+`scripts/vault.py` (python3, stdlib only; needs `grep`; `git` optional — a non-git vault uses a snapshot diff). `python3 scripts/vault.py --help`.
 
 ```
 init · tree · changes · index · subject set|missing · refs scan [--bare OLD] · refs rewrite OLD NEW [--bare --only ids] · move · check · mark · selfcheck
@@ -31,7 +31,12 @@ Test: `python3 scripts/vault.py selfcheck`.
 
 ## Install
 
-Development: `claude --plugin-dir /path/to/obsidian-vault-manager`. Permanent: add the repo to a plugin marketplace and install from there.
+```
+/plugin marketplace add roypadina/padina-claude-code-plugins
+/plugin install obsidian-vault-manager@padina
+```
+
+Development: `claude --plugin-dir /path/to/obsidian-vault-manager`.
 
 ## Vault config example
 
