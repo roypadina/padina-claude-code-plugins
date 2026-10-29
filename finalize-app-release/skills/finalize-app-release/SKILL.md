@@ -135,7 +135,9 @@ Top to bottom. Skip what Step 1 already shows as OK.
 
 ### E. Tap — public repos
 
-12. In `~/Code/Padina/homebrew-tap`: bump the cask `version` + `sha256` (formula: `url` + `sha256`).
+12. In `~/Code/Padina/homebrew-tap`: `git fetch` first. Other sessions push the tap by URL, so the
+    `origin/main` ref goes stale and `status -sb` can show "ahead 1" for a commit that is already on the
+    server. Then bump the cask `version` + `sha256` (formula: `url` + `sha256`).
     Keep `desc` current. New app → new cask from the template in the reference file. Add
     ``- `<token>` X.Y.Z`` under `### Changed` (new cask: `### Added`) in today's `## YYYY-MM-DD`
     section of the tap's `CHANGELOG.md` (create the section at the top, below `## [Unreleased]`).
