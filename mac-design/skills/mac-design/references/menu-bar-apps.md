@@ -255,12 +255,12 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
 
 Each pane gets its own height (SET-8): grouped forms have no intrinsic height.
 
-Call it from the status menu and the gear menu. Keeping the `Settings` scene needs the community hidden-window workaround (Sources, steipete): a 1 by 1 `Window(id: "hidden")` declared before `MenuBarExtra` and `Settings`, which switches to `.regular`, waits about 100 ms, calls `openSettings`, then orders the `com.apple.SwiftUI.Settings` window front. Timing dependent: prefer the own window.
+Call it from the status menu and the panel's More menu. Keeping the `Settings` scene needs the community hidden-window workaround (Sources, steipete): a 1 by 1 `Window(id: "hidden")` declared before `MenuBarExtra` and `Settings`, which switches to `.regular`, waits about 100 ms, calls `openSettings`, then orders the `com.apple.SwiftUI.Settings` window front. Timing dependent: prefer the own window.
 
 ## Menu order, Quit, About (MBX-11, MBX-12)
 
 - **MBX-11** Order: actions, separator, status, separator, `Settings…` (Command-Comma), `About Example`, separator, `Quit Example` (Command-Q) last. Short app name (16 characters or fewer), no version in About. Open About with `NSApp.activate()` then `NSApp.orderFrontStandardAboutPanel(nil)`.
-- **MBX-12** A panel-style extra still needs Settings and Quit: a gear menu in the panel plus the right-click menu (house convention). A panel with no Quit is a defect.
+- **MBX-12** A panel-style extra still needs Settings and Quit: a More menu (`ellipsis.circle`, SYM-2) in the panel plus the right-click menu, with the same items (house convention). A gear (`gearshape`) means Settings: use it only for a button that opens Settings directly, never for a menu of mixed actions. A panel with no Quit is a defect.
 - While the policy is `.regular` the app has a menu bar: give it App (Settings…), Edit, Window and Help so text keys work.
 
 ## Launch at login (MBX-17)

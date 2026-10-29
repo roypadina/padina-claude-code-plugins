@@ -7,6 +7,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-10-30
+
+### Changed
+- mac-design 0.1.2: MBX-12 — a menu-bar panel's action menu is a More menu (`ellipsis.circle`) matching the right-click menu; a gear only for a button that opens Settings directly.
+
 ## 2026-10-29
 
 ### Added

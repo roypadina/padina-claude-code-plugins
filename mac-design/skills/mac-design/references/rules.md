@@ -209,7 +209,7 @@ Format: `ID` rule. `severity` · version gate (only when version-specific) · [s
 - **MBX-9** A Settings toggle shows or hides the icon; with `.removalAllowed` the app keeps running (a `MenuBarExtra`-only app quits); stable `autosaveName`. `P2` · [Docs] → menu-bar-apps.md
 - **MBX-10** Never detect notch hiding (`isVisible` stays true) or move other apps' items; users can turn icons off in System Settings. `P2` · macOS 26+ · [Forum] → menu-bar-apps.md
 - **MBX-11** Status menu: actions, status, then Settings… (Command-Comma), About, and Quit <App> (Command-Q) last. `P2` · [HIG The menu bar] → menu-bar-apps.md
-- **MBX-12** A panel-style extra still offers Settings and Quit (gear menu and right-click). `P1` · [House] → menu-bar-apps.md
+- **MBX-12** A panel-style extra still offers Settings and Quit (a More menu, `ellipsis.circle`, and right-click; a gear only for a button that opens Settings directly). `P1` · [House] → menu-bar-apps.md
 - **MBX-13** Left click opens the primary UI; right-click and Control-click open a menu (on mouse-up). `P2` · [Comm] → menu-bar-apps.md
 - **MBX-14** Handle clicks with the button's target-action (or 27's `expandedInterfaceDelegate`), never a local event monitor. `P2` · [Forum] → menu-bar-apps.md
 - **MBX-15** Switch to `.regular` before showing a window and back to `.accessory` after the last closes; test `LSUIElement` from a clean launch. `P2` · [Comm] → menu-bar-apps.md
