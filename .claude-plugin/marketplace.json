@@ -78,6 +78,19 @@
       ]
     },
     {
+      "name": "smart-compact",
+      "source": "./smart-compact",
+      "description": "Steered /compact without questions — a tuned /compact instruction on the clipboard, a handoff file re-injected after compaction, a full session backup right before it, and a bounded search the model uses instead of guessing.",
+      "category": "productivity",
+      "keywords": [
+        "compact",
+        "context",
+        "handoff",
+        "backup",
+        "sessions"
+      ]
+    },
+    {
       "name": "finalize-app-release",
       "source": "./finalize-app-release",
       "description": "End-of-dev release checklist for roypadina's Mac apps — version, CHANGELOG, README, wiki, Ko-fi, GitHub release, Homebrew tap and the local install, checked by a script and fixed by Claude.",

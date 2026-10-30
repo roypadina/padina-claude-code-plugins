@@ -1,0 +1,19 @@
+{
+  "name": "smart-compact",
+  "version": "0.1.0",
+  "description": "Steered /compact without questions: reads the session, copies a tuned /compact instruction to the clipboard and writes a handoff file; hooks back up the whole session right before every compaction, re-inject the handoff after it, give the model a bounded search over the full session, and nudge at context-fill thresholds.",
+  "author": {
+    "name": "Roy Padina",
+    "url": "https://github.com/roypadina"
+  },
+  "homepage": "https://github.com/roypadina/padina-claude-code-plugins",
+  "repository": "https://github.com/roypadina/padina-claude-code-plugins",
+  "license": "MIT",
+  "keywords": [
+    "compact",
+    "context",
+    "handoff",
+    "backup",
+    "sessions"
+  ]
+}

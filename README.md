@@ -3,7 +3,7 @@
 [![Website](https://img.shields.io/badge/website-apps.roypadina-2F62E6)](https://apps.roypadina.synology.me/)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/roypadina)
 
-A [Claude Code](https://claude.com/claude-code) plugin marketplace. Small plugins for a terminal-heavy Claude Code workflow: cmux and Ghostex integration, session memory, recaps and close-out, the release checklist for my Mac apps, Hebrew/English layout repair, Espanso control, recipe research with parallel subagents, a MaccyPlus clipboard bridge, and native macOS UI/UX design rules.
+A [Claude Code](https://claude.com/claude-code) plugin marketplace. Small plugins for a terminal-heavy Claude Code workflow: cmux and Ghostex integration, session memory, recaps and close-out, steered compaction with full session backups, the release checklist for my Mac apps, Hebrew/English layout repair, Espanso control, recipe research with parallel subagents, a MaccyPlus clipboard bridge, and native macOS UI/UX design rules.
 
 ```
 /plugin marketplace add roypadina/padina-claude-code-plugins
@@ -15,6 +15,7 @@ Then install whichever you want:
 /plugin install cmux-control@padina
 /plugin install agentctl-sessions@padina
 /plugin install session-management@padina
+/plugin install smart-compact@padina
 /plugin install finalize-app-release@padina
 /plugin install heeng-keyboard-translator@padina
 /plugin install espanso-control@padina
@@ -33,6 +34,7 @@ Then install whichever you want:
 | [`cmux-control`](cmux-control) | Notifications, progress and a session inventory for Claude inside cmux | macOS, cmux CLI, `jq`, Python 3 | cmux |
 | [`agentctl-sessions`](agentctl-sessions) | Name, label, flag, remind and close out sessions | `agentctl` 0.5.0+ | agentctl |
 | [`session-management`](session-management) | `/session-recap`, `/resume-all`, `/finish-session` | nothing (`jq` for the pane close) | cmux, agentctl (optional) |
+| [`smart-compact`](smart-compact) | `/smart-compact`: a steered `/compact` with no questions, a full session backup before every compaction, and a bounded search after it | Python 3 (`pbcopy` for the clipboard) | any OS |
 | [`finalize-app-release`](finalize-app-release) | Release checklist for Roy's own Mac apps, not a general tool | macOS, `gh`, Homebrew, the tap checked out | the roypadina tap |
 | [`heeng-keyboard-translator`](heeng-keyboard-translator) | Repairs Hebrew/English wrong-layout typing, per word | Python 3 | any OS |
 | [`espanso-control`](espanso-control) | Teaches Claude the Espanso CLI, plus `/espanso-doctor` | macOS, Espanso | Espanso |
@@ -124,6 +126,18 @@ Two commands keep track of it:
 **Requires** nothing. `jq`, `agentctl` and cmux are used when present.
 
 → [Plugin README](session-management/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/session-management)
+
+### [`smart-compact`](smart-compact) — compaction that keeps the reasons, and loses nothing for good
+
+A custom `/compact` instruction replaces the summarizer's prompt, so whatever it doesn't restate
+is gone. `/smart-compact` reads the session — no questions — and copies a tuned instruction to the
+clipboard plus a handoff file (goal, decisions with reasons, do-not-redo, next step). Its hooks
+back up the whole session right before every compaction (manual or auto), re-inject the handoff
+after it, and give the model a bounded `search` over the full session to use instead of guessing.
+
+**Requires** Python 3. `pbcopy` (macOS) for the clipboard.
+
+→ [Plugin README](smart-compact/README.md) · [Wiki page](https://github.com/roypadina/padina-claude-code-plugins/wiki/smart-compact)
 
 ### [`finalize-app-release`](finalize-app-release) — no forgotten release step
 
@@ -258,6 +272,7 @@ keyboard-shortcut answers from the live hotkey list, and routing to the skills G
 cmux-control/                     plugin: commands/, hooks/, scripts/, skills/
 agentctl-sessions/                plugin: commands/, hooks/, skills/
 session-management/               plugin: commands/
+smart-compact/                    plugin: commands/, hooks/, scripts/ (one stdlib Python script)
 finalize-app-release/             plugin: skills/ (with a bundled state script)
 heeng-keyboard-translator/        plugin: skills/ (with a bundled Python translator)
 espanso-control/                  plugin: commands/, scripts/, skills/

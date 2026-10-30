@@ -1,0 +1,39 @@
+{
+  "description": "smart-compact automation. Three hooks, all delegating to smart_compact.py: (1) PreCompact runs `hook-precompact` on every compaction (manual or auto, no matcher) to snapshot the auto-extracted handoff facts to disk before the summarizer discards them, and to write a FULL backup of the session under ~/.claude/smart-compact/backups/<session>/ (transcript gzip-copied, subagents/ + tool-results/ hardlinked) — under 1 s even for a 669 MB session, well inside the 30 s timeout — survival is guaranteed by the filesystem, not by the compaction prompt. (2) SessionStart matcher \"compact\" runs `hook-sessionstart`, which prints the handoff file to stdout so the harness injects it as context right after compaction; \"resume\"/\"startup\"/\"clear\"/\"fork\" are deliberately NOT matched — resume already reloads the full transcript from disk, so re-injecting the handoff there would be redundant, and neither verification report found a resume-time gap this closes. (3) Stop runs `hook-nag`, the per-turn context-health check. Stop was chosen over PostToolUse/UserPromptSubmit because both verification passes independently concluded it's the right free surface: it fires once per turn (cheapest useful poll), and its stdin already carries `background_tasks`/`session_crons` for free, which the nag can use without parsing the transcript. The nag hook must emit `systemMessage` (and/or `terminalSequence`) only, never `decision`+`reason` or `additionalContext` — both reports confirmed those are the two channels that actually reach the model and would spend context on a nag that is supposed to be free. It also must exit 0 quickly when `stop_hook_active` is true, to avoid looping. All three hooks fail soft: on any unexpected error the script prints nothing and exits 0 rather than risk breaking the session. That guarantee is made STRUCTURAL here, not left to the interpreter: each command is `test -f <script> && python3 <script> <sub> || exit 0`, because a failure BEFORE the script's own wrapper runs (missing/renamed/unreadable plugin dir, unset ${CLAUDE_PLUGIN_ROOT}, partially-synced marketplace checkout, quarantine) exits 2 from python — and exit 2 is the BLOCKING code on both PreCompact (compaction refused outright, so the session wedges at the context wall) and Stop (stop refused every turn, with stderr fed back to the model).",
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f \"${CLAUDE_PLUGIN_ROOT}/scripts/smart_compact.py\" && python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/smart_compact.py\" hook-precompact || exit 0",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f \"${CLAUDE_PLUGIN_ROOT}/scripts/smart_compact.py\" && python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/smart_compact.py\" hook-sessionstart || exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f \"${CLAUDE_PLUGIN_ROOT}/scripts/smart_compact.py\" && python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/smart_compact.py\" hook-nag || exit 0",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

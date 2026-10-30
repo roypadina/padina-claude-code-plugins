@@ -9,6 +9,16 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## 2026-10-30
 
+### Added
+- smart-compact 0.1.0: new plugin. `/smart-compact` reads the session without asking anything and copies
+  a tuned `/compact` instruction to the clipboard, plus a handoff file (goal, decisions with reasons,
+  do-not-redo, next step); free-text dials (`long haul`, `minimize`, a mode name) set depth and size.
+  Hooks: PreCompact refreshes the handoff and backs up the whole session (transcript gzip-copied,
+  subagents and tool results hardlinked; newest per session, 5 GB cap); SessionStart re-injects the
+  handoff capped at 9,000 chars, most important sections first, with the notes' real age; Stop nudges
+  once at 50/70/85 % fill. `search` gives the model bounded hits over the full session instead of
+  guessing. Shares its state dir with a same-script copy in another marketplace; each hook event runs once.
+
 ### Changed
 - finalize-app-release 0.5.2: Step 1 note — the state script skips worktrees outside ~/Code/Padina, run it on the shared clone; PullPing row in the per-app table.
 - finalize-app-release 0.5.1: rule for parallel sessions releasing the same app — fetch tags, take the next free version above the latest tag, coordinate tap/site bumps.
