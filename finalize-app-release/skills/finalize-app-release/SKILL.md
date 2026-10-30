@@ -68,6 +68,9 @@ finds the version source, tag, latest GitHub release and its assets, the cask or
 CHANGELOG/appcast top entry, README install line, Ko-fi everywhere, stale mentions of the previous
 version, and the installed copy in `/Applications`.
 
+The script SKIPs any path outside `~/Code/Padina`, including a feature worktree in a ClaudWork folder.
+Run it on the shared clone: before the merge for the docs checks, after the merge for the release.
+
 ## Step 2 — version
 
 - `WARN … commit(s) on HEAD since vX` with user-visible changes → a release is due. Patch for fixes,
@@ -293,6 +296,7 @@ Summary only — the app's `CLAUDE.md` and memory note win.
 | Agents Monitor | `AgentsMonitor` | Asset must be `AgentsMonitor.zip`; never commit work or topic strings; local install: after `brew upgrade`, extract the release zip to `/tmp`, clear quarantine there, `ditto` it over `/Applications` before launch (Gatekeeper trashes the brew copy) |
 | agentctl | `agentctl` | CLI-only cask since 0.11.0 (`binary "agentctl/bin/agentctl"`, no app, no About window — Ko-fi lives in `--help`). `main` protected: bump `package.json` + lock + CHANGELOG in a PR, admin-merge; `npm ci` then `sh scripts/build-release.sh` → `release/agentctl.zip` in a throwaway worktree at the merge sha (the script's `npm run build` needs devDeps); CI's `Test (ubuntu, best-effort)` leg flakes, macOS `Test & build` is the gate; local install = `brew upgrade --cask agentctl` only (no xattr, no relaunch) |
 | Obsidian Vault Git Watcher | `ObsidianVaultGitWatcher` | Plain `swiftc` via `build.sh` (no SwiftPM/Xcode), version in `Info.plist`; `./build.sh dist` → `dist/ObsidianVaultGitWatcher.zip`; `main` protected; never push local `backup/pre-public`; after `brew upgrade` reload the LaunchAgent (copy repo plist, `bootout` exact label, `bootstrap`) |
+| PullPing | `PullPing` | Version in `Info.plist` (`CFBundleShortVersionString` + `CFBundleVersion`) + bug_report.yml placeholder; `main` protected → PR, admin-merge; `RELEASE=1 Scripts/package_app.sh` → `dist/PullPing.zip`; README screenshots `RENDER_SCREENSHOTS=$PWD/docs/screenshots swift test --filter ScreenshotRenderTests` (fake data); site WebP = `cwebp -q 85` (main-window `-resize 1600 0`, others native); menu-bar app: after `brew upgrade` + xattr, Roy relaunches it (Raycast) unless his rules allow a session relaunch |
 | claude-jam | `claude-jam` | Formula from the tag tarball; README and wiki quote the npm tarball version — bump them |
 
 ## Self-update
