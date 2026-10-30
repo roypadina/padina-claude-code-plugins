@@ -10,6 +10,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-10-30
 
 ### Changed
+- finalize-app-release 0.5.1: rule for parallel sessions releasing the same app — fetch tags, take the next free version above the latest tag, coordinate tap/site bumps.
 - mac-design 0.1.3: two window gotchas in `swiftui-appkit.md` — a reused window (`isReleasedWhenClosed = false`) keeps SwiftUI timers running after close (drop it on `willClose`), and windows report `isVisible == false` while the app is hidden.
 - mac-design 0.1.2: MBX-12 — a menu-bar panel's action menu is a More menu (`ellipsis.circle`) matching the right-click menu; a gear only for a button that opens Settings directly.
 

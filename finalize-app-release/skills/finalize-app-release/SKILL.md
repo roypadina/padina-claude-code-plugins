@@ -49,6 +49,12 @@ Steps 2–3.
 - **Public = clean.** No employer or client names, internal hostnames, emails, tokens, notification
   topics or home paths in code, docs, screenshots or history.
 - **Processes.** Quit or kill only by exact PID. Never a name pattern.
+- **Parallel sessions release too.** Another Claude session may be releasing the same app (e.g. a
+  "push all + finalize all" batch). Before the version bump and again before tagging: `git fetch --tags`,
+  `git ls-remote --tags origin`, and take the next free version above the latest tag (a release that sorts
+  below an existing tag is wrong); `git rebase origin/main`. Message the other `padina-*` sessions
+  (ListAgents) about the version you take, and agree who bumps the tap and site, so the cask and
+  `apps.json` move forward in order (fetch right before each push).
 
 ## Step 1 — state
 
