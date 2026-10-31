@@ -1,6 +1,6 @@
 ---
 name: finalize-app-release
-description: End-of-dev release checklist for the user's personal Mac apps (roypadina/* repos under ~/Code/Padina shipped through the roypadina/homebrew-tap Homebrew tap — LanGuard, MaccyPlus, VaultBar, Window Organizer, SmartHiddenBar, MeetAlert, Agents Monitor, agentctl, claude-jam — or a new app headed there). Checks and fixes version bump, CHANGELOG, README, wiki, Ko-fi (README, FUNDING.yml, wiki, in-app About), GitHub release + asset, tap cask + tap README, server-side push verification and the local install. Use when one of these apps gets a version bump, release build, tag or GitHub release, goes public, or when the user says "release", "full release", "ship it", "push all", "finalize", "wrap up", "update readme/wiki/tap", or a session that changed one of these apps is ending; also /finalize-app-release. Also covers the plugin marketplace repo padina-claude-code-plugins: after a plugin change it keeps the plugin version, CHANGELOG, READMEs, wiki, site card and the installed copies on every Claude profile in step — use it when a plugin there was changed, bumped or added. Offer it unprompted at the end of dev work on these apps or plugins. Skips the review when its state script reports the app already finalized and unchanged, unless the user asks to recheck.
+description: End-of-dev release checklist for the user's personal Mac apps (roypadina/* repos under ~/Code/Padina shipped through the roypadina/homebrew-tap Homebrew tap — LanGuard, MaccyPlus, VaultBar, Window Organizer, SmartHiddenBar, MeetAlert, Agents Monitor, agentctl, claude-jam — or a new app headed there). Checks and fixes version bump, CHANGELOG, README, wiki, demo GIF + site video, Ko-fi (README, FUNDING.yml, wiki, in-app About), GitHub release + asset, tap cask + tap README, server-side push verification and the local install. Use when one of these apps gets a version bump, release build, tag or GitHub release, goes public, or when the user says "release", "full release", "ship it", "push all", "finalize", "wrap up", "update readme/wiki/tap", or a session that changed one of these apps is ending; also /finalize-app-release. Also covers the plugin marketplace repo padina-claude-code-plugins: after a plugin change it keeps the plugin version, CHANGELOG, READMEs, wiki, site card and the installed copies on every Claude profile in step — use it when a plugin there was changed, bumped or added. Offer it unprompted at the end of dev work on these apps or plugins. Skips the review when its state script reports the app already finalized and unchanged, unless the user asks to recheck.
 ---
 
 # Finalize app release
@@ -62,11 +62,12 @@ Steps 2–3.
 bash "${CLAUDE_PLUGIN_ROOT}/skills/finalize-app-release/scripts/release-state.sh" <repo-dir>
 ```
 
-Read every `GAP` and `WARN`; `INFO` is context. The script only reads (plus `git fetch --tags`). It
+Read every `GAP` and `WARN`; `INFO` is context. The script only reads (plus `git fetch --tags` and dark-mode previews in `$TMPDIR/release-state-dark`). It
 finds the version source, tag, latest GitHub release and its assets, the cask or formula in
 `~/Code/Padina/homebrew-tap`, tap README row, tap and wiki push state against the server,
-CHANGELOG/appcast top entry, README install line, Ko-fi everywhere, stale mentions of the previous
-version, and the installed copy in `/Applications`.
+CHANGELOG/appcast top entry, README install line, screenshots with transparent pixels, the demo GIF
+(sources, UI drift since its last render, site video, orphan media), Ko-fi everywhere,
+stale mentions of the previous version, and the installed copy in `/Applications`.
 
 The script SKIPs any path outside `~/Code/Padina`, including a feature worktree in a ClaudWork folder.
 Run it on the shared clone: before the merge for the docs checks, after the merge for the release.
@@ -85,10 +86,10 @@ Top to bottom. Skip what Step 1 already shows as OK.
 
 ### A. Code
 
-1. Build and tests green with the repo's own commands. Protected `main` → branch, PR, wait for CI,
-   `gh pr merge --squash --admin`.
-2. Commit and push to the `roypadina/*` remote (MaccyPlus: remote `padina`; `origin` is upstream
-   Maccy — never push there).
+1. Build and tests green with the repo's own commands. Protected `main` → commit on a branch now; push
+   it, open the PR, wait for CI and `gh pr merge --squash --admin` only after the review gate (§ C2).
+2. Commit now; push to the `roypadina/*` remote (MaccyPlus: remote `padina`; `origin` is upstream
+   Maccy — never push there) only after the review gate (§ C2).
 
 ### B. Docs — every app
 
@@ -100,12 +101,23 @@ Top to bottom. Skip what Step 1 already shows as OK.
    three times (repo, release notes, the site's "What's new"). Step 1 GAPs when the top entry is not
    the source version or the latest tag has no entry.
 4. **README** — matches the new behaviour: features, settings, shortcuts, permissions, limitations,
-   install, uninstall. Screenshots retaken if the UI changed (privacy-check the image). Install line
+   install, uninstall. Screenshots retaken if the UI changed (privacy-check the image); they must be opaque,
+   because transparent ones lose their text in GitHub dark mode — on a Step 1 WARN, view the dark preview it
+   prints and flatten or re-render the image (optionally a `<picture>` with a `-dark` variant). Install line
    `brew install --cask roypadina/tap/<token>`. No stale version strings (Step 1 lists mentions of the
    previous version; "since X.Y.Z" history notes are fine).
+4a. **Demo** — the looping GIF in the README (hero under the badges) and the MP4 on the site page, kept
+   true at all times; how to build and ship one is in [references/demo.md](references/demo.md), Step 1
+   WARNs on each case below.
+   - **New app, no demo** → build one (storyboard, render, README hero, site video).
+   - **A release changes UI the demo shows** → re-render with `docs/demo/render.sh`, then refresh the README
+     GIF and the site MP4 + poster together from that one render.
+   - **A feature is removed or renamed, or a demo is replaced** → delete the old gif/mp4/webp and every
+     reference to it (repo, wiki, site `static/screenshots/<slug>/`, `apps.json`, page): no orphans left.
+   - A real recording without `docs/demo/` (LanGuard) is re-recorded by hand under the same names.
 5. **Wiki** — update every page that touches the change. A new page goes into `_Sidebar.md` too (the
    custom sidebar replaces GitHub's page list). The clone sits next to the repo as `<Repo>.wiki`,
-   branch `master` (MeetAlert: nested `MeetAlert/wiki`). Commit, then push by URL:
+   branch `master` (MeetAlert: nested `MeetAlert/wiki`). Commit now; after § C2 push by URL:
    `git push git@github-padina:roypadina/<Repo>.wiki.git HEAD:master`. Wiki not initialised → ask the
    user to click "Create the first page" in the web UI once (there is no API), then clone and push.
    Live but no local clone → clone it next to the repo.
@@ -123,6 +135,33 @@ Top to bottom. Skip what Step 1 already shows as OK.
 8. In-app: existing apps already have the About window and menu items — verify only (Step 1). New app →
    build them per [references/new-public-app.md](references/new-public-app.md) § 4.
    Ko-fi only: never Buy Me a Coffee or GitHub Sponsors (neither pays out to Israel).
+
+### C2. Review gate — before anything public
+
+Everything this pass changes is done and committed locally, nothing pushed: also prepare the site edits
+(E2 15a–15c: `apps.json`, page prose, screenshots, demo MP4/poster) in the site clone first, push them
+after `APPROVE`. Skip only when the pass changed nothing (Step 1 clean, no new commits).
+
+8a. Spawn ONE reviewer subagent with `model: "fable"` (the user approved fable for this step on
+    2026-10-30; one app at a time, never a fan-out). Give it the whole diff of this pass: code since the
+    last tag (`git diff v<last>..HEAD`), CHANGELOG, the release-notes text, README, the wiki clone's diff,
+    new or changed screenshots and demo media, and the site files (`apps.json`, page,
+    `static/screenshots/<slug>/`). It checks:
+    - **Correctness**: README, wiki, CHANGELOG, notes and demo captions match the code (features, settings,
+      shortcuts, versions).
+    - **Look**: views each new image on white and on `#0d1117` (Step 1's dark previews), site images also on
+      `#1c2243`, and the demo's first, mid-crossfade, last and poster frames.
+    - **Security and privacy**: public-clean (no tokens, emails, hostnames, home paths, employer names or
+      notification topics in files, media or the new commits).
+    - **Links and paths**: every image and link target exists; no orphan files (Step 1).
+    - **Version consistency**: source, CHANGELOG, notes, `apps.json` (tag and cask come later; G20's Step 1
+      re-run checks them).
+
+    It replies `APPROVE` or a numbered list `file:line — problem — fix`. Fix, then send the same reviewer
+    back to re-check. Only `APPROVE` unlocks the first public push (A2, the wiki B5, D, E, E2). Tell it:
+    wrap long commands as `perl -e 'alarm shift; exec @ARGV' 600 <cmd>`, view one contact sheet per image
+    (its backgrounds side by side, `ffmpeg … hstack`) and one for the demo frames, downscaled to ≤ 1600 px,
+    and give the verdict as its final reply.
 
 ### D. Release — gated
 
@@ -230,7 +269,7 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
     `release-state.sh <repo-dir> --stamp`. The next run then prints `STAMP MATCH` until the repo, the
     wiki or the tap changes.
 21. Report as a table, one row per item: ✅ done · ⏭ skipped (why) · ❗ needs the user. Include the
-    release URL and the repo, wiki and tap commits.
+    release URL, the repo, wiki and tap commits and the review verdict.
 
 ## Plugin marketplace
 

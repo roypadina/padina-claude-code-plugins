@@ -1,6 +1,6 @@
 #!/bin/bash
 # release-state.sh — read-only snapshot of one app's release state: version everywhere, tag,
-# GitHub release, Homebrew tap, README/wiki/CHANGELOG, Ko-fi, local install, last stamp.
+# GitHub release, Homebrew tap, README/wiki/CHANGELOG, transparent screenshots, demo GIF + site video, Ko-fi, local install, last stamp.
 # A plugin marketplace repo (.claude-plugin/marketplace.json) gets its own checks instead: per plugin —
 # listed, version bumped after its last change, CHANGELOG line, READMEs, wiki page + Home + sidebar, and
 # the installed version in each Claude config dir — plus wiki push state and the site card.
@@ -9,7 +9,7 @@
 #   release-state.sh [repo-dir] --stamp    record "finalized" for the current state
 #
 # Prints OK / GAP / WARN / INFO lines and a summary. Always exits 0 — it reports, the agent decides.
-# Only network/side effects: `git fetch --tags`, `git ls-remote`, `gh` reads.
+# Only network/side effects: `git fetch --tags`, `git ls-remote`, `gh` reads; dark previews in $TMPDIR/release-state-dark.
 # Overrides: APPS_ROOT (where personal apps live), TAP_WORK (tap working copy), SITE_WORK (marketing-site
 # repo, default $APPS_ROOT/roypadina-apps), FAR_STATE_DIR (stamp dir), FAR_CLAUDE_DIRS (Claude config
 # dirs whose installed plugin versions are compared, default ~/.claude ~/.claude-work2 ~/.claude3).
@@ -329,6 +329,71 @@ elif [ -n "$WIKI" ]; then
   [ "$(git -C "$WIKI" rev-parse HEAD)" = "$WSRV" ] && ok "wiki pushed (server = local)" || gap "wiki local ≠ server — push (by URL) or pull"
   WD=$(git -C "$WIKI" log -1 --format=%cs)
   [ -n "$REL_DATE" ] && [[ "$WD" < "${REL_DATE%%T*}" ]] && warn "wiki last changed $WD, before release ${REL_DATE%%T*} — review pages for the new version"
+fi
+
+# ---------- screenshots: transparent PNG/WebP lose their content on GitHub's dark page (#0d1117) ----------
+# Alpha plane -> 64x64 grid of opaque-pixel share; take the bbox of the non-empty cells, trim one cell, flag when
+# >=3% of it is transparent. Calibrated: window shots (corners/shadow) 0-1.3%, floating card 0.1%, transparent-bg shots 8-97%.
+shots() {  # stdin: image paths. One OK, or per suspect image a WARN + a preview composited on #0d1117.
+  local f g n=0 bad=0 sh out T PD="${TMPDIR:-/tmp}/release-state-dark"
+  if ! command -v ffmpeg >/dev/null || ! command -v dwebp >/dev/null; then info "screenshots: ffmpeg/dwebp missing, transparency not checked"; return; fi
+  T=$(mktemp -d); mkdir -p "$PD"
+  while read -r f; do
+    [ -f "$f" ] && [ ! -e "${f%.*}-dark.${f##*.}" ] || continue  # a -dark variant = <picture> pair, the user chose per theme
+    g=$f; case $f in *.[wW][eE][bB][pP]) g=$T/w.png; dwebp -quiet "$f" -o "$g" 2>/dev/null || continue ;; esac
+    n=$((n+1))
+    sh=$(ffmpeg -nostdin -v error -i "$g" -vf "format=rgba,alphaextract,lut=y='if(gte(val,128),255,0)',scale=64:64:flags=area" -f rawvideo -pix_fmt gray - 2>/dev/null | od -An -v -tu1 |
+      awk '{for(i=1;i<=NF;i++){k=c++; a[int(k/64),k%64]=$i}}
+           END{x0=y0=64; x1=y1=-1
+               for(y=0;y<64;y++)for(x=0;x<64;x++)if(a[y,x]>0){if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y}
+               for(y=y0+1;y<y1;y++)for(x=x0+1;x<x1;x++){m++; t+=255-a[y,x]}
+               printf "%.1f", m ? 100*t/m/255 : 0}')
+    [ "${sh%.*}" -lt 3 ] && continue
+    bad=$((bad+1)); out="$PD/$(echo "${f#$APPS_ROOT/}" | tr / _).png"
+    ffmpeg -nostdin -v error -y -i "$g" -vf "split[a][b];[a]drawbox=w=iw:h=ih:t=fill:c=0x0d1117:replace=1[bg];[bg][b]overlay=format=auto" -frames:v 1 "$out" 2>/dev/null
+    warn "screenshot ${f/#$HOME/~}: $sh% of its content area is transparent, its text vanishes in GitHub dark mode. View the dark preview: $out"
+  done
+  rm -rf "$T"
+  [ $bad = 0 ] && [ $n -gt 0 ] && ok "$n screenshot(s) opaque enough for GitHub dark mode (README, wiki, site)"
+}
+IMGS=$( { for s in "$R/README.md" "${WIKI:-/nonexistent}"/*.md; do  # local PNG/WebP shown by markdown ![](), <img src>, <source srcset>; icons skipped
+            [ -f "$s" ] && grep -hiE '!\[|<img|<source' "$s" | grep -oiE "[^]\"'(=[:space:]]+\.(png|webp)" |
+              grep -viE '^https?:|icon|brand' | sed -E "s#^\.?/##; s#^#${s%/*}/#"
+          done
+          [ -n "${SSLUG:-}" ] && ls "$SITE_WORK/static/screenshots/$SSLUG"/*.webp 2>/dev/null | grep -v '/demo-still\.webp$'; } | sort -u )
+[ -n "$IMGS" ] && shots <<<"$IMGS"
+
+# ---------- demo: README GIF + sources, UI drift since the last render, site video, orphan media (references/demo.md) ----------
+if [ "$VIS" = PUBLIC ]; then
+  DG=$(git log -1 --format=%H -- docs/demo.gif)
+  if ! grep -q 'docs/demo\.gif' README.md 2>/dev/null; then warn "README shows no demo GIF (hero under the badges; build one per references/demo.md)"
+  elif [ -z "$DG" ]; then warn "README shows docs/demo.gif but no such file is committed"
+  else
+    [ -f docs/demo/render.sh ] && ok "README demo GIF + docs/demo/render.sh" \
+      || info "demo GIF has no docs/demo/render.sh (a real recording? re-record it by hand when the UI changes)"
+    # count from the render or the last stamped finalize, whichever is newer (an unchanged re-render commits nothing)
+    BASE=$DG; SH=$(grep -o 'head=[0-9a-f]*' "$STATE_DIR/$(basename "$R")" 2>/dev/null | cut -d= -f2)
+    [ -n "$SH" ] && git merge-base --is-ancestor "$DG" "$SH" 2>/dev/null && BASE=$SH
+    DN=$(git rev-list --count "$BASE"..HEAD -- '*.swift' '*Assets*' ':!Tests' ':!docs')
+    [ "${DN:-0}" -gt 0 ] && warn "demo may be stale ($DN app source commit(s) since the demo or the last finalize): re-render if the UI it shows changed, then README GIF + site MP4 together"
+  fi
+  k=0  # media under docs/ that no README/wiki/docs page shows: left behind by a removed or renamed feature?
+  while read -r f; do
+    grep -rqF "${f##*/}" README.md ${WIKI:+"$WIKI/"} docs --include='*.md' 2>/dev/null && continue
+    [ $((++k)) -le 8 ] && warn "$f is referenced by no README, wiki or docs page (orphan? delete it, or show it)"
+  done < <(git ls-files 'docs/*.gif' 'docs/*.mp4' 'docs/*.webp' 'docs/*.png' ':!docs/demo/' ':!docs/demo.gif' ':!docs/social-preview.png')
+  [ $k -gt 8 ] && info "… and $((k-8)) more unreferenced media file(s)"
+fi
+if [ -n "${SSLUG:-}" ]; then  # site: demo field + files, not older than the README GIF, nothing unreferenced
+  SD=static/screenshots/$SSLUG
+  REFS=$(node -e 'const a=require(process.argv[1]).apps.find(a=>a.slug===process.argv[2]);if(a)console.log([...(a.screenshots||[]).map(s=>s.src),...(a.demo?[a.demo.video,a.demo.poster]:[])].join("\n"))' "$SITE_WORK/data/apps.json" "$SSLUG" 2>/dev/null)
+  grep -qx "screenshots/$SSLUG/demo.mp4" <<<"$REFS" || warn "site: apps.json has no \"demo\" for $SSLUG (video + poster, and h.demoSection first on its page)"
+  for f in demo.mp4 demo-still.webp; do [ -f "$SITE_WORK/$SD/$f" ] || warn "site: $SD/$f missing"; done
+  GT=$(git log -1 --format=%ct -- docs/demo.gif); MT=$(git -C "$SITE_WORK" log -1 --format=%ct -- "$SD/demo.mp4")
+  [ -n "$GT" ] && [ -n "$MT" ] && [ "$GT" -gt "$MT" ] && warn "site demo.mp4 is older than the README GIF: re-render both from one render.sh run, push the site"
+  for f in "$SITE_WORK/$SD"/*; do
+    [ -f "$f" ] && ! grep -qx "screenshots/$SSLUG/${f##*/}" <<<"$REFS" && warn "site: $SD/${f##*/} is not referenced in apps.json (orphan? delete it)"
+  done
 fi
 
 # ---------- stale version strings ----------

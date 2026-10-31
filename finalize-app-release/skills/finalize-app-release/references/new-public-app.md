@@ -16,8 +16,8 @@ Before the first public push, and before every push of a repo that was private u
    `git grep -inE '<pattern>'`, `git log -p --all | grep -inE '<pattern>'`,
    `strings <App>.app/Contents/MacOS/<App> | grep -iE '/Users/|<pattern>'`.
 2. **gitleaks:** `gitleaks git --log-opts=--all` and `gitleaks dir .` (`brew install gitleaks`).
-3. **Independent reviewer:** a subagent re-checks the tree, the wiki and the images with no context
-   from you.
+3. **Review gate:** the SKILL.md § C2 fable reviewer, given the full tree, the git history, the wiki and
+   every image (not just a diff), with no context from you.
 
 Also:
 
@@ -46,7 +46,7 @@ Also:
     `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/{bug_report,feature_request,config}.yml`,
     `.github/workflows/ci.yml` (job "Build and test").
 - Create the repo public under `roypadina`, remote `git@github-padina:roypadina/<Repo>.git`, push `main`.
-- Metadata: description, homepage = `https://apps.roypadina.synology.me/apps/<slug>/` (the site page, not the wiki; set it after § 8 deploys), topics (`macos`, `menu-bar`, `swift`, …).
+- Metadata: description, homepage = `https://apps.roypadina.synology.me/apps/<slug>/` (the site page, not the wiki; set it after § 7 deploys), topics (`macos`, `menu-bar`, `swift`, …).
 - Branch protection on `main`: the CI job as required check, code-owner review, admins can bypass
   (`enforce_admins` off — the sole owner cannot approve their own PR).
 
@@ -149,6 +149,7 @@ rules apply to every image and file.
    stable; `hasPage: true`), `src/pages/<slug>.mjs` copied from a sibling per `docs/design.md`, icon
    (256 px WebP in `static/icons/`) and screenshots (`static/screenshots/<slug>/`, WebP, offscreen renders,
    fake data, nothing personal). Add the app's 16x16 glyph in `src/glyphs.mjs` if the build asks.
+   The demo clip (README GIF, `demo` field, `h.demoSection` first on the page): [demo.md](demo.md).
    `node build.mjs`, review light + dark, desktop + 390 px (recipe in the site `CLAUDE.md`). Never hard-code
    an app count anywhere (site, READMEs, wiki, tap, plugin docs): count nothing, or derive it.
 2. **Deploy = push to `main`** (unprotected): CI builds and publishes `deploy`, NAS git-sync pulls it

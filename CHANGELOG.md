@@ -7,6 +7,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-10-31
+
+### Changed
+- finalize-app-release 0.6.0: flags README, wiki and site screenshots whose transparent background hides their text in GitHub dark mode (with a dark preview); keeps each app's demo GIF and site video current (new app: build one from the bundled demo kit; UI changed: re-render; removed media: delete it, orphans flagged); a fable review gate checks the whole pass before anything public is pushed.
+
 ## 2026-10-30
 
 ### Added
