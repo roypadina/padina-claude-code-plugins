@@ -248,10 +248,13 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
     - Quit the old copy by exact PID (`pgrep -x <Executable>` → `kill <pid>`, or
       `osascript -e 'quit app id "<bundle id>"'`). Relaunch from `/Applications` with the session
       environment stripped —
-      `env $(env | grep -o '^CLAUDE[A-Z0-9_]*' | sort -u | sed 's/^/-u /') -u CLAUDECODE open "/Applications/<App>.app"` —
+      `env $(env | grep -oE '^(CLAUDE|SESSIONHOPPER|AGENTCTL|CODEX)[A-Z0-9_]*' | sort -u | sed 's/^/-u /') -u CLAUDECODE open "/Applications/<App>.app"` —
       only if the user's rules allow relaunching apps from a session; otherwise ask them to open it.
       Stripping only the 4 session vars still leaks ~12 `CLAUDE*` vars (incl. a messaging token) into
-      the app; check `ps eww -o command= -p <pid> | tr ' ' '\n' | grep -c '^CLAUDE'` prints `0`.
+      the app, and a `CLAUDE*`-only filter still leaks `SESSIONHOPPER_SESSION_ID` (an app that starts
+      agents then hands them this session's identity); check
+      `ps eww -o command= -p <pid> | tr ' ' '\n' | grep -cE '^(CLAUDE|SESSIONHOPPER|AGENTCTL|CODEX)'` prints `0`.
+      The same applies to every dev-build launch during the session, not only the final install.
     - Verify with Step 1: `installed … is X.Y.Z`, one PID running from `/Applications`, no quarantine.
 
 ### G. Wrap-up
@@ -335,7 +338,7 @@ Summary only — the app's `CLAUDE.md` and memory note win.
 | Agents Monitor | `AgentsMonitor` | Asset must be `AgentsMonitor.zip`; never commit work or topic strings; local install: after `brew upgrade`, extract the release zip to `/tmp`, clear quarantine there, `ditto` it over `/Applications` before launch (Gatekeeper trashes the brew copy) |
 | agentctl | `agentctl` | CLI-only cask since 0.11.0 (`binary "agentctl/bin/agentctl"`, no app, no About window — Ko-fi lives in `--help`). `main` protected: bump `package.json` + lock + CHANGELOG in a PR, admin-merge; `npm ci` then `sh scripts/build-release.sh` → `release/agentctl.zip` in a throwaway worktree at the merge sha (the script's `npm run build` needs devDeps); CI's `Test (ubuntu, best-effort)` leg flakes, macOS `Test & build` is the gate; local install = `brew upgrade --cask agentctl` only (no xattr, no relaunch) |
 | Obsidian Vault Git Watcher | `ObsidianVaultGitWatcher` | Plain `swiftc` via `build.sh` (no SwiftPM/Xcode), version in `Info.plist`; `./build.sh dist` → `dist/ObsidianVaultGitWatcher.zip`; `main` protected; never push local `backup/pre-public`; after `brew upgrade` reload the LaunchAgent (copy repo plist, `bootout` exact label, `bootstrap`) |
-| PullPing | `PullPing` | Version in `Info.plist` (`CFBundleShortVersionString` + `CFBundleVersion`) + bug_report.yml placeholder; `main` protected → PR, admin-merge; `RELEASE=1 Scripts/package_app.sh` → `dist/PullPing.zip`; README screenshots `RENDER_SCREENSHOTS=$PWD/docs/screenshots swift test --filter ScreenshotRenderTests` (fake data); site WebP = `cwebp -q 85` (main-window `-resize 1600 0`, others native); menu-bar app: after `brew upgrade` + xattr, Roy relaunches it (Raycast) unless his rules allow a session relaunch |
+| PullPing | `PullPing` | Version in `Info.plist` (`CFBundleShortVersionString` + `CFBundleVersion`) + bug_report.yml placeholder; `main` protected → PR, admin-merge; `RELEASE=1 Scripts/package_app.sh` → `dist/PullPing.zip`; README screenshots `RENDER_SCREENSHOTS=$PWD/docs/screenshots swift test --filter ScreenshotRenderTests` (fake data); site WebP = `cwebp -q 85` (main-window `-resize 1600 0`, others native); menu-bar app: after `brew upgrade` + xattr, Roy relaunches it (Raycast) unless his rules allow a session relaunch; cask has `binary … target: "pullping"` (the app executable is the `pullping` CLI); a feature branch whose history holds private names (old test fixtures) is squashed to one local commit before the first push |
 | claude-jam | `claude-jam` | Formula from the tag tarball; README and wiki quote the npm tarball version — bump them |
 
 ## Self-update

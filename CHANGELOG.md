@@ -7,6 +7,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-02
+
+### Fixed
+- finalize-app-release 0.6.1: the clean relaunch also strips `SESSIONHOPPER_*`, `AGENTCTL_*` and `CODEX_*` variables, so an app that starts agents never inherits the releasing session's identity; PullPing notes (CLI `binary` stanza, squash a branch whose history holds private names).
+
 ## 2026-10-31
 
 ### Changed
