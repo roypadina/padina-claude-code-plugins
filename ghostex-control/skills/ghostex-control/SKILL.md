@@ -101,6 +101,7 @@ aliases come from whichever `gx sessions` list was printed last on this machine 
 | New agent session | `ghostex agents create <agentId> --title … --body-file <file>` — recipe 5.2 |
 | Type into a shell | `send-text <ref> '<text>'` then `send-enter <ref>` — recipe 5.3 |
 | Message an agent | `ghostex agents send <ref> '<text>'` (or `--body-file`) |
+| Same text or slash command to many sessions | No built-in verb (only `sleep`/`wake`/`kill` take `all`). Filter `agents list --all --json` with `jq`, then loop `queue-session-chat-prompt <ref> '<text>'` — a slash command needs the identity vars unset (section 6) |
 | Interrupt an agent | `ghostex interrupt-session-chat <ref>` (not a raw Escape) |
 | Read a shell | `ghostex read-text <ref> --lines 40` |
 | Read an agent | `ghostex read-session-chat <ref> --last 2 --format text` |
@@ -254,7 +255,25 @@ the `session-management` plugin's `/finish-session`), not to an ad-hoc `kill`.
 - Numeric aliases and titles are not stable handles (section 2). `kill <alias>` acts on whatever row
   that number had in the last list anyone printed.
 - `kill`, `sleep`, `wake` accept `all`. Never pass it.
+- Killing an agent session **from inside itself while it is working** (`ghostex kill <own ref>`, or
+  the sidebar x mid-turn) printed `killed 1`, then Ghostex relaunched it within seconds through its
+  `__ghostex_restore_resume` path: the record stayed `lifecycleState: running` and
+  `providerStateJson.zmxWireGeneration` went up by one per relaunch [live, 10.41.0]. To close your
+  own session use `ghostex close-after-done <G… id>` (prints `closeAfterDone:true` in
+  `sessions --json --full`), then end the turn. It takes the bare session id: the global ref
+  returned `No matching session was found.`
 - `send-message` from an agent session signs the text; into a shell that breaks the command (5.3).
+- From an agent session, `send-session-chat-message` / `queue-session-chat-prompt` / `send-message`
+  sign the text too, and a `/` body gets the block first, so a slash command never runs. Signing
+  happens only when the CLI finds a caller identity: unset `GHOSTEX_GLOBAL_SESSION_REF
+  GHOSTEX_NATIVE_SESSION_ID GHOSTEX_SESSION_ID ZMX_SESSION` for that one call and it sends as the
+  user — `/rename x` then ran as a real command [source `ghostex_cli/agents/outbound.rs`, live
+  10.43.0]. Do it only when the user asked for the command to be sent. `queue-session-chat-prompt`
+  held the prompt until the running turn ended, then delivered it [live].
+- Extension bridge (`ghostex extensions install-local <dir>` copies the folder — re-run after edits —
+  and grants its declared permissions): `ghostex.exec(cmd)` runs `/bin/zsh -lc cmd` in the active
+  project folder (login shell: `.zshrc` not read, `path_helper` reorders PATH); `ghostex.cli(verb,
+  args)` runs the bundled CLI with an args array, no shell [source, live 10.43.0].
 - `agents send` "delivered", "accepted", "pending" or "queued" means the text reached the session —
   not that the agent read it or finished.
 - `server stop-all` and Quit Ghostex & BG Service kill every session on the machine.
@@ -265,6 +284,12 @@ the `session-management` plugin's `/finish-session`), not to an ad-hoc `kill`.
   adds folders [guide, live]. A user who "can't find" a plugin command in the chat box can still
   type the full `/<plugin>:<name>` (Claude receives it as a slash command) or use the terminal
   view's `/` menu.
+- Ghostex terminals never read the Ghostty app's config (`~/.config/ghostty/config`); they read
+  only `~/.config/ghostex/ghostty/config.ghostty` [guide, live]. "Terminal acts unlike Ghostty"
+  (no Option+Backspace word delete, no copy on select) → compare the two files. Settings rows
+  (`terminalCopyOnSelect`, default `false`; theme; font) go through `ghostex settings set`; options
+  with no row (`macos-option-as-alt`, `keybind`) go in that file outside the managed markers.
+  Copy on select seems to work in Claude sessions only because Claude Code copies its own selection.
 
 ## 7. Ghostex's bundled skills — route, don't duplicate
 
