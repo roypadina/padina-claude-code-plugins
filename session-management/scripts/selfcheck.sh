@@ -146,6 +146,23 @@ for m in 'close the PR' 'close RD-123' '/finish-session close' 'please close the
     else printf 'ok    trigger ignores "%s"\n' "$m"; fi
 done
 
+# agent-state.sh against canned subagent transcripts
+sa="$tmp/cfg/projects/-x/sid-1/subagents"; mkdir -p "$sa"
+u='{"type":"user","timestamp":"2026-01-01T00:00:00.000Z","message":{"content":"go"}}'
+call='{"type":"assistant","timestamp":"2026-01-01T00:00:01.000Z","message":{"content":[{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"sleep 99;\n echo x"}}]}}'
+res='{"type":"user","timestamp":"2026-01-01T00:00:02.000Z","message":{"content":[{"type":"tool_result","tool_use_id":"t1"}]}}'
+txt='{"type":"assistant","timestamp":"2026-01-01T00:00:03.000Z","message":{"content":[{"type":"text","text":"done"}]}}'
+printf '%s\n' "$u" "$call" >"$sa/agent-a1.jsonl"; echo '{}' >"$sa/agent-a1.meta.json"
+printf '%s\n' "$u" "$call" "$res" >"$sa/agent-a2.jsonl"; echo '{"name":"two"}' >"$sa/agent-a2.meta.json"
+printf '%s\n' "$u" "$call" "$res" "$txt" >"$sa/agent-a3.jsonl"; echo '{"name":"three"}' >"$sa/agent-a3.meta.json"
+printf '%s\n' "$u" "$txt" >"$sa/agent-a4.jsonl"; echo '{"finished":true}' >"$sa/agent-a4.meta.json"
+st() { CLAUDE_CONFIG_DIR="$tmp/cfg" CLAUDE_CODE_SESSION_ID=sid-1 bash "$here/agent-state.sh" "$@" | sed 's/ [0-9]*s / Ns /'; }
+want=$'a1 - in-tool Ns Bash: sleep 99; echo x\na2 two thinking Ns \na3 three idle Ns '
+if [ "$(st)" = "$want" ]; then echo "ok    agent-state: in-tool / thinking / idle, finished hidden"
+else fails=$((fails + 1)); printf 'FAIL  agent-state: got\n%s\n' "$(st)"; fi
+if st --all | grep -q '^a4 - finished '; then echo "ok    agent-state --all lists finished"
+else fails=$((fails + 1)); echo "FAIL  agent-state --all misses finished"; fi
+
 if [ "$fails" != 0 ]; then
     printf '\n%s check(s) failed\n' "$fails"
     exit 1

@@ -7,6 +7,18 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-03
+
+### Added
+- session-management 0.5.0: `/session-pause [sleep] [now | 3m]` — before a reboot, shutdown or sleep,
+  brings every background agent, shell, Monitor, cron, loop and Workflow the session started to a
+  safe stop without losing work. Unnamed subagents get a pause message (they read it after their
+  current call and report where they are); named agents only read messages when their run ends, so
+  they are stopped with `TaskStop` between calls — never inside a push, deploy or other write — and
+  resume later with their history. Writes `~/.claude/session-pause/<session id>.md` with how to
+  restart each item, then says when it is safe. New `scripts/agent-state.sh` shows what each
+  subagent is doing right now (`selfcheck.sh` covers it). `/resume-all` starts from that record.
+
 ## 2026-11-02
 
 ### Fixed

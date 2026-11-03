@@ -33,7 +33,7 @@ Then install whichever you want:
 |---|---|---|---|
 | [`cmux-control`](cmux-control) | Notifications, progress and a session inventory for Claude inside cmux | macOS, cmux CLI, `jq`, Python 3 | cmux |
 | [`agentctl-sessions`](agentctl-sessions) | Name, label, flag, remind and close out sessions | `agentctl` 0.5.0+ | agentctl |
-| [`session-management`](session-management) | `/session-recap`, `/resume-all`, `/finish-session` | nothing (`jq` for the pane close) | cmux, agentctl (optional) |
+| [`session-management`](session-management) | `/session-recap`, `/session-pause`, `/resume-all`, `/finish-session` | nothing (`jq` for the pane close) | cmux, agentctl (optional) |
 | [`smart-compact`](smart-compact) | `/smart-compact`: a steered `/compact` with no questions, a full session backup before every compaction, and a bounded search after it | Python 3 (`pbcopy` for the clipboard) | any OS |
 | [`finalize-app-release`](finalize-app-release) | Release checklist for Roy's own Mac apps, not a general tool | macOS, `gh`, Homebrew, the tap checked out | the roypadina tap |
 | [`heeng-keyboard-translator`](heeng-keyboard-translator) | Repairs Hebrew/English wrong-layout typing, per word | Python 3 | any OS |
@@ -114,11 +114,14 @@ Install the plugin in every profile; the app's setup can do it for you.
 ### [`session-management`](session-management) — recap mid-session, close out at the end
 
 A long session starts things everywhere — background agents, other panes, PRs, tickets, temp files.
-Two commands keep track of it:
+These commands keep track of it:
 
 - `/session-recap` — mid-session: done / now / next, then what's open and *how* each item runs
   (background agent, other pane or workspace, another session, a cron), what's missing, not planned,
   waiting on, and what you need to do.
+- `/session-pause` — before a reboot or sleep: brings every background agent, shell, Monitor, cron
+  and Workflow to a safe stop without losing work, records how to restart each, and says when it
+  is safe. `/resume-all` restarts them afterwards.
 - `/finish-session` — before closing: every open, un-done, un-cleaned or owed item with a proposed
   action; acts only on what you pick. Then say `close`: it marks the session done in `agentctl` and
   closes the cmux pane — only its own, never someone else's.

@@ -67,7 +67,7 @@
     {
       "name": "session-management",
       "source": "./session-management",
-      "description": "Mid-session recap, a resume-all check after sleep/network/account disruptions, and an end-of-session close-out that closes the session on \"close\" — so nothing a Claude Code session started falls through the cracks.",
+      "description": "Mid-session recap, a pause that brings background agents and jobs to a safe stop before a reboot or sleep, a resume-all check after sleep/network/account disruptions, and an end-of-session close-out that closes the session on \"close\" — so nothing a Claude Code session started falls through the cracks.",
       "category": "productivity",
       "keywords": [
         "sessions",

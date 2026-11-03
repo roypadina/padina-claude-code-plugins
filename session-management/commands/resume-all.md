@@ -26,6 +26,11 @@ What happened (from the user; may be empty — then assume any of the above): $A
 
 ## 1. Inventory
 
+**Pause record first.** If `/session-pause` ran before the disruption, it wrote
+`~/.claude/session-pause/$CLAUDE_CODE_SESSION_ID.md` (and the same report in the conversation):
+everything it stopped on purpose and how to resume each. Every item under Paused is stopped —
+resume it (step 3); the record beats recall. Its "Needs you" items still stand.
+
 Scan the conversation from the start (and the compact summary, if any) for everything in flight
 when the disruption hit: the main-thread step in progress, subagents, background Bash, Monitors,
 crons/loops/wakeups, Workflow runs, agents launched in other panes/workspaces/sessions, long-lived
@@ -67,7 +72,11 @@ For each stopped item, restore it the way it ran before:
 - Subagent → continue it with `SendMessage` if it is still addressable; else relaunch with the same
   prompt, type and model, plus one line: "Resuming after an interruption — already done: <…>;
   continue from: <…>".
-- Monitor / cron / wakeup / `/loop` → recreate with the same schedule and prompt.
+- Subagent from a pause record → `SendMessage` to its agent ID (a name may not survive a restart):
+  "Resuming after a pause — your last call may have been cut short: check its effect, then
+  continue from: <next step from the record or its PAUSED reply>".
+- Monitor / cron / wakeup / `/loop` → recreate with the same schedule and prompt (`CronList`
+  first — never a second copy).
 - Workflow → resume from its run id (`resumeFromRunId`) so completed steps are cached.
 - Dev server / port-forward / tunnel → restart with the same command once its port is free.
 - Network-bound step that failed (push, upload, sync) → check it did not land, then retry once.
@@ -87,6 +96,7 @@ Needs you (n):
 ```
 
 Omit empty groups. Nothing was affected → one line: `All <n> items running — nothing stopped.`
+Every item of a pause record resumed → delete the record; any left → keep it.
 
 Then continue the main task from where it stopped, on the same plan — unless a **Needs you** item
 blocks it; then stop and wait.
