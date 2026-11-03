@@ -234,6 +234,8 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
     App pages live at `https://apps.roypadina.synology.me/apps/<slug>/` (not `/<slug>/`, which is a 404). The site
     clone may hold another session's uncommitted edit, so `git pull --rebase` refuses. Then `git fetch` and
     check `status -sb`: not behind means no pull is needed. Stage only `data/apps.json` and leave the other file.
+    The push by URL leaves `origin/main` stale, so `status -sb` then shows "ahead 1" for a commit already on the
+    server: `git fetch` before judging it (or compare with `git ls-remote`).
     Several apps released together → edit all their lines in one commit, one deploy.
 
 ### F. Local install — part of the release, not optional

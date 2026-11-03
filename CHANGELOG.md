@@ -9,6 +9,9 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## 2026-11-03
 
+### Fixed
+- finalize-app-release 0.6.2: the site push note says a push by URL leaves `origin/main` stale (`status -sb` shows "ahead 1" for a pushed commit) — fetch before judging it.
+
 ### Added
 - session-management 0.5.0: `/session-pause [sleep] [now | 3m]` — before a reboot, shutdown or sleep,
   brings every background agent, shell, Monitor, cron, loop and Workflow the session started to a
