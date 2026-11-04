@@ -23,6 +23,26 @@ HIG: show a menu, not a popover, unless the content is too complex for one. Let 
 
 - `.menu` holds only `Button`, `Toggle`, `Picker`, `Divider`, `Menu`, `Text`, `Section` headers and non-button `Label` rows. It does not refresh while open (community): never put live data in one.
 - No first-party open or close from code (the docs list only `isInserted` initializers). For a hotkey-opened UI use `NSStatusItem`.
+- Opening a `.window` extra from code anyway (hotkey, right-click Open): up to macOS 26, `performClick` on the `NSStatusBarButton` inside the app's `NSStatusBarWindow`. On macOS 27 that button has `action == nil` and the click does nothing (verified 27.2, AgentsSessionHopper, 2026-11-04): the window opens through the item's expanded-interface session. Begin it with the SPI `_beginExpandedInterfaceSession:` and close it with `cancel` on `expandedInterfaceSession`, as MenuBarExtraAccess does:
+
+  ```swift
+  @MainActor func toggleMenuBarExtraWindow() {
+      let key = NSSelectorFromString("statusItem")
+      guard let item = NSApp.windows.lazy
+          .filter({ String(describing: type(of: $0)).contains("NSStatusBarWindow") && $0.responds(to: key) })
+          .compactMap({ $0.value(forKey: "statusItem") as? NSStatusItem }).first(where: { $0.isVisible }) else { return }
+      NSApp.activate()
+      let begin = NSSelectorFromString("_beginExpandedInterfaceSession:"), current = NSSelectorFromString("expandedInterfaceSession")
+      guard item.responds(to: begin), item.responds(to: current) else { item.button?.performClick(nil); return }  // macOS 26 and earlier
+      if let session = item.perform(current)?.takeUnretainedValue() as? NSObject {
+          if session.responds(to: NSSelectorFromString("cancel")) { session.perform(NSSelectorFromString("cancel")) }
+      } else {
+          // The argument is the trigger's timestamp; AppKit drops a begin older than the last session's end.
+          typealias Begin = @convention(c) (NSStatusItem, Selector, TimeInterval) -> Void
+          unsafeBitCast(item.method(for: begin), to: Begin.self)(item, begin, .greatestFiniteMagnitude)
+      }
+  }
+  ```
 - `.window` style: fixed width, bounded height, own `ScrollView`, Escape and close-after-action.
 - A menu-bar-only SwiftUI app terminates when the user removes the extra (docs). Keep it alive another way if it has other jobs (MBX-9).
 - Shortcuts in a status menu fire only while it is open or the app is active; Command-Q is not global.
