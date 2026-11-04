@@ -92,6 +92,9 @@ Top to bottom. Skip what Step 1 already shows as OK.
 
 1. Build and tests green with the repo's own commands. Protected `main` → commit on a branch now; push
    it, open the PR, wait for CI and `gh pr merge --squash --admin` only after the review gate (§ C2).
+   Right after `gh pr create`, `gh pr checks --watch` prints "no checks reported" and exits non-zero:
+   poll `gh pr checks` until a check exists, then watch. A helper script run in the background must not
+   be edited while that run is open (bash reads the file as it goes) — run a copy.
 2. Commit now; push to the `roypadina/*` remote (MaccyPlus: remote `padina`; `origin` is upstream
    Maccy — never push there) only after the review gate (§ C2).
 
@@ -257,6 +260,8 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
       not signed with it is installed with its dev build script, never `brew upgrade` — the app's memory
       note says which. (SmartHiddenBar no longer: releases share the identity since 1.3.2.)
     - Quit the old copy by exact PID (`pgrep -x <Executable>` → `kill <pid>`, or
+      — `pgrep -x` matches the 15-character process name, so a longer executable (`ObsidianVaultGitWatcher`)
+      needs `pgrep -f "/Applications/<App>.app/Contents/MacOS/"` —
       `osascript -e 'quit app id "<bundle id>"'`). Relaunch from `/Applications` with the session
       environment stripped —
       `env $(env | grep -oE '^(CLAUDE|SESSIONHOPPER|AGENTCTL|CODEX)[A-Z0-9_]*' | sort -u | sed 's/^/-u /') -u CLAUDECODE open "/Applications/<App>.app"` —
@@ -270,6 +275,11 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
       macOS 27 a menu-bar app then runs without a visible status item. After packaging, unregister and delete it:
       `/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -u <repo>/dist/<App>.app && rm -rf <repo>/dist/<App>.app`;
       `lsregister -dump | grep "^path:.*<App>.app"` must list only `/Applications`. Then relaunch.
+    - App run by a LaunchAgent with KeepAlive (Obsidian Vault Git Watcher, VaultBar): brew swaps the bundle under
+      the running agent, launchd relaunches it while still quarantined → SIGKILL "Launch Constraint Violation"
+      (crash report). Clear the quarantine, then `launchctl kickstart -k gui/$(id -u)/<label>` — not `open`
+      (a second, non-agent copy). If quitting it changes the user's state (VaultBar locks open vaults), leave
+      the upgrade + restart to the user.
     - Verify with Step 1: `installed … is X.Y.Z`, one PID running from `/Applications`, no quarantine.
 
 ### G. Wrap-up
@@ -412,6 +422,11 @@ In-app update check + prompt (Sparkle 2) — template: Agents Monitor commit "Ad
 - **Live install test**: installing a release build in `/Applications` quits Roy's running copy — never for
   his always-on apps (meeting alarm, auto-lock, ntfy client) while he is away; build and review, install
   when he is back. The real update test is the next release reaching the installed copy through Sparkle.
+  An app's first Sparkle release cannot reach it (the installed copy has no Sparkle) → one § F brew upgrade.
+  After that, with Roy's OK to relaunch his apps: `defaults write <id> SULastCheckTime -date "2026-01-01 00:00:00 +0000"`,
+  quit, relaunch env-stripped; with the silent prefs Sparkle stages the update within seconds
+  (`~/Library/Caches/<id>/org.sparkle-project.Sparkle/Installation`); quit again → it installs; relaunch and check
+  the version, `vmmap <pid> | grep -c Sparkle.framework` and no leaked session env.
 
 ## Self-update
 

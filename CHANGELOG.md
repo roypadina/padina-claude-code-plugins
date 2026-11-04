@@ -10,6 +10,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-04
 
 ### Changed
+- finalize-app-release 0.7.5: wait for PR checks to register before `--watch`; never edit a script a background run is using; `pgrep -x` 15-char limit; LaunchAgent apps after a brew upgrade (quarantine → Launch Constraint Violation, `launchctl kickstart -k`); first Sparkle release needs one brew upgrade; live Sparkle update test recipe.
 - finalize-app-release 0.7.4: Sparkle casks (`auto_updates true`) need `brew upgrade --cask --greedy` for the local install; SmartHiddenBar per-app note covers its Sparkle release (appcast asset).
 - finalize-app-release 0.7.3: Sparkle rollout lessons — SwiftPM recipe, no `--deep --identifier` with nested code, ask-first apps that promised no network, updater start gates, Swift 6 presenter, Roy's Mac on silent updates, no live installs of always-on apps while Roy is away.
 - finalize-app-release 0.7.2: how to commit only your lines when another session's uncommitted edit sits in the same file (tap CHANGELOG, site `apps.json`).
