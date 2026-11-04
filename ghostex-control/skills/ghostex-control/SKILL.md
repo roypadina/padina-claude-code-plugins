@@ -274,6 +274,15 @@ the `session-management` plugin's `/finish-session`), not to an ad-hoc `kill`.
   and grants its declared permissions): `ghostex.exec(cmd)` runs `/bin/zsh -lc cmd` in the active
   project folder (login shell: `.zshrc` not read, `path_helper` reorders PATH); `ghostex.cli(verb,
   args)` runs the bundled CLI with an args array, no shell [source, live 10.43.0].
+- Extension pages (10.45.0) [source, live]: `window.ghostex` is defined only at page **load end**,
+  after inline scripts ran, and no event fires — poll for it (50 ms, ~5 s) before the first call.
+  Native `<select>` popups don't open in the embedded browser: use buttons, chips or a segmented
+  control. A `modal` placement is a fixed, borderless window: it can't be moved and clicking
+  outside doesn't close it (only a hover-only corner ×), so give the page its own Cancel/Escape
+  calling `ghostex.ui.close()`. Pages get only Ghostex's light/dark appearance, not the `gx show`
+  page kit: copy the `--gx-*` tokens from `server/src/visual_pages/theme.rs` and the controls from
+  `visual_pages/kit.rs`. A self-signed local build of Ghostex can't load the web runtime at all
+  (amfid `-423` on the ad-hoc CEF): extension views need the official signed app.
 - `agents send` "delivered", "accepted", "pending" or "queued" means the text reached the session —
   not that the agent read it or finished.
 - `server stop-all` and Quit Ghostex & BG Service kill every session on the machine.
