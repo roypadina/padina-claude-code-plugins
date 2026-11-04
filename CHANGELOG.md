@@ -10,6 +10,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-04
 
 ### Changed
+- finalize-app-release 0.7.1: Sparkle apps need the `@executable_path/../Frameworks` rpath (else a silent launch crash) and a launch check from /Applications before tagging.
 - finalize-app-release 0.7.0: Sparkle in-app updates — new § Sparkle updates (shared EdDSA key, per-app setup, cask `auto_updates true`), release step uploads `appcast.xml` (Agents Monitor) or signs the appcast item (MaccyPlus), and the state script GAPs on a missing feed asset or an unsigned top item.
 - ghostex-control 0.1.5: extension-page pitfalls — `window.ghostex` arrives at load end (poll for it), no native `<select>` in the embedded browser, modals are fixed and need their own close, theme tokens to copy, and a self-signed Ghostex build cannot load the web runtime.
 - finalize-app-release 0.6.4: local install step unregisters and deletes the repo's release build, which otherwise hides a menu-bar app's status item on macOS 27.

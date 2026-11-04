@@ -376,8 +376,12 @@ In-app update check + prompt (Sparkle 2) — template: Agents Monitor commit "Ad
   `standardUserDriverWillFinishUpdateSession` → back to `.accessory` when no other window is open).
 - **Never drop `SUPublicEDKey` or change the signing identity** once shipped — Sparkle refuses key
   removal, and a keyless old copy (MaccyPlus ≤ 2.10.1) only accepts an update whose code signature matches.
-- SwiftPM-built apps (no Xcode project) must copy `Sparkle.framework` into `Contents/Frameworks` and add
-  `@executable_path/../Frameworks` to the rpath themselves.
+- **rpath**: the binary needs `@executable_path/../Frameworks` — Xcode projects scaffolded without
+  frameworks lack it (`LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/../Frameworks` in the
+  xcconfig); SwiftPM-built apps copy `Sparkle.framework` into `Contents/Frameworks` and add the rpath
+  themselves. Missing → dyld aborts at launch (`Library not loaded: @rpath/Sparkle.framework…`), which for
+  a menu-bar app only looks like "no icon". Check `otool -l <binary> | grep -A2 LC_RPATH`, and launch the
+  signed release build from `/Applications` (Roy opens it) before tagging: `vmmap <pid> | grep Sparkle`.
 
 ## Self-update
 
