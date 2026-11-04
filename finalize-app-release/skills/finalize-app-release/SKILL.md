@@ -249,7 +249,8 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
 ### F. Local install — part of the release, not optional
 
 16. Put the released version on the user's Mac:
-    - Default: `brew upgrade --cask roypadina/tap/<token>`, then
+    - Default: `brew upgrade --cask roypadina/tap/<token>` (a Sparkle cask with `auto_updates true` needs
+      `--greedy`, else brew skips it and keeps recording the old version), then
       `xattr -dr com.apple.quarantine "/Applications/<App>.app"` (self-signed with a stable identity; Gatekeeper may
       otherwise offer to move it to the Trash).
     - Exception: an app whose Accessibility grant belongs to a local signing identity and whose release is
@@ -347,7 +348,7 @@ Summary only — the app's `CLAUDE.md` and memory note win.
 | MaccyPlus | `Maccay` | Remote `padina`, never `origin`; version in the pbxproj; prepend an `appcast.xml` item (length = zip bytes, `sparkle:version` = build) after the release asset exists; since 2.10.2 (`SUPublicEDKey`) the `<enclosure>` must carry `sparkle:edSignature` + `length` exactly as `build-release.sh` prints them (`appcast enclosure:` line) — an unsigned item is refused by every keyed copy. `main` is protected, so it goes in its own PR `appcast: X.Y.Z`; `xmllint --noout appcast.xml` first; wiki clone is `maccyplus.wiki` (slug, not folder name); upstream-sync PRs merge with `--merge`, never `--squash`; build with `MACCYPLUS_SIGN_IDENTITY` set (see memory) |
 | VaultBar | `VaultBar` | Push only `main`; privacy triple check before every public push; `RELEASE=1 Scripts/package_app.sh` |
 | Window Organizer | `window-organizer` | Version is a literal in the `Scripts/package_app.sh` plist heredoc; asset `Window-Organizer.zip` |
-| SmartHiddenBar | `SmartHiddenBar` | `RELEASE=1 ./build.sh`; since 1.3.2 releases share the dev identity, so local install = `brew upgrade` + quarantine clear (grant survives, verified 1.3.3) |
+| SmartHiddenBar | `SmartHiddenBar` | `RELEASE=1 ./build.sh` (Sparkle since 1.6.0: also writes `build/appcast.xml` from the CHANGELOG section — heading first, upload both assets; local install `brew upgrade --cask --greedy`); since 1.3.2 releases share the dev identity, so local install = `brew upgrade` + quarantine clear (grant survives, verified 1.3.3) |
 | MeetAlert | `MeetAlert` | Wiki is the nested clone `MeetAlert/wiki`; `build.sh` makes no zip — ditto it; bump `Info.plist` with `sed` on the two version lines, because `PlistBuddy` reformats the whole file |
 | Agents Monitor | `AgentsMonitor` | Asset must be `AgentsMonitor.zip`; Sparkle since 1.9.0: `Scripts/build-release.sh` also writes `build/appcast.xml` (feed = `releases/latest/download/appcast.xml`, notes = the CHANGELOG section, so the `## [X.Y.Z]` heading must exist before the build) — upload it with the zip; never commit work or topic strings; local install: after `brew upgrade`, extract the release zip to `/tmp`, clear quarantine there, `ditto` it over `/Applications` before launch (Gatekeeper trashes the brew copy) |
 | agentctl | `agentctl` | CLI-only cask since 0.11.0 (`binary "agentctl/bin/agentctl"`, no app, no About window — Ko-fi lives in `--help`). `main` protected: bump `package.json` + lock + CHANGELOG in a PR, admin-merge; `npm ci` then `sh scripts/build-release.sh` → `release/agentctl.zip` in a throwaway worktree at the merge sha (the script's `npm run build` needs devDeps); CI's `Test (ubuntu, best-effort)` leg flakes, macOS `Test & build` is the gate; local install = `brew upgrade --cask agentctl` only (no xattr, no relaunch) |
