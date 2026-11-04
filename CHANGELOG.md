@@ -10,6 +10,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-04
 
 ### Changed
+- finalize-app-release 0.6.4: local install step unregisters and deletes the repo's release build, which otherwise hides a menu-bar app's status item on macOS 27.
 - finalize-app-release 0.6.3: the "site demo.mp4 is older than the README GIF" warning no longer fires after a squash merge (one day of slack).
 - ghostex-control 0.1.4: new pitfalls — closing your own working session (use `close-after-done`), Ghostex terminals read their own Ghostty config, sending a real slash command to another session (unset the caller identity vars; queue waits for the turn to end), and how the extension bridge runs `exec`/`cli`. New decision-table row: one message to many sessions.
 

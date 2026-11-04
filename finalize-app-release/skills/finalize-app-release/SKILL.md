@@ -257,6 +257,10 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
       agents then hands them this session's identity); check
       `ps eww -o command= -p <pid> | tr ' ' '\n' | grep -cE '^(CLAUDE|SESSIONHOPPER|AGENTCTL|CODEX)'` prints `0`.
       The same applies to every dev-build launch during the session, not only the final install.
+    - The release build in the repo (`dist/<App>.app`, `build/…`) is registered with LaunchServices too, and on
+      macOS 27 a menu-bar app then runs without a visible status item. After packaging, unregister and delete it:
+      `/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -u <repo>/dist/<App>.app && rm -rf <repo>/dist/<App>.app`;
+      `lsregister -dump | grep "^path:.*<App>.app"` must list only `/Applications`. Then relaunch.
     - Verify with Step 1: `installed … is X.Y.Z`, one PID running from `/Applications`, no quarantine.
 
 ### G. Wrap-up
