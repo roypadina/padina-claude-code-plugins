@@ -35,6 +35,8 @@ forgotten — and a tap push that silently failed still upgrades your own Mac, s
   marketing site (`roypadina-apps/data/apps.json`, override `SITE_WORK`) is not behind the latest tag
   (skipped for apps not on the site or when the site repo is absent), and that the live app page's
   "What's new" (built from `CHANGELOG.md`) shows the latest tag.
+- **Sparkle in-app updates** — the recipe for adding Sparkle to an app (one shared EdDSA key, feed = the latest
+  release's `appcast.xml`, cask `auto_updates true`); the state script flags a missing feed asset or an unsigned item.
 - **Demo lifecycle** — every public app gets a looping "how it works" GIF (README) and MP4 (site), rendered
   offscreen from the app's real views with a bundled kit (`references/demo.md`, `references/demo-kit/`). A new app gets
   one, a UI change re-renders it for README and site together, a removed feature or replaced clip leaves no orphan files.
