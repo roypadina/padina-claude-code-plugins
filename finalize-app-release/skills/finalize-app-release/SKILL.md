@@ -55,6 +55,10 @@ Steps 2–3.
   below an existing tag is wrong); `git rebase origin/main`. Message the other `padina-*` sessions
   (ListAgents) about the version you take, and agree who bumps the tap and site, so the cask and
   `apps.json` move forward in order (fetch right before each push).
+- **Another session's uncommitted edit in the same file** (tap `CHANGELOG.md`, site `data/apps.json`): stage
+  only yours. Build the index copy from HEAD (`git show HEAD:<f> > /tmp/x`, apply your edit there), then
+  `git update-index --cacheinfo 100644,$(git hash-object -w /tmp/x),<f>`; make the same edit in the working
+  file so their hunk stays unstaged. Check `git diff --cached <f>` shows only your lines before committing.
 
 ## Step 1 — state
 

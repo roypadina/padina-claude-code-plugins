@@ -10,6 +10,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-04
 
 ### Changed
+- finalize-app-release 0.7.2: how to commit only your lines when another session's uncommitted edit sits in the same file (tap CHANGELOG, site `apps.json`).
 - mac-design 0.1.4: opening a window-style `MenuBarExtra` from code (hotkey, right-click Open) on macOS 27 — the status button has no action, so `performClick` does nothing; begin the expanded-interface session instead (snippet in `menu-bar-apps.md`).
 - finalize-app-release 0.7.1: Sparkle apps need the `@executable_path/../Frameworks` rpath (else a silent launch crash) and a launch check from /Applications before tagging.
 - finalize-app-release 0.7.0: Sparkle in-app updates — new § Sparkle updates (shared EdDSA key, per-app setup, cask `auto_updates true`), release step uploads `appcast.xml` (Agents Monitor) or signs the appcast item (MaccyPlus), and the state script GAPs on a missing feed asset or an unsigned top item.
