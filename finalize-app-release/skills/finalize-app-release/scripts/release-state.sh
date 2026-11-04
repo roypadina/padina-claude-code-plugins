@@ -390,7 +390,8 @@ if [ -n "${SSLUG:-}" ]; then  # site: demo field + files, not older than the REA
   grep -qx "screenshots/$SSLUG/demo.mp4" <<<"$REFS" || warn "site: apps.json has no \"demo\" for $SSLUG (video + poster, and h.demoSection first on its page)"
   for f in demo.mp4 demo-still.webp; do [ -f "$SITE_WORK/$SD/$f" ] || warn "site: $SD/$f missing"; done
   GT=$(git log -1 --format=%ct -- docs/demo.gif); MT=$(git -C "$SITE_WORK" log -1 --format=%ct -- "$SD/demo.mp4")
-  [ -n "$GT" ] && [ -n "$MT" ] && [ "$GT" -gt "$MT" ] && warn "site demo.mp4 is older than the README GIF: re-render both from one render.sh run, push the site"
+  # shortcut: 1-day slack, because a squash merge restamps the GIF after the site was prepped from the same render; compare render ids if it ever misfires
+  [ -n "$GT" ] && [ -n "$MT" ] && [ "$GT" -gt $((MT + 86400)) ] && warn "site demo.mp4 is older than the README GIF: re-render both from one render.sh run, push the site"
   for f in "$SITE_WORK/$SD"/*; do
     [ -f "$f" ] && ! grep -qx "screenshots/$SSLUG/${f##*/}" <<<"$REFS" && warn "site: $SD/${f##*/} is not referenced in apps.json (orphan? delete it)"
   done
