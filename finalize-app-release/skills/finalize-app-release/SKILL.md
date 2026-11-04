@@ -386,6 +386,31 @@ In-app update check + prompt (Sparkle 2) — template: Agents Monitor commit "Ad
   themselves. Missing → dyld aborts at launch (`Library not loaded: @rpath/Sparkle.framework…`), which for
   a menu-bar app only looks like "no icon". Check `otool -l <binary> | grep -A2 LC_RPATH`, and launch the
   signed release build from `/Applications` (Roy opens it) before tagging: `vmmap <pid> | grep Sparkle`.
+- **SwiftPM apps** (template: PullPing 0.6.0): `.package(url: "https://github.com/sparkle-project/Sparkle",
+  from: "2.10.0")` placed *after* `products:` (manifest argument order), product on the app target only,
+  `linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]`;
+  the packager dittos `$(swift build … --show-bin-path)/Sparkle.framework` into `Contents/Frameworks`;
+  tools live in `.build/artifacts/sparkle/Sparkle/bin`. A cask `binary` symlink to the app executable
+  (CLI) keeps working: dyld resolves `@executable_path` through the symlink.
+- **Never `codesign --deep --identifier <app id>`** once Sparkle is embedded: it stamps the app's identifier
+  on Sparkle's helpers. Sign inside-out (`find … -depth` over frameworks/xpc/app/Autoupdate with
+  `--preserve-metadata=identifier,entitlements,flags`), then the app with `--identifier`, then
+  `codesign --verify --deep --strict`.
+- **Apps that promised "no network"** (NtfyBar, Window Organizer, MeetAlert) ship **without**
+  `SUEnableAutomaticChecks`: Sparkle asks on the second launch and contacts nothing before a yes. Rewrite
+  every "no network / no update checks" claim (README, wiki Home/FAQ/Permissions, site page + apps.json).
+  Other apps ship it `true`.
+- **Updater start** in `applicationDidFinishLaunching`, gated on the app's test env var and
+  `Bundle.main.bundleIdentifier != nil` (a bare `swift run` would show Sparkle's "Unable to Check" alert).
+  An updater created inside a view (`@State`, MaccyPlus upstream) only runs while that view lives — keep
+  one app-lifetime instance.
+- **Swift 6 targets**: the presenter class needs `@unchecked Sendable` (no stored state) or `nonisolated`
+  plus `MainActor.assumeIsolated` in the delegate methods.
+- **Roy's own Mac updates silently**: `defaults write <bundle id> SUEnableAutomaticChecks -bool YES` and
+  `SUAutomaticallyUpdate -bool YES` per Sparkle app (a sandboxed app's container gets it through cfprefsd).
+- **Live install test**: installing a release build in `/Applications` quits Roy's running copy — never for
+  his always-on apps (meeting alarm, auto-lock, ntfy client) while he is away; build and review, install
+  when he is back. The real update test is the next release reaching the installed copy through Sparkle.
 
 ## Self-update
 
