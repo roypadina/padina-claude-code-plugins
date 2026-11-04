@@ -306,6 +306,21 @@ if [ -f appcast.xml ]; then
   AC=$(grep -m1 -oE 'shortVersionString="[^"]+"' appcast.xml | cut -d'"' -f2)
   [ "$AC" = "$VER" ] && ok "appcast.xml top item $AC" || gap "appcast.xml top item ${AC:-none} ≠ $VER"
 fi
+# Sparkle: feed served as a release asset, and EdDSA signature once the app ships SUPublicEDKey
+SPLISTS=$(grep -rlsE --include=Info.plist --exclude-dir={build,.build,.dd,DerivedData,node_modules,.git} 'SUFeedURL|SUPublicEDKey' .)
+if [ -n "$SPLISTS" ]; then
+  if grep -qs 'releases/latest/download/appcast.xml' $SPLISTS && [ -n "$REL_TAG" ]; then
+    case ",$ASSETS," in
+      *",appcast.xml="*) ok "Sparkle feed: release $REL_TAG has appcast.xml" ;;
+      *) gap "Sparkle feed is the latest release's appcast.xml, but $REL_TAG has none — gh release upload $REL_TAG build/appcast.xml" ;;
+    esac
+  fi
+  if [ -f appcast.xml ] && grep -qs SUPublicEDKey $SPLISTS; then
+    awk '/<item>/{f=1} f; /<\/item>/{if (f) exit}' appcast.xml | grep -q 'sparkle:edSignature=' \
+      && ok "appcast.xml top item is EdDSA-signed" \
+      || gap "appcast.xml top item has no sparkle:edSignature — apps with SUPublicEDKey refuse it; use the build script's 'appcast enclosure:' line"
+  fi
+fi
 [ -f README.md ] || gap "no README.md"
 if [ -n "$TOKEN_RB" ] && [ -f README.md ]; then
   CMD="brew install $( [ "$KIND" = Casks ] && echo '--cask ')$OWNER/tap/$TOKEN_RB"
