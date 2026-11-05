@@ -9,6 +9,12 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## 2026-11-05
 
+### Added
+- agentctl-sessions 0.3.0: `UserPromptSubmit` hook (`agentctl hook user-prompt-submit`, agentctl 0.14.0+).
+  Until the session has a human `/rename` name it asks Claude, from the second prompt on, to propose a
+  kebab name, run `agentctl name` and end the reply with `Rename: **/rename <name>**`; silent once named,
+  and the agentctl name follows the `/rename` name. Older agentctl → silently skipped.
+
 ### Changed
 - smart-compact 0.2.0: the clipboard prompt now starts with `[<session name> · <session id prefix> · <HH:MM>]`
   (the `/rename` name), so prompts from parallel sessions are told apart
