@@ -248,6 +248,9 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
     The push by URL leaves `origin/main` stale, so `status -sb` then shows "ahead 1" for a commit already on the
     server: `git fetch` before judging it (or compare with `git ls-remote`).
     Several apps released together → edit all their lines in one commit, one deploy.
+    A clone `ahead 1` that `ls-remote` shows is NOT on the server is another session's unpushed release commit
+    (e.g. `agentctl 0.14.0`): never push it with yours. Prepare your edit, `git fetch` again right before the push
+    (it usually lands within minutes); still unpushed → commit yours in a worktree at `origin/main` and push that.
 
 ### F. Local install — part of the release, not optional
 
