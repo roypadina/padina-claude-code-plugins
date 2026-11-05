@@ -7,6 +7,7 @@ Subcommands
   health             context-health report for a session transcript
   snapshot           (re)write the handoff file from the transcript (+ model notes)
   search             search a session's full backup (or live transcript) — bounded, readable hits
+  copy               put the /compact prompt on the clipboard, prefixed with the session's name
   hook-precompact    PreCompact hook: refresh handoff, FULL session backup, warn on auto-compact
   hook-sessionstart  SessionStart hook: re-inject the handoff after a compact/resume
   hook-nag           per-turn hook: one-time nudge when a fill threshold is crossed
@@ -1629,7 +1630,103 @@ def cmd_demo(_args=None) -> int:
                 else:
                     os.environ[k] = v
 
+    # copy: label leads the line, wrapped lines are joined like the old sed|tr pipeline
+    assert labelled_prompt("  Summarize a\n  b`c`", "RD-1-x", "0123456789ab", "09:05") \
+        == "[RD-1-x · 01234567 · 09:05] Summarize ab`c`"
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp) / "t.jsonl"
+        t.write_text(json.dumps({"type": "custom-title", "customTitle": "my  title"}) + "\n",
+                     encoding="utf-8")
+        assert session_label("no-such-sid", str(t)) == "my title"
+        assert session_label("no-such-sid", None) == ""         # no name: copy exits 3
+
     print("OK")
+    return 0
+
+
+# ---------------------------------------------------------------- copy
+
+MACCYPLUS = "/Applications/MaccyPlus.app/Contents/MacOS/MaccyPlus"
+
+
+def prompt_path(session_id: str) -> Path:
+    state_root().mkdir(parents=True, exist_ok=True)
+    return state_root() / f"{safe_id(session_id)}.prompt.txt"
+
+
+def session_label(session_id: str, transcript: str | None) -> str:
+    """The session's human name: live /rename (sessions/<pid>.json), else the /rename title in
+    the transcript. "" when the session has none. One line, <= 60 chars."""
+    name = ""
+    cfg = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude")
+    for f in (cfg / "sessions").glob("*.json"):
+        try:
+            d = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if isinstance(d, dict) and d.get("sessionId") == session_id and d.get("name"):
+            name = d["name"]
+            break
+    if not name and transcript:
+        try:
+            with open(transcript, encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    if '"custom-title"' in line:
+                        try:
+                            name = json.loads(line).get("customTitle") or name
+                        except ValueError:
+                            pass
+        except OSError:
+            pass
+    return " ".join(name.split())[:60]
+
+
+def labelled_prompt(raw: str, label: str, session_id: str, stamp: str) -> str:
+    """One physical line (as `sed 's/^ *//' | tr -d '\\n'` did), led by `[label · sid8 · HH:MM]`
+    so parallel sessions' prompts differ at the start of a clipboard-history row."""
+    body = "".join(line.lstrip() for line in raw.splitlines())
+    return f"[{label} · {session_id[:8]} · {stamp}] {body}"
+
+
+def cmd_copy(args) -> int:
+    sid = args.session_id or os.environ.get("CLAUDE_CODE_SESSION_ID") or ""
+    if not sid:
+        print("no session id (pass --session-id)", file=sys.stderr)
+        return 1
+    out = prompt_path(sid)
+    if args.file:
+        label = " ".join((args.name or "").split())[:60] \
+            or session_label(sid, resolve_transcript(args.transcript, args.cwd))
+        if not label:
+            print("NO SESSION NAME: pick a short kebab name for this session and rerun with "
+                  "--name <name>", file=sys.stderr)
+            return 3
+        raw = Path(args.file).read_text(encoding="utf-8")
+        out.write_text(labelled_prompt(raw, label, sid, datetime.now().strftime("%H:%M")),
+                       encoding="utf-8")
+    elif not out.exists():
+        print(f"no saved prompt for {sid}: {out}", file=sys.stderr)
+        return 1
+    text = out.read_text(encoding="utf-8")
+    prefix = text[:text.find("] ") + 1] if text.startswith("[") else ""
+    label = prefix[1:].split(" · ")[0] or sid[:8]
+
+    how = None
+    if os.access(MACCYPLUS, os.X_OK):           # labelled row in MaccyPlus history + live clipboard
+        r = subprocess.run([MACCYPLUS, "history", "add", "--copy", "--label", label,
+                            "--note", f"/compact prompt · session {sid}"],
+                           input=text, text=True, capture_output=True, timeout=10)
+        if r.returncode == 0:
+            how = f'MaccyPlus, label "{label}"'
+    if how is None and shutil.which("pbcopy"):
+        subprocess.run(["pbcopy"], input=text, text=True, check=True, timeout=10)
+        how = "pbcopy"
+    if how is None:
+        print(f"no clipboard tool; copy it yourself from: {out}")
+        return 1
+    print(f"prefix: {prefix}")
+    print(f"copied: {how}, {len(text)} chars")
+    print(f"recopy: ! pbcopy < {out}")
     return 0
 
 
@@ -1658,6 +1755,13 @@ def main(argv: list[str]) -> int:
     q.add_argument("--cwd", help="for the live-transcript fallback")
     q.add_argument("--max", type=int, default=20, help="hits to print (default 20)")
 
+    c = sub.add_parser("copy", help="copy the /compact prompt, labelled with the session name")
+    c.add_argument("--session-id", help="default: $CLAUDE_CODE_SESSION_ID")
+    c.add_argument("--file", help="bare prompt to label + save; omit to recopy the saved one")
+    c.add_argument("--name", help="session name for the label (when the session has none)")
+    c.add_argument("--transcript")
+    c.add_argument("--cwd")
+
     for name in ("hook-precompact", "hook-sessionstart", "hook-nag", "demo"):
         sub.add_parser(name)
 
@@ -1668,6 +1772,8 @@ def main(argv: list[str]) -> int:
         return cmd_snapshot(args)
     if args.cmd == "search":
         return cmd_search(args)
+    if args.cmd == "copy":
+        return cmd_copy(args)
     if args.cmd == "hook-precompact":
         return run_hook(hook_precompact_body)
     if args.cmd == "hook-sessionstart":

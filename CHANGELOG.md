@@ -7,6 +7,16 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-05
+
+### Changed
+- smart-compact 0.2.0: the clipboard prompt now starts with `[<session name> · <session id prefix> · <HH:MM>]`
+  (the `/rename` name), so prompts from parallel sessions are told apart
+  in clipboard history; the closing reply shows that prefix. A session with no name gets one picked by the
+  agent from the goal and a `/rename` suggestion. New `smart_compact.py copy` subcommand saves it to
+  `~/.claude/smart-compact/<session_id>.prompt.txt`, copies it as a labelled MaccyPlus row when installed
+  (else `pbcopy`) and prints a `! pbcopy < …` line to copy it again.
+
 ## 2026-11-04
 
 ### Changed

@@ -63,7 +63,10 @@ capped at 5 GB, oldest evicted first.
 ## Requirements
 
 Python 3 (standard library only). `pbcopy` for the clipboard (macOS); elsewhere the command
-gives you the file path to copy from.
+gives you the file path to copy from. With [MaccyPlus](https://github.com/roypadina/maccyplus)
+installed the prompt lands as a history row labelled with the session name. Either way the
+prompt starts with `[<session name> · <session id prefix> · <HH:MM>]`, so prompts from parallel
+sessions are easy to tell apart, and the command prints a `! pbcopy < …` line to copy it again.
 
 ## Notes
 

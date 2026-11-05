@@ -181,17 +181,25 @@ Size comes from the Size dial (above), not from the mode.
 2. Put it on the clipboard:
 
 ```bash
-sed 's/^[[:space:]]*//' "${TMPDIR:-/tmp}/smart-compact-instruction-<session_id>.txt" | tr -d '\n' | pbcopy
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/smart_compact.py" copy \
+  --session-id "<session id from Step 1>" \
+  --transcript "<transcript from Step 1>" \
+  --cwd "<cwd from Step 1>" \
+  --file "${TMPDIR:-/tmp}/smart-compact-instruction-<session_id>.txt"
 ```
 
-If `pbcopy` fails or is missing (non-macOS), say so in one line and give the file path so the human can copy it themselves.
+The script joins the string into one line and **prefixes it with `[<session name> · <session id prefix> · <HH:MM>] `** — so prompts from parallel sessions differ at the start of a clipboard-history row. Name = the `/rename` name. It saves the result to `~/.claude/smart-compact/<session_id>.prompt.txt`, copies it (MaccyPlus row labelled with the name when installed, else `pbcopy`) and prints `prefix: […]` and `recopy: ! pbcopy < …`. If it fails, say so in one line and give the file path so the human can copy it themselves.
 
-Then your **entire** closing response is at most five short lines:
+**Exit 3 = `NO SESSION NAME`.** Do not ask. Pick a 2–5 word kebab name from the GOAL that tells this session apart from the human's other sessions at a glance — the Jira key / PR number first when there is one (`RD-14189-linear-history`, `pr-412-review`, `ash-peer-messaging`), never a generic word like `session` or `work`. Rerun the same `copy` command with `--name "<name>"` added.
+
+Then your **entire** closing response is at most seven short lines:
 
 - mode + dials you picked and the Step 3 inferences, one line
 - handoff path
 - the boundary warning, only if it applies
-- **`Compact prompt copied to clipboard. Type `/compact ` then paste (⌘V) and hit enter.`**
+- **`Compact prompt copied to clipboard as `<prefix>`. Type `/compact ` then paste (⌘V) and hit enter.`** — `<prefix>` is the script's `prefix:` value, verbatim (e.g. `[RD-14189-linear-history · 08db150a · 18:37]`)
+- `Copy it again: ! pbcopy < <prompt path>` — the script's `recopy` line, verbatim; the human types it at the prompt (`!` runs it as bash) whenever the clipboard was overwritten
+- only if you named the session (exit 3): `Session had no name — named it <name>. Make it yours: /rename <name>`
 
 Nothing after that. No summary of the summary, no preview, no "here's what it says", no fenced block.
 
