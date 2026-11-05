@@ -336,7 +336,9 @@ wiki page describe what the plugin does now?
 8. **Install on every profile.** `claude-plugin-all marketplace update padina`, then
    `claude-plugin-all plugin update <plugin>@padina` (a new plugin: `plugin install`), then
    `claude-plugin-drift`. Tell the user to run `/reload-plugins`. Step 1 GAPs while any Claude config dir
-   (`FAR_CLAUDE_DIRS`) has an older version installed.
+   (`FAR_CLAUDE_DIRS`) has an older version installed. Both are zsh functions, not on `PATH`: from a Bash
+   tool call run `zsh -ic 'claude-plugin-all …'`. Their output ends in inventory-drift noise, so confirm
+   with `jq -r '.plugins["<plugin>@padina"][].version' ~/.claude*/plugins/installed_plugins.json`.
 9. **Wrap-up.** The `claude-setup-inventory` skill (offer it, then `sync` + `refresh` and a changelog line
    on each changed plugin's note); the user's memory note for the plugin when it pins a version. Then
    Step 3 G20–21: re-run Step 1, stamp, and report as a table.
