@@ -7,7 +7,8 @@ conversation on another account near a usage limit.
 With it, Claude knows:
 
 - whether the session is supervised and on which profile it runs;
-- how to switch, hold, show usage and the switch log (`sessionhopper status | switch | hold | log`);
+- how to switch, cancel a pending move, hold, show usage and the switch log (`sessionhopper status | switch [--cancel] | hold | log`);
+- how messaging sessions on other accounts is turned on (`doctor`, `profiles share`);
 - to end its turn when a move is pending, so the move lands cleanly;
 - what to do when a moved session resumes with a `[sessionhopper]` message: redo the interrupted step,
   restart what was running, and carry on;

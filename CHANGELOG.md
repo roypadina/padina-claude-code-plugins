@@ -16,6 +16,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
   and the agentctl name follows the `/rename` name. Older agentctl → silently skipped.
 
 ### Changed
+- agents-session-hopper 0.2.0: `switch --cancel` for "cancel the move", and the `doctor` / `profiles share` route for messaging sessions on other accounts (AgentsSessionHopper 1.9.0).
 - finalize-app-release 0.7.7: a site or tap clone holding another session's unpushed release commit is never pushed with yours.
 - finalize-app-release 0.7.6: `claude-plugin-all` / `claude-plugin-drift` are zsh functions — run them via `zsh -ic` from a Bash tool call and confirm versions from `installed_plugins.json`.
 - smart-compact 0.2.0: the clipboard prompt now starts with `[<session name> · <session id prefix> · <HH:MM>]`

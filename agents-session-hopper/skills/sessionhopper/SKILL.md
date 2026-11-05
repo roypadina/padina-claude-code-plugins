@@ -1,6 +1,6 @@
 ---
 name: sessionhopper
-description: Steer AgentsSessionHopper, which runs this Claude Code session on one of the user's own Claude accounts (profiles) and continues the same conversation on another one near a usage limit. Use for "switch account", "move to <profile>", "which account am I on", "how much usage is left", "stay on this account", "hold this session", "stop auto switching", "resume supervised", and whenever a "[sessionhopper]" message arrives.
+description: Steer AgentsSessionHopper, which runs this Claude Code session on one of the user's own Claude accounts (profiles) and continues the same conversation on another one near a usage limit. Use for "switch account", "move to <profile>", "which account am I on", "how much usage is left", "stay on this account", "hold this session", "stop auto switching", "cancel the move", "don't switch after all", "message a session on another account", "resume supervised", and whenever a "[sessionhopper]" message arrives.
 ---
 
 # AgentsSessionHopper: the account this session runs on
@@ -26,10 +26,12 @@ only the account changes.
 | "switch account", "move off this one" | `… switch` (moves when this turn ends: finish the step you are on, then end your turn) |
 | "move to <profile>" | `… switch <profile>` |
 | "move right now", even mid-work | `… switch --now` (restarts Claude Code at once; only on an explicit ask) |
+| "cancel the move", "don't switch after all" | `… switch --cancel` (drops the pending move, also one the user confirmed; a move the engine queued may come back, `hold on` stops that) |
 | "stay on this account", "stop auto switching" | `… hold on` (`hold off` undoes it; `--all` for every session) |
 | "show the switch log" | `… log -n 20` |
 | "what can I resume here" | `… sessions` (`all`, `--all-dirs` for every folder) |
 | "what are the thresholds" | `… config` (read only) |
+| "can sessions on other accounts message each other" | `… doctor` (its "cross-account messaging" line; turn on with `… profiles share <profile>`, with no claude running on that profile) |
 
 ## Rules
 
@@ -40,6 +42,8 @@ only the account changes.
   (`config …`) are the user's choice.
 - **Paid usage:** `hold on` keeps the session on its account even past 100% of the plan, which can bill
   paid extra usage where the account allows it. Say so, and only do it when the user asks.
+- **Messaging across accounts:** with `sessions/` shared (`doctor` says on), `@name`, `/peers`, ListAgents and
+  SendMessage reach sessions on every profile, and a session keeps its `/rename` name when it moves.
 - **Logins are the user's**: `sessionhopper login <profile>` runs Claude Code's own `claude auth login`.
   Never read, copy or move login or credential files.
 
