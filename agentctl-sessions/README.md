@@ -64,15 +64,22 @@ Or use the slash commands directly:
 | `/agentctl-hide` | Out of the default list, still under `--hidden` |
 | `/agentctl-delete` | Out of every list — recoverable, transcript untouched |
 
-## The hook
+## The hooks
 
-One `SessionStart` hook, running `agentctl hook session-start`. On a **named** session it hands
+A `SessionStart` hook, running `agentctl hook session-start`. On a **named** session it hands
 Claude the name, labels, note and due state, so a resumed session knows what it is and what is
 overdue. On an **unnamed** one it asks Claude to name it once your first task is clear, and points
 out any issue key it found in your branch. It also mentions reminders that came due elsewhere.
 
-It runs once per session start and prints a handful of lines. If `agentctl` is not installed the
-hook is skipped entirely — no error, no noise.
+A `UserPromptSubmit` hook, running `agentctl hook user-prompt-submit` (agentctl 0.14.0+). Other
+sessions can only @-address a session whose name you chose with `/rename`, so until you do, from
+your second prompt on it asks Claude to propose a short kebab name, set it with `agentctl name`, and
+end each reply with `Rename: **/rename <name>**`. Once you `/rename`, it prints nothing and copies
+that name to agentctl. It reads Claude Code's own session record — no network, no model call. On
+Claude Code builds that track `/rename` this replaces the SessionStart naming nudge.
+
+Each prints at most a handful of lines. If `agentctl` is not installed (or is older than the
+hook) the hook is skipped entirely — no error, no noise.
 
 ## Where the data lives
 
@@ -88,7 +95,7 @@ silently reverted on a live session.
 ```
 .claude-plugin/plugin.json
 commands/agentctl-*.md            nine slash commands
-hooks/hooks.json                  the SessionStart hook
+hooks/hooks.json                  the SessionStart and UserPromptSubmit hooks
 skills/agentctl-sessions/SKILL.md the full toolset, for Claude
 ```
 

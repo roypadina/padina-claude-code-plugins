@@ -49,15 +49,21 @@ To act on a *different* session, pass `-s <id-or-prefix>` — get ids from `agen
 
 ## Do it without being asked
 
-**Name the session** once the first real task is clear — a 3-5 word name describing the work, not
-the tool. Run it quietly; do not ask permission and do not announce it. Only once per session: if
-it already has a name, leave it alone unless the work has clearly changed direction.
+**Name the session** once the first real task is clear — a short kebab-case name for the work, not
+the tool: the subject plus a Jira key, PR number or role (`RD-14189-linear-history`, `pr-412-review`).
+Run it quietly; do not ask permission and do not announce it. If it already has a name, leave it
+alone unless the work has clearly changed direction.
+
+**Ask for a `/rename`** when the `UserPromptSubmit` hook says the session has no human name yet:
+other sessions can only address a name the user chose. Set your pick with `agentctl name`, end the
+reply with `Rename: **/rename <name>**`, and keep the same pick on later turns unless the task
+changed. Once the user renames it, the hook goes silent and copies their name to agentctl.
 
 **Label it with the ticket.** If the branch or the conversation mentions an issue key (`RD-12345`,
 `PROJ-42`), label the session with it. `agentctl label --auto` reads it from the branch for you.
 Add a second label for the component or repo when that is obvious and stable.
 
-Good: `billing spike` + `[RD-12345]` · `catalog reindex slowness` + `[RD-12987] [catalog]`
+Good: `RD-12345-billing-spike` + `[RD-12345]` · `catalog-reindex-slowness` + `[RD-12987] [catalog]`
 Bad: `debugging` · `fix the thing` · `Claude Code session`
 
 **Leave a note before a long pause** — if the user is clearly stopping mid-task (they say they're

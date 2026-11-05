@@ -1,5 +1,5 @@
 {
-  "description": "agentctl-sessions: hand each session its Agentctl name, note, flags and due reminders at startup.",
+  "description": "agentctl-sessions: hand each session its Agentctl name, note, flags and due reminders at startup; ask for a /rename until it has a human name.",
   "hooks": {
     "SessionStart": [
       {
@@ -9,6 +9,17 @@
             "type": "command",
             "command": "command -v agentctl >/dev/null 2>&1 && agentctl hook session-start || exit 0",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v agentctl >/dev/null 2>&1 && agentctl hook user-prompt-submit || exit 0",
+            "timeout": 5
           }
         ]
       }
