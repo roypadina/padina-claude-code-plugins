@@ -89,8 +89,9 @@ issue key from your git branch — and handles plain requests:
 
 > "mark this done" · "remind me in 2h" · "this is for RD-12345" · "what do I need to get back to?"
 
-Nine slash commands, a `SessionStart` hook that hands a resumed session its own metadata back, and
-a skill that teaches Claude the whole toolset.
+Nine slash commands, a `SessionStart` hook that hands a resumed session its own metadata back, a
+`UserPromptSubmit` hook that asks for a `/rename` until the session has a name other sessions can
+address (agentctl 0.14.0+), and a skill that teaches Claude the whole toolset.
 
 **Requires** the `agentctl` CLI, 0.5.0+ (`brew install --cask roypadina/tap/agentctl`). The plugin
 offers to install it if it is missing.
