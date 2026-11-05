@@ -6,7 +6,8 @@
 # In Ghostex, close this session instead (`ghostex kill`; Ghostex can bring it back from its
 # closed sessions). $GHOSTEX_SESSION_ID is an env var and can leak like the cmux ones below, so
 # its `zmx run <name>` process must sit on this process's own ancestor chain, and the name must
-# select exactly this one session (Ghostex matches alias, id, provider name or title).
+# select exactly this one session (Ghostex matches alias, id, provider name or title). A pinned
+# session is unpinned first (re-pinned if the kill fails).
 #
 # Never trusts $CMUX_WORKSPACE_ID. It is fixed when the shell starts, so it goes stale when the
 # pane is moved to another workspace, and cmux uses it as the default --workspace. A stale value
@@ -45,13 +46,19 @@ if [ -n "$zmx" ]; then
     gx="${GHOSTEX_CLI_EXECUTABLE:-ghostex}"
     command -v "$gx" >/dev/null || gxfail "ghostex CLI not found"
     command -v jq >/dev/null || gxfail "jq not found"
-    title=$("$gx" sessions --json --full 2>/dev/null | jq -r --arg g "$GX" '
+    row=$("$gx" sessions --json --full 2>/dev/null | jq -r --arg g "$GX" '
         [.sessions[] | select(.providerSessionName == $g or .sessionId == $g or .title == $g
             or (.alias | tostring) == $g or .globalRef == $g)]
-        | if length == 1 and .[0].providerSessionName == $g then "= \(.[0].title // "")" else empty end')
-    [ -n "$title" ] || gxfail "Ghostex session $GX is not exactly one listed session"
-    [ "${1:-}" = --dry-run ] && { echo "Would close Ghostex session $GX \"${title#= }\"."; exit 0; }
+        | if length == 1 and .[0].providerSessionName == $g
+          then "\(.[0].isPinned == true)=\(.[0].title // "")" else empty end')
+    [ -n "$row" ] || gxfail "Ghostex session $GX is not exactly one listed session"
+    pinned=${row%%=*} title=${row#*=} unpin=
+    [ "$pinned" = true ] && unpin=", unpinning it first"
+    [ "${1:-}" = --dry-run ] && { echo "Would close Ghostex session $GX \"$title\"$unpin."; exit 0; }
+    # A closed pinned session stays in its sidebar folder as a dead row until unpinned (maddada/Ghostex#435).
+    [ "$pinned" = true ] && "$gx" pin-session "$GX" false >/dev/null 2>&1
     out=$("$gx" kill "$GX" 2>&1) && { echo "$out"; exit 0; }
+    [ "$pinned" = true ] && "$gx" pin-session "$GX" true >/dev/null 2>&1
     gxfail "$out"
 fi
 

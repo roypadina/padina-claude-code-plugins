@@ -7,6 +7,19 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-06
+
+### Changed
+- session-management 0.6.0: `/finish-session` does what it is sure of without asking (local cleanup
+  of this session's own leftovers, saving lessons to memory) and asks only about the rest. Reply
+  `ignore <n>` and the item is never raised again (`~/.claude/session-management/finish-ignore.md`,
+  shared by every config dir). `cleanup` is still accepted; cleanup always runs now.
+
+### Fixed
+- session-management 0.6.0: in Ghostex, the close unpins the session before `ghostex kill` (and
+  re-pins it if the kill fails). A closed pinned session stayed in its sidebar folder as a row whose
+  × did nothing until unpinned ([maddada/Ghostex#435](https://github.com/maddada/Ghostex/issues/435)).
+
 ## 2026-11-05
 
 ### Added

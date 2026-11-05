@@ -11,11 +11,9 @@ then says `close`, close the session (step 5).
 Arguments: $ARGUMENTS
 - First word `force` or `-f` → skip steps 1–4 and 5.1: no report, no checks, no questions. Run
   step 5.2 with the reply `Force-closed. Closing <what the dry run said>.`
-- Contains the word `cleanup` → after steps 1–3, run every **local cleanup** item at once, no
-  question (rules below), as if the user had picked them.
-- Contains the word `close` → after steps 1–3 (and the cleanup, if asked), close in the same turn
-  (step 5) **only if nothing is left open**. Anything still open → show the report and wait; the
-  user decides.
+- Contains the word `cleanup` → accepted for old habits; local cleanup now always runs in step 2b.
+- Contains the word `close` → after steps 1–3, close in the same turn (step 5) **only if nothing
+  is left open**. Anything still open → show the report and wait; the user decides.
 - Anything else → extra notes / focus for the report.
 
 **Local cleanup** = only things this session created that nothing needs any more: scratch / temp
@@ -26,10 +24,16 @@ stay), anything needed to resume this session later (notes, handoff files, repor
 wrote), worktrees, other sessions' files, anything outside this machine. Unsure → it is not
 cleanup; list it as an open item.
 
+**Ignore list** = `~/.claude/session-management/finish-ignore.md`, one line per thing the user
+said never to raise again (`- <what> (<yyyy-mm-dd>)`), shared by every Claude config dir on this
+machine. Rules in the user's CLAUDE.md or memory that say to never raise something count the same.
+
 ## Rules
 
-- **Read-only until the user approves.** Gather and report first. Do NOT close, merge, delete, push,
-  transition, post, email, or remove anything on your own — propose it, then do only what the user picks.
+- **Act alone when sure, ask only when not.** Step 2b does the sure, local, this-session things
+  without asking. Everything else is read-only until the user picks it: do NOT merge, push,
+  transition, post, email, or delete beyond local cleanup on your own. Ask only about what you are
+  not highly confident about — one line each, never "should I…?" for things already decided.
 - All normal gates still apply — every rule in the user's CLAUDE.md and memory, plus: remove a
   worktree only by the exact path this session created; use the right account for each repo and
   service; tracker writes need confirmation; messages (chat, email, comments) go out as the user,
@@ -70,6 +74,20 @@ Only what applies to this session:
   drop those silently. For the rest, `STAMP MATCH` or no GAP → nothing to report; otherwise one open
   item `<app>: <n> release gaps → /finalize-app-release <dir>`.
 
+## 2b. Do what you're sure of — no question
+
+- **Drop ignored items.** Read the ignore list; anything it (or a never-raise rule in the user's
+  CLAUDE.md / memory) covers is dropped silently. So is anything the user already skipped or
+  declined earlier in this session.
+- **Local cleanup** — delete every item that fits the definition above with high confidence.
+- **Memory** — save each lesson, gotcha or durable fact learned here that isn't saved yet, the
+  way the user's CLAUDE.md says (its memory procedure, skill and location; update an existing
+  entry before adding one). Patch a skill or command this session found wrong, when the fix is
+  clear. Not sure it's worth keeping, or where it goes → open item.
+- Each one is a line under `Done:` in the report (`deleted 3 temp files in /tmp/x`, `saved
+  memory: <title>`). Never do anything outward-facing, destructive beyond local cleanup, or
+  outside this session's own work here.
+
 ## 3. Report — SHORT
 
 The user will ask for detail if they want it.
@@ -79,7 +97,7 @@ The user will ask for detail if they want it.
 - Merge similar items (e.g. "3 temp files in X → delete").
 - Prefix `!` to an item the close would kill or orphan: something started here that is still
   running (background shell or agent, port-forward, local server, Monitor, cron, loop), a lesson
-  not yet saved to memory or a skill, an unsent draft, uncommitted changes in a worktree this
+  step 2b could not save, an unsent draft, uncommitted changes in a worktree this
   session created. Unpushed commits and edits in a shared clone stay on disk — no `!`.
 - No section headers for empty categories, no per-category walkthrough, no draft messages yet —
   just "notify <who> about <what>". Draft text only when the user picks that item.
@@ -93,7 +111,7 @@ Done:
 Open:
 1. <item> → <action>
 2. ! <item> → <action>
-Run which? (all / 1,3 / none) — or "close" to close the session
+Run which? (all / 1,3 / none / ignore 2) — or "close" to close the session
 ```
 
 If nothing is open: one line saying so + `Say "close" to close the session.`
@@ -101,6 +119,9 @@ If nothing is open: one line saying so + `Say "close" to close the session.`
 ## 4. Act on the user's picks
 
 Execute only the approved items, then one line per item: done / skipped / failed.
+`ignore <n>` (or "never ask about X again") → append the item to the ignore list (create the file
+if missing): this one thing (`release gaps in agentctl`), or the whole kind only when the user
+said so (`release gaps, any repo`). Then one line `ignored: <what>`.
 End with: `Say "close" to close the session.` A reply like `1,3 then close` runs those items, then
 step 5.
 
@@ -130,7 +151,8 @@ from a summary.
    `$CMUX_SURFACE_ID`, confirmed by its tty — and the workspace only when this pane is provably
    its single surface; a pinned workspace is kept with a fresh shell. In Ghostex it closes this
    session (`ghostex kill`), found by `$GHOSTEX_SESSION_ID` and confirmed by its `zmx run` process
-   on the session's own process chain. Elsewhere it prints
+   on the session's own process chain, unpinning it first (a closed pinned session stays in the
+   sidebar as a dead row). Elsewhere it prints
    `Not in cmux or Ghostex — close the window yourself.`
 3. If the session is still alive after that, the script printed `… — closed nothing.`: relay that
    line verbatim and stop. Never close anything yourself — no `ghostex kill`, no `cmux close-surface` /

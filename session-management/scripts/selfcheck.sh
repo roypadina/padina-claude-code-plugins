@@ -38,6 +38,7 @@ case "$1" in
     kill) echo "kill $2" >>"$FAKE_LOG"
         [ -z "${FAKE_GX_KILL_FAIL:-}" ] || { echo "Error: $FAKE_GX_KILL_FAIL"; exit 1; }
         echo "Killed $2" ;;
+    pin-session) echo "pin $2 $3" >>"$FAKE_LOG" ;;
     *) exit 2 ;;
 esac
 EOF
@@ -48,10 +49,11 @@ unset GHOSTEX_SESSION_ID
 export PATH="$tmp:$PATH" FAKE_TREE="$tmp/tree.json" FAKE_LOG="$tmp/log" FAKE_GX="$tmp/gx.json" \
     GHOSTEX_CLI_EXECUTABLE="$tmp/ghostex"
 
-# gxlist <provider name>:<title> ... -> canned `ghostex sessions --json --full`.
+# gxlist [!]<provider name>:<title> ... -> canned `ghostex sessions --json --full`. "!" pins it.
 gxlist() {
     printf '%s\n' "$@" | jq -Rsc '{sessions: [split("\n")[] | select(. != "") | split(":") |
-        {providerSessionName: .[0], sessionId: ("id-" + .[0]), alias: 1, globalRef: ("g:" + .[0]), title: .[1]}]}' >"$FAKE_GX"
+        {providerSessionName: (.[0] | ltrimstr("!")), sessionId: ("id-" + (.[0] | ltrimstr("!"))), alias: 1,
+         globalRef: ("g:" + (.[0] | ltrimstr("!"))), title: .[1], isPinned: (.[0] | startswith("!"))}]}' >"$FAKE_GX"
 }
 
 # tree [!]<workspace>:<surface>,<surface> ... -> canned `tree --json`. "!" pins the workspace.
@@ -132,6 +134,11 @@ gxlist "gx-me:my work" "gx-other:gx-me"
 check "ghostex name also another session's title: closes nothing" ok 1 ""
 gxlist "gx-other:other work"
 check "ghostex session not listed: closes nothing" ok 1 ""
+# A closed pinned session stays in its sidebar folder as a dead row (maddada/Ghostex#435): unpin first.
+gxlist "!gx-me:my work" "gx-other:other work"
+check "ghostex pinned: unpins, then kills" ok 0 "pin gx-me false;kill gx-me"
+ARGS=--dry-run check "ghostex pinned dry run: changes nothing" ok 0 ""
+FAKE_GX_KILL_FAIL=boom check "ghostex pinned, kill fails: re-pins, exit 1" ok 1 "pin gx-me false;kill gx-me;pin gx-me true"
 unset GHOSTEX_SESSION_ID
 
 # close-trigger.sh (UserPromptSubmit hook): fires only on a whole-message session-close reply.
