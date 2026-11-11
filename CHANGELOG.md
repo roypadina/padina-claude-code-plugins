@@ -7,6 +7,17 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-11
+
+### Added
+- smart-compact 0.3.0: cross-session mode — `/smart-compact session <name|id>` builds the handoff and
+  `/compact` prompt for another session that is too full to run it itself. New `digest` subcommand
+  (condensed transcript of another session) and `health --session-id`.
+
+### Fixed
+- smart-compact 0.3.0: `snapshot` and `copy` honour `--session-id` when no `--transcript` is given;
+  they used to read the calling session's transcript.
+
 ## 2026-11-06
 
 ### Changed

@@ -36,6 +36,10 @@ rest must survive verbatim:
 - **Size:** `minimize` / `short` targets ~3K tokens.
 - **In-flight:** background jobs are always recorded by id, since compaction keeps them running
   but loses the model's handle on them.
+- **Target:** `session <name|id>` runs it for ANOTHER session — one already too full to run
+  `/smart-compact` itself. It reads that session from a condensed digest (`smart_compact.py digest
+  --session-id <id>`), writes its handoff, and labels the clipboard prompt with its name; you paste
+  it into that session after `/compact `.
 
 ## Files
 
