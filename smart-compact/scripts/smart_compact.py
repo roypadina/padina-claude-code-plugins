@@ -1770,6 +1770,79 @@ def cmd_digest(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- subcommand: find
+
+def cmd_find(args) -> int:
+    """Resolve a session by /rename name or id (prefix) from Claude Code's own files only:
+    live sessions (<config>/sessions/<pid>.json) and the /rename `custom-title` records in
+    <config>/projects/*/*.jsonl. Exit 0 = one match, 2 = several, 1 = none."""
+    q = args.query.strip()
+    ql = q.lower()
+    dirs = []
+    for d in (os.environ.get("CLAUDE_CONFIG_DIR"), str(Path.home() / ".claude")):
+        if d and Path(d).is_dir() and Path(d).resolve() not in [x.resolve() for x in dirs]:
+            dirs.append(Path(d))
+    found: dict[str, dict] = {}
+
+    def add(sid, name="", cwd="", transcript=""):
+        row = found.setdefault(sid, {"id": sid, "name": "", "cwd": "", "transcript": ""})
+        row["name"] = row["name"] or name
+        row["cwd"] = row["cwd"] or cwd
+        row["transcript"] = row["transcript"] or transcript
+
+    for cfg in dirs:
+        for f in (cfg / "sessions").glob("*.json"):
+            try:
+                d = json.loads(f.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            sid, name = (d.get("sessionId") or ""), (d.get("name") or "")
+            if sid and (sid.startswith(q) or name.lower() == ql):
+                add(sid, name, d.get("cwd") or "")
+        cutoff = time.time() - args.days * 86400
+        for f in (cfg / "projects").glob("*/*.jsonl"):
+            try:
+                if f.stat().st_mtime < cutoff:
+                    continue
+                if f.stem.startswith(q):
+                    add(f.stem, transcript=str(f))
+                    continue
+                data = f.read_bytes()
+            except OSError:
+                continue
+            if b'"custom-title"' not in data:
+                continue
+            title = ""
+            for line in data.splitlines():
+                if b'"custom-title"' in line:
+                    try:
+                        title = json.loads(line).get("customTitle") or title
+                    except ValueError:
+                        pass
+            if title.lower() == ql:
+                add(f.stem, title, transcript=str(f))
+    for row in found.values():
+        t = row["transcript"] or find_transcript(None, row["id"]) or ""
+        row["transcript"] = t
+        if t and not row["cwd"]:
+            for rec in iter_records(t):
+                if rec.get("cwd"):
+                    row["cwd"] = rec["cwd"]
+                    break
+        if t and not row["name"]:
+            row["name"] = session_label(row["id"], t)
+    rows = list(found.values())
+    if args.json:
+        print(json.dumps(rows, indent=1))
+    else:
+        for r in rows:
+            print(f"{r['id']}  {r['name'] or '-'}  cwd={r['cwd'] or '-'}  transcript={r['transcript'] or '-'}")
+        if not rows:
+            print(f"no session named or id-prefixed {q!r} (searched {', '.join(map(str, dirs))}; "
+                  f"transcripts touched in the last {args.days} days)")
+    return 0 if len(rows) == 1 else (2 if rows else 1)
+
+
 # ---------------------------------------------------------------- main
 
 def main(argv: list[str]) -> int:
@@ -1803,6 +1876,11 @@ def main(argv: list[str]) -> int:
     c.add_argument("--transcript")
     c.add_argument("--cwd")
 
+    fd = sub.add_parser("find", help="resolve a session by /rename name or id prefix (Claude Code files only)")
+    fd.add_argument("query")
+    fd.add_argument("--days", type=int, default=30, help="only transcripts touched in the last N days (default 30)")
+    fd.add_argument("--json", action="store_true")
+
     d = sub.add_parser("digest", help="condense another session's transcript for a cross-session run")
     d.add_argument("--session-id")
     d.add_argument("--transcript")
@@ -1821,6 +1899,8 @@ def main(argv: list[str]) -> int:
         return cmd_search(args)
     if args.cmd == "copy":
         return cmd_copy(args)
+    if args.cmd == "find":
+        return cmd_find(args)
     if args.cmd == "digest":
         return cmd_digest(args)
     if args.cmd == "hook-precompact":

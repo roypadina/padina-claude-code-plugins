@@ -9,6 +9,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## 2026-11-11
 
+### Changed
+- smart-compact 0.3.1: cross-session mode resolves the target with the new `find <name|id-prefix>`
+  subcommand — Claude Code's own session files only (live `/rename` names, transcript titles), so it
+  no longer needs agentctl; agentctl stays an optional fallback.
+
 ### Added
 - smart-compact 0.3.0: cross-session mode — `/smart-compact session <name|id>` builds the handoff and
   `/compact` prompt for another session that is too full to run it itself. New `digest` subcommand
