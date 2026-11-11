@@ -38,7 +38,8 @@ rest must survive verbatim:
   but loses the model's handle on them.
 - **Target:** `session <name|id>` runs it for ANOTHER session — one already too full to run
   `/smart-compact` itself. It finds the session with `smart_compact.py find <name|id>` (Claude Code's own
-  session files), reads it from a condensed digest (`smart_compact.py digest
+  session files; when unsure it shows the candidates — last active, first and last prompt — and
+  asks you which one), reads it from a condensed digest (`smart_compact.py digest
   --session-id <id>`), writes its handoff, and labels the clipboard prompt with its name; you paste
   it into that session after `/compact `.
 

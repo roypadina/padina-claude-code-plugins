@@ -1601,6 +1601,25 @@ def cmd_demo(_args=None) -> int:
             os.environ["CLAUDE_CODE_SESSION_ID"] = "sess-gone"   # id known, no file: never guess
             assert find_transcript(str(work)) is None
 
+
+            # find: exact name -> 0; near (contains) -> 2 with candidates; none -> 1
+            sdir = fake_home / ".claude" / "sessions"
+            sdir.mkdir(parents=True, exist_ok=True)
+            (sdir / "1.json").write_text(json.dumps({"sessionId": "sess-mine", "name": "fix-login"}))
+            mine.write_text(json.dumps({"type": "user", "cwd": str(work), "message":
+                                        {"content": "fix the login page"}}) + "\n", encoding="utf-8")
+            other.write_text(json.dumps({"type": "custom-title", "customTitle": "fix-login-2"}) + "\n",
+                             encoding="utf-8")
+            fa = argparse.Namespace(query="fix-login", days=36500, json=True)
+            import contextlib, io
+            with contextlib.redirect_stdout(io.StringIO()):
+                assert cmd_find(fa) == 0
+                fa.query = "fix"
+                assert cmd_find(fa) == 2
+                fa.query = "nothing-like-this"
+                assert cmd_find(fa) == 1
+            assert session_gist(str(mine))[0] == "fix the login page"
+
             # search: live transcript + its side dir first; the backup once the live one is gone
             (pdir / "sess-mine" / "subagents").mkdir(parents=True)
             (pdir / "sess-mine" / "subagents" / "a.jsonl").write_text(json.dumps(
@@ -1772,10 +1791,39 @@ def cmd_digest(args) -> int:
 
 # ---------------------------------------------------------------- subcommand: find
 
+def _prompt_text(rec: dict) -> str:
+    """A human prompt as one short line; "" for tool results, meta, commands, reminders."""
+    if rec.get("type") != "user" or rec.get("isMeta"):
+        return ""
+    c = (rec.get("message") or {}).get("content")
+    if isinstance(c, list):
+        c = " ".join(b.get("text") or "" for b in c if isinstance(b, dict) and b.get("type") == "text")
+    t = " ".join((c or "").split())
+    return "" if t.startswith(("<", "[Request interrupted", "Caveat:", "[sessionhopper]")) else t[:100]
+
+
+def session_gist(transcript: str) -> tuple[str, str]:
+    """(first, last) human prompt of a session — enough for a person to recognise it."""
+    first = next((t for t in map(_prompt_text, iter_records(transcript)) if t), "")
+    last = ""
+    for line in tail_lines(transcript, want_bytes=2_097_152):  # agent turns are bulky; 256K often holds no prompt
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(rec, dict):
+            last = _prompt_text(rec) or last
+    return first, last
+
+
 def cmd_find(args) -> int:
     """Resolve a session by /rename name or id (prefix) from Claude Code's own files only:
     live sessions (<config>/sessions/<pid>.json) and the /rename `custom-title` records in
-    <config>/projects/*/*.jsonl. Exit 0 = one match, 2 = several, 1 = none."""
+    <config>/projects/*/*.jsonl. Exact name / id-prefix hits win; with none, names that
+    CONTAIN the query are returned as candidates. Every row carries last-active time and the
+    first + last human prompt so a person can tell the candidates apart.
+    Exit 0 = exactly one exact hit (safe to use), 2 = several or only near hits (ask the
+    human which one), 1 = none."""
     q = args.query.strip()
     ql = q.lower()
     dirs = []
@@ -1785,7 +1833,12 @@ def cmd_find(args) -> int:
     found: dict[str, dict] = {}
 
     def add(sid, name="", cwd="", transcript=""):
-        row = found.setdefault(sid, {"id": sid, "name": "", "cwd": "", "transcript": ""})
+        exact = sid.startswith(q) or (name or "").lower() == ql
+        if not exact and not (name and ql in name.lower()):
+            return
+        row = found.setdefault(sid, {"id": sid, "name": "", "cwd": "", "transcript": "",
+                                     "exact": False})
+        row["exact"] = row["exact"] or exact
         row["name"] = row["name"] or name
         row["cwd"] = row["cwd"] or cwd
         row["transcript"] = row["transcript"] or transcript
@@ -1796,9 +1849,8 @@ def cmd_find(args) -> int:
                 d = json.loads(f.read_text(encoding="utf-8"))
             except (OSError, ValueError):
                 continue
-            sid, name = (d.get("sessionId") or ""), (d.get("name") or "")
-            if sid and (sid.startswith(q) or name.lower() == ql):
-                add(sid, name, d.get("cwd") or "")
+            if isinstance(d, dict) and d.get("sessionId"):
+                add(d["sessionId"], d.get("name") or "", d.get("cwd") or "")
         cutoff = time.time() - args.days * 86400
         for f in (cfg / "projects").glob("*/*.jsonl"):
             try:
@@ -1819,28 +1871,35 @@ def cmd_find(args) -> int:
                         title = json.loads(line).get("customTitle") or title
                     except ValueError:
                         pass
-            if title.lower() == ql:
-                add(f.stem, title, transcript=str(f))
-    for row in found.values():
+            add(f.stem, title, transcript=str(f))
+    rows = [r for r in found.values() if r["exact"]] or list(found.values())
+    for row in rows:
         t = row["transcript"] or find_transcript(None, row["id"]) or ""
         row["transcript"] = t
-        if t and not row["cwd"]:
-            for rec in iter_records(t):
-                if rec.get("cwd"):
-                    row["cwd"] = rec["cwd"]
-                    break
-        if t and not row["name"]:
+        row["last_active"], row["first_prompt"], row["last_prompt"] = "", "", ""
+        if not t:
+            continue
+        row["last_active"] = datetime.fromtimestamp(os.path.getmtime(t)).strftime("%Y-%m-%d %H:%M")
+        row["first_prompt"], row["last_prompt"] = session_gist(t)
+        if not row["cwd"]:
+            row["cwd"] = next((r["cwd"] for r in iter_records(t) if r.get("cwd")), "")
+        if not row["name"]:
             row["name"] = session_label(row["id"], t)
-    rows = list(found.values())
+    rows.sort(key=lambda r: r["last_active"], reverse=True)
+    exact = sum(r["exact"] for r in rows)
     if args.json:
         print(json.dumps(rows, indent=1))
     else:
         for r in rows:
-            print(f"{r['id']}  {r['name'] or '-'}  cwd={r['cwd'] or '-'}  transcript={r['transcript'] or '-'}")
+            print(f"{r['id']}  {r['name'] or '-'}  [{'exact' if r['exact'] else 'near'}]  "
+                  f"last active {r['last_active'] or '-'}  cwd={r['cwd'] or '-'}")
+            print(f"    first: {r['first_prompt'] or '-'}")
+            print(f"    last : {r['last_prompt'] or '-'}")
+            print(f"    transcript: {r['transcript'] or '-'}")
         if not rows:
-            print(f"no session named or id-prefixed {q!r} (searched {', '.join(map(str, dirs))}; "
-                  f"transcripts touched in the last {args.days} days)")
-    return 0 if len(rows) == 1 else (2 if rows else 1)
+            print(f"no session named, named like, or id-prefixed {q!r} (searched "
+                  f"{', '.join(map(str, dirs))}; transcripts touched in the last {args.days} days)")
+    return 0 if exact == 1 and len(rows) == 1 else (2 if rows else 1)
 
 
 # ---------------------------------------------------------------- main

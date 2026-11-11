@@ -10,6 +10,10 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-11
 
 ### Changed
+- smart-compact 0.3.2: cross-session mode asks which session (`AskUserQuestion`) when the target is not
+  certain — several hits or only near-name hits. `find` now also returns names that contain the
+  query, with last-active time and the first + last human prompt of each, so the candidates can be
+  told apart.
 - smart-compact 0.3.1: cross-session mode resolves the target with the new `find <name|id-prefix>`
   subcommand — Claude Code's own session files only (live `/rename` names, transcript titles), so it
   no longer needs agentctl; agentctl stays an optional fallback.
