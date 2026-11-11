@@ -26,6 +26,18 @@ Keep this cheap. The whole point is context health — do not read files, do not
 - **Depth:** `long haul` / `long-haul` → the long-haul keep-list (research behind decisions, rejected alternatives, chronology). A mode name (`mid-dev`, `debug-hunt`, `wrap-up`, `review-fix`) selects that keep-list. Neither → infer (Step 3).
 - **Size:** `minimize` / `short` / `small` → target ~3K tokens whatever the depth. Long haul + minimize = the long-haul keep-list with no narrative and no chronology. Default: ~3–4K tokens; ~6–8K only for long haul without minimize.
 - **In-flight:** any mention of background jobs / monitors / "ongoing" → every in-flight id + purpose goes into NEXT. That is the default anyway; acknowledge it in the inference line.
+- **Target:** `session <name|id>` / `for <name|id>` / a bare session id or `/rename` name of ANOTHER session → cross-session mode (below). None → this session.
+
+### Cross-session mode — compacting a session you are not running inside
+
+Use it when the target session is at its limit and cannot run this command itself. Nothing touches the target; the human pastes the result into it. Differences from the normal flow:
+
+1. **Resolve the id.** Full id or 8-char prefix as given; a name → `agentctl ls --json | jq -r '.[] | select(.name=="<name>") | .id'`. Zero or several matches → say so and stop (the one place this command may stop instead of guessing).
+2. **Pass the target everywhere.** Every script call gets `--session-id <target id>` (and `health` prints the transcript + cwd to reuse): `health --session-id <id>`, `snapshot`, `copy`, and the `search` line in the instruction string (`search '<regex>' --session-id <id>`). Without it the script falls back to THIS session.
+3. **Read it from a digest, not from your context.** `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/smart_compact.py" digest --session-id <id> --out <work-dir>/digest.md` condenses the transcript (text + short tool stubs). The no-reading HARD-GATE is about your OWN context; here the digest is the conversation. Over ~60K chars → hand Steps 2–6 to one subagent (model `opus`): give it this file's path, the digest path, the target's transcript path (bounded grep only, never cat), the handoff path and the script path (get the handoff path first: run `snapshot --session-id <id> --cwd <cwd>` once without notes — it prints it; the notes merge later overwrites the same file), and have it write the notes file and the instruction file. Weight the last ~25% of the digest for mode, NEXT and in-flight work; scan all of it for standing instructions and approval gates.
+4. **In-flight work** is the target's (its crons, monitors, subagents, peer sessions) — you cannot see its task list, only what the digest shows; say so in the inference line.
+5. **Clipboard label** = the target's name, not yours (`copy --session-id <id>`; pass `--name <target name>` when exit 3).
+6. **Tell the human where to paste**: "Paste into session `<name>` (`<id8>`), after `/compact `." The target may be on another profile or pane — never type into it yourself.
 
 ---
 

@@ -715,19 +715,19 @@ def find_transcript(cwd: str | None, session_id: str | None = None) -> str | Non
     return None
 
 
-def resolve_transcript(arg: str | None, cwd: str | None) -> str | None:
+def resolve_transcript(arg: str | None, cwd: str | None, session_id: str | None = None) -> str | None:
     if arg and os.path.exists(arg):
         return arg
-    return find_transcript(cwd)
+    return find_transcript(cwd, session_id)
 
 
 # ---------------------------------------------------------------- subcommand: health
 
 def cmd_health(args) -> int:
     cwd = args.cwd or os.getcwd()
-    transcript = resolve_transcript(args.transcript, cwd)
+    transcript = resolve_transcript(args.transcript, cwd, args.session_id)
     if not transcript:
-        sid = os.environ.get("CLAUDE_CODE_SESSION_ID")
+        sid = args.session_id or os.environ.get("CLAUDE_CODE_SESSION_ID")
         msg = (f"transcript for session {sid} not found — pass --transcript PATH" if sid
                else "no transcript found — pass --transcript PATH")
         print(json.dumps({"error": msg}) if args.json else msg)
@@ -794,7 +794,7 @@ def cmd_health(args) -> int:
 
 def cmd_snapshot(args) -> int:
     cwd = args.cwd or os.getcwd()
-    transcript = resolve_transcript(args.transcript, cwd)
+    transcript = resolve_transcript(args.transcript, cwd, args.session_id)
     session_id = args.session_id or (Path(transcript).stem if transcript else "unknown")
     notes = None
     if args.merge_model_notes:
@@ -1696,7 +1696,7 @@ def cmd_copy(args) -> int:
     out = prompt_path(sid)
     if args.file:
         label = " ".join((args.name or "").split())[:60] \
-            or session_label(sid, resolve_transcript(args.transcript, args.cwd))
+            or session_label(sid, resolve_transcript(args.transcript, args.cwd, sid))
         if not label:
             print("NO SESSION NAME: pick a short kebab name for this session and rerun with "
                   "--name <name>", file=sys.stderr)
@@ -1730,6 +1730,46 @@ def cmd_copy(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- subcommand: digest
+
+def cmd_digest(args) -> int:
+    """Condense ANOTHER session's transcript (user/assistant text + short tool-call stubs, in
+    order) into a file, so /smart-compact can be run for a session it is not running inside."""
+    transcript = resolve_transcript(args.transcript, args.cwd, args.session_id)
+    if not transcript:
+        print("transcript not found — pass --session-id or --transcript")
+        return 1
+    rows = []
+    for rec in iter_records(transcript):
+        kind = rec.get("type")
+        if kind not in ("user", "assistant") or rec.get("isMeta"):
+            continue
+        content = (rec.get("message") or {}).get("content")
+        if isinstance(content, str):
+            text = content
+        else:
+            parts = []
+            for b in content or []:
+                if not isinstance(b, dict):
+                    continue
+                if b.get("type") == "text":
+                    parts.append(b.get("text") or "")
+                elif b.get("type") == "tool_use":
+                    parts.append(f"[tool {b.get('name')}: {json.dumps(b.get('input'))[:300]}]")
+            text = "\n".join(parts)
+        if not text.strip() or (kind == "user" and text.lstrip().startswith(("<system-reminder>", "<local-command"))):
+            continue
+        rows.append(f"### {kind.upper()} {(rec.get('timestamp') or '')[:16]}\n"
+                    f"{text[:2500 if kind == 'user' else 1200]}")
+    out = Path(args.out or Path(os.environ.get("TMPDIR", "/tmp")) / f"smart-compact-digest-{Path(transcript).stem}.md")
+    out.write_text("\n\n".join(rows), encoding="utf-8")
+    print(f"digest     : {out}")
+    print(f"turns      : {len(rows)}  ({sum(map(len, rows)):,} chars)")
+    print(f"session id : {Path(transcript).stem}")
+    print(f"transcript : {transcript}")
+    return 0
+
+
 # ---------------------------------------------------------------- main
 
 def main(argv: list[str]) -> int:
@@ -1739,6 +1779,7 @@ def main(argv: list[str]) -> int:
 
     h = sub.add_parser("health")
     h.add_argument("--transcript")
+    h.add_argument("--session-id", help="another session (default: this one)")
     h.add_argument("--cwd")
     h.add_argument("--json", action="store_true")
 
@@ -1762,6 +1803,12 @@ def main(argv: list[str]) -> int:
     c.add_argument("--transcript")
     c.add_argument("--cwd")
 
+    d = sub.add_parser("digest", help="condense another session's transcript for a cross-session run")
+    d.add_argument("--session-id")
+    d.add_argument("--transcript")
+    d.add_argument("--cwd")
+    d.add_argument("--out", help="default: $TMPDIR/smart-compact-digest-<session_id>.md")
+
     for name in ("hook-precompact", "hook-sessionstart", "hook-nag", "demo"):
         sub.add_parser(name)
 
@@ -1774,6 +1821,8 @@ def main(argv: list[str]) -> int:
         return cmd_search(args)
     if args.cmd == "copy":
         return cmd_copy(args)
+    if args.cmd == "digest":
+        return cmd_digest(args)
     if args.cmd == "hook-precompact":
         return run_hook(hook_precompact_body)
     if args.cmd == "hook-sessionstart":
