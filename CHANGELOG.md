@@ -10,6 +10,9 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-13
 
 ### Changed
+- finalize-app-release 0.8.1: step B4b reworked — the tip popup gets no feature lines. On every version one
+  Opus reviewer asks whether a change would bring in more tips; any proposed change waits for the user's OK,
+  `NO CHANGE` lets the release continue. The state script only lists the popup file (INFO), no WARN.
 - finalize-app-release 0.8.0: a Sparkle app's local install now goes through the app's own updater —
   the user clicks Check for Updates → Install Update, or Claude runs it with their OK (clear the last check
   time, relaunch, wait for the staged update, quit to install) — instead of `brew upgrade`; brew stays for

@@ -434,12 +434,7 @@ fi
 
 # ---------- support popup (Ko-fi tip prompt, rolling out app by app; SKILL § B4b) ----------
 SP=$(git ls-files 2>/dev/null | grep -E '(^|/)SupportPrompt[^/]*\.[a-z]+$' | grep -vi test | head -1)
-if [ -n "$SP" ]; then
-  NEWS=$(awk -v v="## [$VER]" 'index($0, v) == 1 {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md 2>/dev/null | grep -cE '^### (Added|Changed)')
-  if [ -n "$PREV" ] && [ "${NEWS:-0}" -gt 0 ] && git diff --quiet "v$PREV" -- "$SP" 2>/dev/null; then
-    warn "support popup $SP unchanged since v$PREV while $VER adds or changes features — name the headline one in it (§ B4b)"
-  else ok "support popup $SP"; fi
-elif [ -n "$APP" ] && [ "$KIND" = Casks ]; then info "no support popup yet (SupportPrompt*, rolling out app by app)"; fi
+[ -n "$SP" ] && info "support popup $SP — Opus tip review on this version (§ B4b)"
 
 # ---------- local install ----------
 SPK=""

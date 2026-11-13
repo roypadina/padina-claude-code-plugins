@@ -151,8 +151,8 @@ the copy you actually run. One skill runs the whole checklist at the end of a se
 sees the work wrapping up). A script checks the mechanical part in about ten seconds — including that
 the tap and wiki really reached the server, since a failed tap push still upgrades your own Mac — and
 stamps a clean result, so the next run skips the review when nothing changed. It also catches screenshots
-that vanish in GitHub dark mode, keeps each app's demo GIF, site video and in-app tip popup current, updates Sparkle apps through their
-own updater, and puts one review
+that vanish in GitHub dark mode, keeps each app's demo GIF and site video current, has Opus review the in-app tip popup (changes only with
+your OK), updates Sparkle apps through their own updater, and puts one review
 agent over the whole pass before anything public is pushed. Run on this marketplace,
 it does the same for a plugin change: version bump, CHANGELOG line, READMEs, wiki page and the
 installed copy on every Claude profile.

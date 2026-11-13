@@ -39,8 +39,9 @@ forgotten — and a tap push that silently failed still upgrades your own Mac, s
   release's `appcast.xml`, cask `auto_updates true`); the state script flags a missing feed asset or an unsigned item.
   A Sparkle app's local install goes through its own updater (you click Check for Updates → Install Update,
   or Claude runs it with your OK), not `brew upgrade`; brew stays for apps without Sparkle and CLIs.
-- **Support popup** — apps with the in-app Ko-fi tip popup (`SupportPrompt*`, rolling out app by app) get its
-  text checked on every version: a release that adds features names the headline one in it.
+- **Support popup** — apps with the in-app Ko-fi tip popup (`SupportPrompt*`, rolling out app by app): on every
+  version one Opus reviewer asks whether a change would bring in more tips. Proposed changes always wait for
+  your OK; `NO CHANGE` means the release just continues.
 - **Demo lifecycle** — every public app gets a looping "how it works" GIF (README) and MP4 (site), rendered
   offscreen from the app's real views with a bundled kit (`references/demo.md`, `references/demo-kit/`). A new app gets
   one, a UI change re-renders it for README and site together, a removed feature or replaced clip leaves no orphan files.

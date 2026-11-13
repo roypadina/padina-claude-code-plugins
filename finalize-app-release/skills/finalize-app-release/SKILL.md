@@ -123,19 +123,18 @@ Top to bottom. Skip what Step 1 already shows as OK.
      reference to it (repo, wiki, site `static/screenshots/<slug>/`, `apps.json`, page): no orphans left.
    - A real recording without `docs/demo/` (LanGuard) is re-recorded by hand under the same names.
 4b. **Support popup** — the in-app Ko-fi tip popup, rolling out to every app one by one (MeetAlert first:
-   `Sources/MeetAlert/SupportPrompt.swift`, a "receipt" of what the app did for the user). Step 1 finds it by
-   a source file named `SupportPrompt*`, so every app keeps that name. Check it on every version against
-   this version's CHANGELOG section; Step 1 WARNs when the section has `Added`/`Changed` items and the
-   popup file is unchanged since the last tag.
-   - **New or changed user-facing features** → name the headline one in the popup: one short line in its
-     voice ("New in X.Y: …"), saying what the user gains, not how it works. Add a receipt row only for
-     something the app really counts. Keep its VoiceOver announcement in step with the visible text.
-   - **Fixes only** → no new line, but check nothing in it went stale (renamed features or settings,
-     stats the app no longer counts, a "New in" line older than the previous minor).
-   - Leave the ask rules alone in a release pass: trigger moment, first-ask threshold, snooze, "Nope"
-     until the next major, quiet period after Support, max 3 asks per 365 days. They are the design.
-   - Run the app's popup tests. A preview needs the user (MeetAlert: `MEETALERT_TEST=1` + ⌥-click "Show
-     support prompt now") unless the app renders it offscreen in a screenshot test.
+   `Sources/MeetAlert/SupportPrompt.swift`, a "receipt" of what the app did for the user). Step 1 prints it as
+   `INFO support popup <file>`, found by a source file named `SupportPrompt*`, so every app keeps that name.
+   On every version, spawn ONE reviewer with `model: "opus"` whose only goal is more tips without annoying
+   users. Give it the popup source (text, look, motion, trigger and ask rules), this version's CHANGELOG
+   section and what the app does for its users. It replies `NO CHANGE`, or a short list of proposed
+   changes, each with why it should bring in more tips.
+   - `NO CHANGE` → continue the release; nothing else to do.
+   - Proposed changes → **always ask the user first.** Show each change and its reason, wait for an explicit
+     OK per change, apply only what they approve. Never change the popup on your own, not even a word.
+   - The popup is not a "what's new" panel: no feature lists in it.
+   - Approved changes: run the app's popup tests. A preview needs the user (MeetAlert: `MEETALERT_TEST=1`
+     + ⌥-click "Show support prompt now") unless the app renders it offscreen in a screenshot test.
 5. **Wiki** — update every page that touches the change. A new page goes into `_Sidebar.md` too (the
    custom sidebar replaces GitHub's page list). The clone sits next to the repo as `<Repo>.wiki`,
    branch `master` (MeetAlert: nested `MeetAlert/wiki`). Commit now; after § C2 push by URL:
