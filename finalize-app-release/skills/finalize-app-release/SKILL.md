@@ -71,7 +71,7 @@ finds the version source, tag, latest GitHub release and its assets, the cask or
 `~/Code/Padina/homebrew-tap`, tap README row, tap and wiki push state against the server,
 CHANGELOG/appcast top entry, README install line, screenshots with transparent pixels, the demo GIF
 (sources, UI drift since its last render, site video, orphan media), Ko-fi everywhere,
-stale mentions of the previous version, and the installed copy in `/Applications`.
+stale mentions of the previous version, the support popup (B4b), and the installed copy in `/Applications`.
 
 The script SKIPs any path outside `~/Code/Padina`, including a feature worktree in a ClaudWork folder.
 Run it on the shared clone: before the merge for the docs checks, after the merge for the release.
@@ -122,6 +122,20 @@ Top to bottom. Skip what Step 1 already shows as OK.
    - **A feature is removed or renamed, or a demo is replaced** → delete the old gif/mp4/webp and every
      reference to it (repo, wiki, site `static/screenshots/<slug>/`, `apps.json`, page): no orphans left.
    - A real recording without `docs/demo/` (LanGuard) is re-recorded by hand under the same names.
+4b. **Support popup** — the in-app Ko-fi tip popup, rolling out to every app one by one (MeetAlert first:
+   `Sources/MeetAlert/SupportPrompt.swift`, a "receipt" of what the app did for the user). Step 1 finds it by
+   a source file named `SupportPrompt*`, so every app keeps that name. Check it on every version against
+   this version's CHANGELOG section; Step 1 WARNs when the section has `Added`/`Changed` items and the
+   popup file is unchanged since the last tag.
+   - **New or changed user-facing features** → name the headline one in the popup: one short line in its
+     voice ("New in X.Y: …"), saying what the user gains, not how it works. Add a receipt row only for
+     something the app really counts. Keep its VoiceOver announcement in step with the visible text.
+   - **Fixes only** → no new line, but check nothing in it went stale (renamed features or settings,
+     stats the app no longer counts, a "New in" line older than the previous minor).
+   - Leave the ask rules alone in a release pass: trigger moment, first-ask threshold, snooze, "Nope"
+     until the next major, quiet period after Support, max 3 asks per 365 days. They are the design.
+   - Run the app's popup tests. A preview needs the user (MeetAlert: `MEETALERT_TEST=1` + ⌥-click "Show
+     support prompt now") unless the app renders it offscreen in a screenshot test.
 5. **Wiki** — update every page that touches the change. A new page goes into `_Sidebar.md` too (the
    custom sidebar replaces GitHub's page list). The clone sits next to the repo as `<Repo>.wiki`,
    branch `master` (MeetAlert: nested `MeetAlert/wiki`). Commit now; after § C2 push by URL:
@@ -154,8 +168,8 @@ after `APPROVE`. Skip only when the pass changed nothing (Step 1 clean, no new c
     last tag (`git diff v<last>..HEAD`), CHANGELOG, the release-notes text, README, the wiki clone's diff,
     new or changed screenshots and demo media, and the site files (`apps.json`, page,
     `static/screenshots/<slug>/`). It checks:
-    - **Correctness**: README, wiki, CHANGELOG, notes and demo captions match the code (features, settings,
-      shortcuts, versions).
+    - **Correctness**: README, wiki, CHANGELOG, notes, demo captions and the support popup text (B4b) match
+      the code (features, settings, shortcuts, versions).
     - **Look**: views each new image on white and on `#0d1117` (Step 1's dark previews), site images also on
       `#1c2243`, and the demo's first, mid-crossfade, last and poster frames.
     - **Security and privacy**: public-clean (no tokens, emails, hostnames, home paths, employer names or
@@ -254,7 +268,38 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
 
 ### F. Local install — part of the release, not optional
 
-16. Put the released version on the user's Mac:
+16. Put the released version on the user's Mac. Pick the path by what is installed now.
+
+    **A. In-app update** — the app has an update flow (Sparkle) and the installed copy already has it
+    (`/Applications/<App>.app/Contents/Frameworks/Sparkle.framework` exists). No `brew upgrade`, no zip copy:
+    the app updates itself, which also tests the release's feed on a real install.
+    - Check the live feed serves the release first:
+      `curl -sL "<SUFeedURL>?x=$RANDOM" | grep -o '<sparkle:shortVersionString>[^<]*'` shows X.Y.Z.
+    - Tell the user the one step: **<App> menu → Check for Updates… → Install Update**. Sparkle downloads,
+      installs and relaunches the app itself. A check the user starts always shows the update window, even
+      with silent updates on.
+    - Offer to run it for them. It works without touching the UI, but it quits and relaunches their app, so
+      ask each time: the user's rules forbid relaunching a menu-bar app from a session without an explicit
+      OK, and never an always-on app (meeting alarm, auto-lock, ntfy client) while they are away. With the OK:
+      1. `defaults delete <bundle id> SULastCheckTime`, so the next launch checks at once.
+      2. Quit: `osascript -e 'quit app id "<bundle id>"'` (exact-PID `kill` if it hangs).
+      3. Relaunch env-stripped (command under "Both paths") and check the env count is `0`.
+      4. Wait for Sparkle to stage the update (a background until-loop, not sleeps):
+         `~/Library/Caches/<bundle id>/org.sparkle-project.Sparkle/Installation/*/*/<App>.app` with
+         `CFBundleShortVersionString` X.Y.Z (a sandboxed app: under
+         `~/Library/Containers/<bundle id>/Data/Library/Caches/`). This needs silent updates
+         (`defaults read <bundle id> SUAutomaticallyUpdate` = 1, set on Roy's Mac per § Sparkle updates).
+         Without them the update window opens instead: ask the user to click Install Update.
+      5. Quit again: Sparkle installs on quit. Wait until `/Applications/<App>.app` reports X.Y.Z.
+      6. Relaunch env-stripped. Check the env count is `0` and `vmmap <pid> | grep -c Sparkle.framework` > 0.
+    - brew keeps recording the old version for these casks. That is expected (`brew upgrade` skips
+      `auto_updates true` casks without `--greedy`); don't "fix" it.
+    - A LaunchAgent app (KeepAlive) is untested this way: after the update Step 1 must show one PID, else
+      use the LaunchAgent recipe under "Both paths".
+    - Verified on MeetAlert 1.9.2 → 1.9.3 (2026-11-13): staged within seconds of launch, installed on quit.
+
+    **B. brew** — no Sparkle, a CLI cask or formula, or the app's first Sparkle release (the installed copy
+    has no Sparkle yet, so it cannot update itself):
     - Default: `brew upgrade --cask roypadina/tap/<token>` (a Sparkle cask with `auto_updates true` needs
       `--greedy`, else brew skips it and keeps recording the old version), then
       `xattr -dr com.apple.quarantine "/Applications/<App>.app"` (self-signed with a stable identity; Gatekeeper may
@@ -262,6 +307,8 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
     - Exception: an app whose Accessibility grant belongs to a local signing identity and whose release is
       not signed with it is installed with its dev build script, never `brew upgrade` — the app's memory
       note says which. (SmartHiddenBar no longer: releases share the identity since 1.3.2.)
+
+    **Both paths:**
     - Quit the old copy by exact PID (`pgrep -x <Executable>` → `kill <pid>`, or
       — `pgrep -x` matches the 15-character process name, so a longer executable (`ObsidianVaultGitWatcher`)
       needs `pgrep -f "/Applications/<App>.app/Contents/MacOS/"` —
@@ -278,7 +325,7 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
       macOS 27 a menu-bar app then runs without a visible status item. After packaging, unregister and delete it:
       `/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -u <repo>/dist/<App>.app && rm -rf <repo>/dist/<App>.app`;
       `lsregister -dump | grep "^path:.*<App>.app"` must list only `/Applications`. Then relaunch.
-    - App run by a LaunchAgent with KeepAlive (Obsidian Vault Git Watcher, VaultBar): brew swaps the bundle under
+    - App run by a LaunchAgent with KeepAlive (Obsidian Vault Git Watcher, VaultBar), brew path: brew swaps the bundle under
       the running agent, launchd relaunches it while still quarantined → SIGKILL "Launch Constraint Violation"
       (crash report). Clear the quarantine, then `launchctl kickstart -k gui/$(id -u)/<label>` — not `open`
       (a second, non-agent copy). If quitting it changes the user's state (VaultBar locks open vaults), leave
@@ -359,16 +406,16 @@ Summary only — the app's `CLAUDE.md` and memory note win.
 
 | App | Dir in `~/Code/Padina` | Quirks |
 |---|---|---|
-| LanGuard | `LanGuard-app` | Version in `Config/Shared.xcconfig`; xcodebuild Release + ditto zip; universal build needs `-destination 'generic/platform=macOS'`; wiki clone `LanGuard.wiki` next to the repo; helper script/plist changed → after `brew upgrade` the user relaunches it (Raycast) and clicks Settings › Protection › Update helper, then `launchctl print system/com.roypadina.languard-net` shows `runs = 1` staying at 1 |
+| LanGuard | `LanGuard-app` | Version in `Config/Shared.xcconfig`; xcodebuild Release + ditto zip; universal build needs `-destination 'generic/platform=macOS'`; wiki clone `LanGuard.wiki` next to the repo; helper script/plist changed → after the update (§ F) the user relaunches it (Raycast) and clicks Settings › Protection › Update helper, then `launchctl print system/com.roypadina.languard-net` shows `runs = 1` staying at 1 |
 | MaccyPlus | `Maccay` | Remote `padina`, never `origin`; version in the pbxproj; prepend an `appcast.xml` item (length = zip bytes, `sparkle:version` = build) after the release asset exists; since 2.10.2 (`SUPublicEDKey`) the `<enclosure>` must carry `sparkle:edSignature` + `length` exactly as `build-release.sh` prints them (`appcast enclosure:` line) — an unsigned item is refused by every keyed copy. `main` is protected, so it goes in its own PR `appcast: X.Y.Z`; `xmllint --noout appcast.xml` first; wiki clone is `maccyplus.wiki` (slug, not folder name); upstream-sync PRs merge with `--merge`, never `--squash`; build with `MACCYPLUS_SIGN_IDENTITY` set (see memory) |
 | VaultBar | `VaultBar` | Push only `main`; privacy triple check before every public push; `RELEASE=1 Scripts/package_app.sh` |
 | Window Organizer | `window-organizer` | Version is a literal in the `Scripts/package_app.sh` plist heredoc; asset `Window-Organizer.zip` |
-| SmartHiddenBar | `SmartHiddenBar` | `RELEASE=1 ./build.sh` (Sparkle since 1.6.0: also writes `build/appcast.xml` from the CHANGELOG section — heading first, upload both assets; local install `brew upgrade --cask --greedy`); since 1.3.2 releases share the dev identity, so local install = `brew upgrade` + quarantine clear (grant survives, verified 1.3.3) |
+| SmartHiddenBar | `SmartHiddenBar` | `RELEASE=1 ./build.sh` (Sparkle since 1.6.0: also writes `build/appcast.xml` from the CHANGELOG section — heading first, upload both assets; local install = in-app update, § F path A); since 1.3.2 releases share the dev identity, so the brew path (§ F B) is `brew upgrade` + quarantine clear (grant survives, verified 1.3.3) |
 | MeetAlert | `MeetAlert` | Wiki is the nested clone `MeetAlert/wiki`; `build.sh` makes no zip — ditto it; bump `Info.plist` with `sed` on the two version lines, because `PlistBuddy` reformats the whole file |
-| Agents Monitor | `AgentsMonitor` | Asset must be `AgentsMonitor.zip`; Sparkle since 1.9.0: `Scripts/build-release.sh` also writes `build/appcast.xml` (feed = `releases/latest/download/appcast.xml`, notes = the CHANGELOG section, so the `## [X.Y.Z]` heading must exist before the build) — upload it with the zip; never commit work or topic strings; local install: after `brew upgrade`, extract the release zip to `/tmp`, clear quarantine there, `ditto` it over `/Applications` before launch (Gatekeeper trashes the brew copy) |
+| Agents Monitor | `AgentsMonitor` | Asset must be `AgentsMonitor.zip`; Sparkle since 1.9.0: `Scripts/build-release.sh` also writes `build/appcast.xml` (feed = `releases/latest/download/appcast.xml`, notes = the CHANGELOG section, so the `## [X.Y.Z]` heading must exist before the build) — upload it with the zip; never commit work or topic strings; local install = in-app update (§ F A); on the brew path, after `brew upgrade` extract the release zip to `/tmp`, clear quarantine there, `ditto` it over `/Applications` before launch (Gatekeeper trashes the brew copy) |
 | agentctl | `agentctl` | CLI-only cask since 0.11.0 (`binary "agentctl/bin/agentctl"`, no app, no About window — Ko-fi lives in `--help`). `main` protected: bump `package.json` + lock + CHANGELOG in a PR, admin-merge; `npm ci` then `sh scripts/build-release.sh` → `release/agentctl.zip` in a throwaway worktree at the merge sha (the script's `npm run build` needs devDeps); CI's `Test (ubuntu, best-effort)` leg flakes, macOS `Test & build` is the gate; local install = `brew upgrade --cask agentctl` only (no xattr, no relaunch) |
 | Obsidian Vault Git Watcher | `ObsidianVaultGitWatcher` | Plain `swiftc` via `build.sh` (no SwiftPM/Xcode), version in `Info.plist`; `./build.sh dist` → `dist/ObsidianVaultGitWatcher.zip`; `main` protected; never push local `backup/pre-public`; after `brew upgrade` reload the LaunchAgent (copy repo plist, `bootout` exact label, `bootstrap`) |
-| PullPing | `PullPing` | Version in `Info.plist` (`CFBundleShortVersionString` + `CFBundleVersion`) + bug_report.yml placeholder; `main` protected → PR, admin-merge; `RELEASE=1 Scripts/package_app.sh` → `dist/PullPing.zip`; README screenshots `RENDER_SCREENSHOTS=$PWD/docs/screenshots swift test --filter ScreenshotRenderTests` (fake data); site WebP = `cwebp -q 85` (main-window `-resize 1600 0`, others native); menu-bar app: after `brew upgrade` + xattr, Roy relaunches it (Raycast) unless his rules allow a session relaunch; cask has `binary … target: "pullping"` (the app executable is the `pullping` CLI); a feature branch whose history holds private names (old test fixtures) is squashed to one local commit before the first push |
+| PullPing | `PullPing` | Version in `Info.plist` (`CFBundleShortVersionString` + `CFBundleVersion`) + bug_report.yml placeholder; `main` protected → PR, admin-merge; `RELEASE=1 Scripts/package_app.sh` → `dist/PullPing.zip`; README screenshots `RENDER_SCREENSHOTS=$PWD/docs/screenshots swift test --filter ScreenshotRenderTests` (fake data); site WebP = `cwebp -q 85` (main-window `-resize 1600 0`, others native); menu-bar app, Sparkle since 0.6.0: local install = in-app update (§ F A); cask has `binary … target: "pullping"` (the app executable is the `pullping` CLI); a feature branch whose history holds private names (old test fixtures) is squashed to one local commit before the first push |
 | claude-jam | `claude-jam` | Formula from the tag tarball; README and wiki quote the npm tarball version — bump them |
 
 ## Sparkle updates
@@ -426,12 +473,8 @@ In-app update check + prompt (Sparkle 2) — template: Agents Monitor commit "Ad
   `SUAutomaticallyUpdate -bool YES` per Sparkle app (a sandboxed app's container gets it through cfprefsd).
 - **Live install test**: installing a release build in `/Applications` quits Roy's running copy — never for
   his always-on apps (meeting alarm, auto-lock, ntfy client) while he is away; build and review, install
-  when he is back. The real update test is the next release reaching the installed copy through Sparkle.
-  An app's first Sparkle release cannot reach it (the installed copy has no Sparkle) → one § F brew upgrade.
-  After that, with Roy's OK to relaunch his apps: `defaults write <id> SULastCheckTime -date "2026-01-01 00:00:00 +0000"`,
-  quit, relaunch env-stripped; with the silent prefs Sparkle stages the update within seconds
-  (`~/Library/Caches/<id>/org.sparkle-project.Sparkle/Installation`); quit again → it installs; relaunch and check
-  the version, `vmmap <pid> | grep -c Sparkle.framework` and no leaked session env.
+  when he is back. Every release after an app's first Sparkle one reaches the installed copy through
+  Sparkle: § F path A. The first Sparkle release cannot (the installed copy has no Sparkle) → § F path B.
 
 ## Self-update
 

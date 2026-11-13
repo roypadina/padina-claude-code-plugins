@@ -432,12 +432,25 @@ if [ "$VIS" = PUBLIC ]; then
   [ -n "$SRC" ] && ok "in-app Ko-fi link: $SRC" || gap "no Ko-fi link in app source (About window / menu / --help)"
 fi
 
+# ---------- support popup (Ko-fi tip prompt, rolling out app by app; SKILL § B4b) ----------
+SP=$(git ls-files 2>/dev/null | grep -E '(^|/)SupportPrompt[^/]*\.[a-z]+$' | grep -vi test | head -1)
+if [ -n "$SP" ]; then
+  NEWS=$(awk -v v="## [$VER]" 'index($0, v) == 1 {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md 2>/dev/null | grep -cE '^### (Added|Changed)')
+  if [ -n "$PREV" ] && [ "${NEWS:-0}" -gt 0 ] && git diff --quiet "v$PREV" -- "$SP" 2>/dev/null; then
+    warn "support popup $SP unchanged since v$PREV while $VER adds or changes features — name the headline one in it (§ B4b)"
+  else ok "support popup $SP"; fi
+elif [ -n "$APP" ] && [ "$KIND" = Casks ]; then info "no support popup yet (SupportPrompt*, rolling out app by app)"; fi
+
 # ---------- local install ----------
+SPK=""
 if [ -n "$APP" ] && [ "$KIND" = Casks ]; then
   A="/Applications/$APP.app"
   if [ -d "$A" ]; then
     LV=$(pl CFBundleShortVersionString "$A/Contents/Info.plist")
-    [ "$LV" = "$VER" ] && ok "installed $A is $LV" || gap "installed $A is $LV, source $VER — upgrade the local install"
+    [ -d "$A/Contents/Frameworks/Sparkle.framework" ] && SPK=1  # updates itself: SKILL § F path A
+    if [ "$LV" = "$VER" ]; then ok "installed $A is $LV"
+    elif [ -n "$SPK" ]; then gap "installed $A is $LV, source $VER — update in the app: $APP menu → Check for Updates… → Install Update (or the session runs it with the user's OK, § F path A)"
+    else gap "installed $A is $LV, source $VER — upgrade the local install (§ F path B)"; fi
     xattr -p com.apple.quarantine "$A" >/dev/null 2>&1 && warn "$A still quarantined (xattr -dr com.apple.quarantine)"
     EXE=$(pl CFBundleExecutable "$A/Contents/Info.plist")
     PIDS=$(pgrep -x "$EXE" | tr '\n' ' ')
@@ -452,7 +465,10 @@ if [ -n "$APP" ] && [ "$KIND" = Casks ]; then
     gap "$A not installed"
   fi
   BV=$(brew list --cask --versions "$TOKEN_RB" 2>/dev/null | awk '{print $2}')
-  [ -n "$BV" ] && [ "$BV" != "$VER" ] && info "brew records $TOKEN_RB $BV (fine only if this app is installed another way on purpose)"
+  if [ -n "$BV" ] && [ "$BV" != "$VER" ]; then
+    [ -n "$SPK" ] && info "brew records $TOKEN_RB $BV (expected: the app updates itself; brew upgrade skips auto_updates casks)" \
+      || info "brew records $TOKEN_RB $BV (fine only if this app is installed another way on purpose)"
+  fi
 elif [ "$KIND" = Casks ]; then
   # binary-only cask (no `app` stanza): the brew record is the install
   BV=$(brew list --cask --versions "$TOKEN_RB" 2>/dev/null | awk '{print $2}')

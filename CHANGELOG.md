@@ -7,6 +7,16 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-13
+
+### Changed
+- finalize-app-release 0.8.0: a Sparkle app's local install now goes through the app's own updater —
+  the user clicks Check for Updates → Install Update, or Claude runs it with their OK (clear the last check
+  time, relaunch, wait for the staged update, quit to install) — instead of `brew upgrade`; brew stays for
+  apps without Sparkle and CLIs. New step B4b checks the in-app Ko-fi tip popup (`SupportPrompt*`) on every
+  version: a release that adds features names the headline one in it, and the state script WARNs when the
+  popup is untouched.
+
 ## 2026-11-11
 
 ### Changed
