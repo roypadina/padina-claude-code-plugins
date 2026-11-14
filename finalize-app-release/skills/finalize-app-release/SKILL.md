@@ -83,6 +83,9 @@ Run it on the shared clone: before the merge for the docs checks, after the merg
   no release, but README and wiki still get updated.
 - Bump the version at the source the script names, plus every copy: `appcast.xml`, `package-lock.json`,
   the bug-report template placeholder, docs that quote it.
+- Bump the build number too (CFBundleVersion / `BUILD_NUMBER` / `CURRENT_PROJECT_VERSION` — wherever the repo
+  keeps it): Sparkle compares `sparkle:version` (the build), never the version string. Same build as the
+  previous release = no update offered (ASH 1.8.1–1.11.0 all shipped build 10). Step 1 GAPs on it.
 
 ## Step 3 — checklist
 

@@ -315,6 +315,21 @@ if [ -n "$SPLISTS" ]; then
       *) gap "Sparkle feed is the latest release's appcast.xml, but $REL_TAG has none — gh release upload $REL_TAG build/appcast.xml" ;;
     esac
   fi
+  # Sparkle compares sparkle:version (the build number), not the version string: it must grow every release
+  sbuilds() { grep -oE 'sparkle:version(="[0-9.]+"|>[0-9.]+<)' | grep -oE '[0-9][0-9.]*'; }
+  NEWB=""; OLDB=""
+  case ",$ASSETS," in
+    *",appcast.xml="*)
+      PREV=$(GH release list --repo "$OWNER/$SLUG" --limit 2 --json tagName -q '.[1].tagName' 2>/dev/null)
+      NEWB=$(curl -sL -m 8 "https://github.com/$OWNER/$SLUG/releases/download/$REL_TAG/appcast.xml" | sbuilds | head -1)
+      [ -n "$PREV" ] && OLDB=$(curl -sL -m 8 "https://github.com/$OWNER/$SLUG/releases/download/$PREV/appcast.xml" | sbuilds | head -1) ;;
+    *) if [ -f appcast.xml ]; then NEWB=$(sbuilds < appcast.xml | sed -n 1p); OLDB=$(sbuilds < appcast.xml | sed -n 2p); fi ;;
+  esac
+  if [ -n "$NEWB" ] && [ -n "$OLDB" ]; then
+    [ "$(printf '%s\n%s\n' "$OLDB" "$NEWB" | sort -V | tail -1)" = "$NEWB" ] && [ "$NEWB" != "$OLDB" ] \
+      && ok "Sparkle build $NEWB > previous $OLDB" \
+      || gap "Sparkle build $NEWB is not greater than the previous release's $OLDB — Sparkle offers no update; bump CFBundleVersion"
+  fi
   if [ -f appcast.xml ] && grep -qs SUPublicEDKey $SPLISTS; then
     awk '/<item>/{f=1} f; /<\/item>/{if (f) exit}' appcast.xml | grep -q 'sparkle:edSignature=' \
       && ok "appcast.xml top item is EdDSA-signed" \
