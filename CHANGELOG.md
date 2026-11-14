@@ -7,6 +7,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-14
+
+### Changed
+- finalize-app-release 0.8.2: verified LaunchAgent in-app update recipe, release-notes file from CHANGELOG with `--verify-tag`, CI Swift-version and `@SwiftUI.State` gotcha, support popup rollout status and reviewer principles
+
 ## 2026-11-13
 
 ### Changed

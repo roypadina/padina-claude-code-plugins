@@ -95,6 +95,8 @@ Top to bottom. Skip what Step 1 already shows as OK.
    Right after `gh pr create`, `gh pr checks --watch` prints "no checks reported" and exits non-zero:
    poll `gh pr checks` until a check exists, then watch. A helper script run in the background must not
    be edited while that run is open (bash reads the file as it goes) — run a copy.
+   CI may run an older Swift than the Mac: mirror `.github/workflows/*` locally. An app that defines its
+   own `State` (or another SwiftUI name) must qualify `@SwiftUI.State` (OVGW 0.5.0 failed CI on this).
 2. Commit now; push to the `roypadina/*` remote (MaccyPlus: remote `padina`; `origin` is upstream
    Maccy — never push there) only after the review gate (§ C2).
 
@@ -133,6 +135,14 @@ Top to bottom. Skip what Step 1 already shows as OK.
    - Proposed changes → **always ask the user first.** Show each change and its reason, wait for an explicit
      OK per change, apply only what they approve. Never change the popup on your own, not even a word.
    - The popup is not a "what's new" panel: no feature lists in it.
+   - Rollout (2026-11-14): shipped in MeetAlert 1.10.0, NtfyBar 1.7.0, Window Organizer 0.5.0, LanGuard 1.4.0,
+     OVGW 0.5.0, VaultBar 0.5.0, SmartHiddenBar 1.7.0, MaccyPlus 2.11.0, Agents Monitor 1.10.0,
+     AgentsSessionHopper 1.11.0. PullPing pending; CLIs (agentctl, claude-jam) skipped.
+   - Hold every app to these principles:
+     - only measured stats; title literally true ("since <date>" when counting starts at the update); zero rows hidden; `.formatted()`
+     - never after a stressful moment; skip while the app's own events still arrive; skip while the mic is in use (fade an open card when a call starts)
+     - only when settled: no sleep during the wait, no very recent input, not mid-typing, no menu open (CGWindowList popUpMenu level), no mouse button held
+     - unanswered 5 min or 2 min without input = snooze; app UI, update window, sleep or lock = snooze
    - Approved changes: run the app's popup tests. A preview needs the user (MeetAlert: `MEETALERT_TEST=1`
      + ⌥-click "Show support prompt now") unless the app renders it offscreen in a screenshot test.
 5. **Wiki** — update every page that touches the change. A new page goes into `_Sidebar.md` too (the
@@ -190,8 +200,10 @@ after `APPROVE`. Skip only when the pass changed nothing (Step 1 clean, no new c
    `ditto -c -k --keepParent <App>.app <App>.zip`). The asset name must equal the cask `url` filename
    (`Window-Organizer.zip`; `AgentsMonitor.zip`, not `AgentsMonitor.app.zip`).
 10. Tag `vX.Y.Z` on the pushed commit and push the tag. Then
-    `gh release create vX.Y.Z <zip> --repo roypadina/<Repo> --target main --title vX.Y.Z --notes "…"`.
-    `--target` takes `main` or a full sha, never a short one. Notes in house style: short and
+    `gh release create vX.Y.Z <zip> --repo roypadina/<Repo> --verify-tag --title vX.Y.Z --notes-file notes.md`
+    (tag pushed first; never type a short or invented `--target` sha). Build and check the file first:
+    `{ echo "SHA-256: $SHA"; echo; awk -v v="## [X.Y.Z]" 'index($0,v)==1{f=1;next} /^## \[/{f=0} f' CHANGELOG.md; } > notes.md`
+    (three releases on 2026-11-14 shipped an empty body from a sed one-liner and needed `gh release edit`). Notes in house style: short and
     user-facing — one line for a small release, bullets with bold lead-ins for a bigger one; reuse the
     CHANGELOG section (never empty notes; Step 1 GAPs on them). **First line of the notes: `SHA-256: <zip sha256>`** (`shasum -a 256 <zip>`; the
     site promises it; Step 1 flags a release without it). claude-jam: the tag tarball's hash.
@@ -293,8 +305,14 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
       6. Relaunch env-stripped. Check the env count is `0` and `vmmap <pid> | grep -c Sparkle.framework` > 0.
     - brew keeps recording the old version for these casks. That is expected (`brew upgrade` skips
       `auto_updates true` casks without `--greedy`); don't "fix" it.
-    - A LaunchAgent app (KeepAlive) is untested this way: after the update Step 1 must show one PID, else
-      use the LaunchAgent recipe under "Both paths".
+    - A LaunchAgent app (KeepAlive; verified Obsidian Vault Git Watcher 0.4.0 → 0.5.0, 2026-11-14): replace
+      the osascript quit (KeepAlive relaunches it at once) with `launchctl bootout gui/$(id -u)/<label>`, and
+      the env-stripped relaunch with `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<label>.plist`
+      (launchd gives it a clean env). Order: bootstrap → Sparkle stages → bootout (installs on quit) → bootstrap.
+    - An app lacking `SUAutomaticallyUpdate` gets it set per § Sparkle updates before the update. Sandboxed
+      apps (MaccyPlus, Agents Monitor) staged fine under `~/Library/Containers/<id>/Data/Library/Caches`.
+      Verified on 7 apps in one batch (Window Organizer, LanGuard, NtfyBar, SmartHiddenBar, MaccyPlus,
+      Agents Monitor, OVGW).
     - Verified on MeetAlert 1.9.2 → 1.9.3 (2026-11-13): staged within seconds of launch, installed on quit.
 
     **B. brew** — no Sparkle, a CLI cask or formula, or the app's first Sparkle release (the installed copy
