@@ -427,9 +427,9 @@ Never bind bare Delete, Return or arrows to a menu `Button` shortcut: it fires w
 
 ## Activation
 
-**IMP-6**. Since macOS 14 activation is cooperative: `NSApp.activate()` (14) is a request another app may decline. `activate(ignoringOtherApps:)` is deprecated in macOS 27. Call `activate()` only after a user action (hotkey, click, menu item), never at launch or from a timer. A non-activating panel needs none. To hand focus on: `yieldActivation(toApplicationWithBundleIdentifier:)` (14).
+**IMP-6**. Since macOS 14 activation is cooperative: `NSApp.activate()` (14) is a request another app may decline, and from an `.accessory` app it often is (traced on 27.2). On a user action (click, hotkey, menu item, reopen) call `NSApp.activate(ignoringOtherApps: true)`: deprecated (14, 27) but still forceful; add a one-line why comment. Anything else (launch, login, timer, notification, scheduled update reminder): `activate()` only, never forced. A non-activating panel needs none. To hand focus on: `yieldActivation(toApplicationWithBundleIdentifier:)` (14).
 
-On a 13 target branch with `if #available(macOS 14, *) { NSApp.activate() } else { NSApp.activate(ignoringOtherApps: true) }`; on 14+, call `NSApp.activate()` only. Activation-policy switching: [menu-bar-apps.md](menu-bar-apps.md).
+Symptoms, Sparkle's `state.userInitiated`, activation-policy switching and the hand-back after it: [menu-bar-apps.md](menu-bar-apps.md).
 
 ## macOS 27 deltas
 
@@ -437,7 +437,7 @@ From Apple's update pages and the docs JSON, 2026-10-28. "(27, verify)" = beta-e
 
 | Change | Min | Effect |
 |---|---|---|
-| `activate(ignoringOtherApps:)` | deprecated 27.0 | Use `activate()`. Force-activating hotkey apps may be less reliable. |
+| `activate(ignoringOtherApps:)` | deprecated 27.0 | Still forceful on 27.2: keep it for user-initiated activation of an accessory app (IMP-6), `activate()` elsewhere. Re-test on later builds. |
 | `NSMenuItem.preferredImageVisibility` | 27.0 | Menu item images hidden by default for apps linked on 26+; opt in per item. |
 | `NSView.cornerConfiguration` | 27.0 | Concentric and capsule corners for custom views; fixed radius below. |
 | `@State` becomes a macro | Xcode 27 build | **IMP-14**: class values in `@State` initialize once; re-test `@State var model = Model()` with side effects in `init`. |

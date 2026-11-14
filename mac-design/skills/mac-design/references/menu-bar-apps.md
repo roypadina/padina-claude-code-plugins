@@ -31,7 +31,7 @@ HIG: show a menu, not a popover, unless the content is too complex for one. Let 
       guard let item = NSApp.windows.lazy
           .filter({ String(describing: type(of: $0)).contains("NSStatusBarWindow") && $0.responds(to: key) })
           .compactMap({ $0.value(forKey: "statusItem") as? NSStatusItem }).first(where: { $0.isVisible }) else { return }
-      NSApp.activate()
+      NSApp.activate(ignoringOtherApps: true)  // hotkey or menu: a user action, so forceful (MBX-15)
       let begin = NSSelectorFromString("_beginExpandedInterfaceSession:"), current = NSSelectorFromString("expandedInterfaceSession")
       guard item.responds(to: begin), item.responds(to: current) else { item.button?.performClick(nil); return }  // macOS 26 and earlier
       if let session = item.perform(current)?.takeUnretainedValue() as? NSObject {
@@ -123,7 +123,7 @@ extension StatusController {
 
     private func togglePopover(from button: NSStatusBarButton) {
         if popover.isShown { popover.performClose(nil); return }
-        if #available(macOS 14, *) { NSApp.activate() }     // user action only; a request
+        NSApp.activate(ignoringOtherApps: true)             // user click only; forceful, else the panel's first menu closes (MBX-15)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()   // text fields need a key window
     }
@@ -205,11 +205,13 @@ Drawing, template rules and symbol configuration: [icons.md](icons.md).
 
 Set `LSUIElement` to `YES` in Info.plist for a menu-bar-only app (clean launch needed; an Xcode stop and run can mislead). The policy is `.accessory`: no Dock icon, no menu bar, no Command-Tab entry. A window shown that way gets poor focus, and text fields may ignore Command-C and Command-V without an Edit menu. So:
 
-1. Before a real window (Settings, welcome, main): `setActivationPolicy(.regular)`, then `NSApp.activate()`, then `makeKeyAndOrderFront(nil)`.
+1. Before a real window (Settings, welcome, main): `setActivationPolicy(.regular)`, then `NSApp.activate(ignoringOtherApps: true)`, then `makeKeyAndOrderFront(nil)`, then `keepFront(window)` (hand-back, below).
 2. When the last such window closes: `setActivationPolicy(.accessory)`. Popovers and panels do not count.
-3. Activate only on a user action (click, hotkey), never at launch or on a timer.
+3. Activate only on a user action (click, hotkey, menu item, reopen), never at launch, at login or on a timer.
 
-- `activate(ignoringOtherApps:)` is deprecated in macOS 27. Since macOS 14 activation is cooperative and `activate()` (14) is a request: gate it on a 13 target ([swiftui-appkit.md](swiftui-appkit.md)). Offer a Dock icon only as an explicit setting.
+- **Forceful on user actions, cooperative otherwise (IMP-6).** Since macOS 14 `NSApp.activate()` is a request, and from an `.accessory` app the front app often refuses it (traced on 27.2, 2026-11-14: `NSApp.isActive` reads true at once, but `frontmostApplication` stays the other app and `didBecomeActive` never posts). Symptoms: the first menu opened in a status popover or panel (`NSMenu` popUp, SwiftUI `Menu`, `Picker(.menu)`, right-click menu) closes at once, because opening it forces the activation and that closes it; windows opened from the menu bar open behind the front app. So a status-item click that opens a popover or panel, and every menu item or button that opens Settings, About, a main or welcome window, calls `NSApp.activate(ignoringOtherApps: true)`: deprecated (14, 27) but still forceful. Add a one-line why comment. Everything not started by the user (timers, notifications, launch at login, scheduled update reminders) keeps `activate()`. Sparkle: branch on `state.userInitiated` in `standardUserDriverWillHandleShowingUpdate`.
+- **Hand-back after the policy switch.** About 0.3–0.5 s after `.accessory` → `.regular`, macOS gives activation back to the previous app, even after the forceful call (traced 2026-11-15: Settings ended behind the front app with no click). After showing the window, watch 1.5 s: on `didResignActive` with no global mouse-down meanwhile and the window still visible, activate forcefully once and re-front the window (house `keepFront`, in the Settings example below). Only after a user-initiated show.
+- Offer a Dock icon only as an explicit setting.
 - A relaunch from Finder sends a reopen event: implement `applicationShouldHandleReopen(_:hasVisibleWindows:)` to open the primary UI (MBX-8). A Dock menu exists only while the policy is `.regular`.
 - Return `false` from `applicationShouldTerminateAfterLastWindowClosed`. To keep one main window, hide it with `orderOut(nil)` from a window delegate: close-then-reopen of a SwiftUI `Window` crashed AppKit on macOS 26 (community, one source).
 
@@ -261,8 +263,28 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
             window = w
         }
         NSApp.setActivationPolicy(.regular)             // Dock icon, menu bar, focus
-        if #available(macOS 14, *) { NSApp.activate() } else { NSApp.activate(ignoringOtherApps: true) }
+        NSApp.activate(ignoringOtherApps: true)         // a user action: forceful (MBX-15)
         window?.makeKeyAndOrderFront(nil)
+        if let window { keepFront(window) }
+    }
+
+    /// After the .accessory → .regular switch macOS hands activation back to the previous app (~0.3–0.5 s, traced on 27.2,
+    /// even after the forceful call). Take it back once unless the user clicked elsewhere meanwhile.
+    private func keepFront(_ window: NSWindow) {
+        var clicked = false, done = false
+        let monitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { _ in clicked = true }
+        let observer = NotificationCenter.default.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated {
+                guard !clicked, !done, window.isVisible else { return }
+                done = true
+                NSApp.activate(ignoringOtherApps: true)
+                window.makeKeyAndOrderFront(nil)
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            monitor.map(NSEvent.removeMonitor)
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     func windowWillClose(_ notification: Notification) {
@@ -279,7 +301,7 @@ Call it from the status menu and the panel's More menu. Keeping the `Settings` s
 
 ## Menu order, Quit, About (MBX-11, MBX-12)
 
-- **MBX-11** Order: actions, separator, status, separator, `Settings…` (Command-Comma), `About Example`, separator, `Quit Example` (Command-Q) last. Short app name (16 characters or fewer), no version in About. Open About with `NSApp.activate()` then `NSApp.orderFrontStandardAboutPanel(nil)`.
+- **MBX-11** Order: actions, separator, status, separator, `Settings…` (Command-Comma), `About Example`, separator, `Quit Example` (Command-Q) last. Short app name (16 characters or fewer), no version in About. Open About with `NSApp.activate(ignoringOtherApps: true)` (a user action) then `NSApp.orderFrontStandardAboutPanel(nil)`.
 - **MBX-12** A panel-style extra still needs Settings and Quit: a More menu (`ellipsis.circle`, SYM-2) in the panel plus the right-click menu, with the same items (house convention). A gear (`gearshape`) means Settings: use it only for a button that opens Settings directly, never for a menu of mixed actions. A panel with no Quit is a defect.
 - While the policy is `.regular` the app has a menu bar: give it App (Settings…), Edit, Window and Help so text keys work.
 
@@ -355,10 +377,10 @@ On a clean launch, notched display, crowded bar:
 - Icon reads in light, dark and tinted bars; states differ by shape; tooltip and VoiceOver give name and state (MBX-4 to MBX-6).
 - Left click opens the UI, right and Control-click the menu, Escape closes a popover (MBX-13). Menu ends Settings…, About, Quit; a panel has Settings and Quit (MBX-11, MBX-12).
 - Every action on a floating window also sits in the status menu (MBX-22).
-- Settings opens in front; the Dock icon shows while it is open, then goes (MBX-15, MBX-16).
+- With another app frontmost: Settings opens in front and is still in front 2 s later; the first menu in the popover or panel stays open on the first click; the Dock icon shows while a window is open, then goes (MBX-15, MBX-16).
 - Drag the icon out or turn it off in System Settings > Menu Bar: the app lives, the toggle shows off, you can still reach it (MBX-8 to 10).
 - Launch at login: on, off, requires approval (MBX-17). Reduce Motion: no animation (MBX-20).
-- Grep: no `activate(ignoringOtherApps`, no `SettingsLink` in a `MenuBarExtra`, no `register()` at launch.
+- Grep: `activate(ignoringOtherApps:` only on user-initiated paths, never at launch or on a timer; no bare `NSApp.activate()` before a window or popover a click opens; no `SettingsLink` in a `MenuBarExtra`, no `register()` at launch.
 
 ## Sources
 

@@ -312,7 +312,7 @@ Format: `ID` rule. `severity` · version gate (only when version-specific) · [s
 - **IMP-3** Gate macOS 15 window APIs (`windowLevel`, `WindowDragGesture`, window behavior modifiers) on a 14 target; scene modifiers through a plain `some Scene` function (`@SceneBuilder` has no `else`). `P1` · macOS 15+ · [Docs] → swiftui-appkit.md
 - **IMP-4** Reach the `NSWindow` with a `viewDidMoveToWindow` probe (`WindowAccessor`), never `NSApp.windows.first` or async guesses. `P2` · [Docs] → swiftui-appkit.md
 - **IMP-5** Never replace `window.delegate` in a SwiftUI app; forward through a proxy. `P1` · [Comm] → swiftui-appkit.md
-- **IMP-6** `NSApp.activate()` only after a user action; `activate(ignoringOtherApps:)` is deprecated in 27. `P2` · macOS 14+ · [Docs] → swiftui-appkit.md
+- **IMP-6** User action (click, hotkey, menu item, reopen): `NSApp.activate(ignoringOtherApps: true)` (deprecated, still forceful; `activate()` is a request an accessory app is often refused). Anything else: `activate()` or none. `P2` · macOS 14+ · [Docs] → swiftui-appkit.md
 - **IMP-7** Quick panel = `NSPanel` with `.nonactivatingPanel` in the init mask, `canBecomeKey` true, Escape and resign-key close it. `P1` · [Comm] → swiftui-appkit.md
 - **IMP-8** Set `NSHostingView.sizingOptions` on purpose; the default rewrites the window's min and max size. `P2` · macOS 13+ · [Docs] → swiftui-appkit.md
 - **IMP-9** `NSViewRepresentable`: create once, diff in `updateNSView` (no binding writes), clean up in `dismantleNSView`. `P2` · [Docs] → swiftui-appkit.md

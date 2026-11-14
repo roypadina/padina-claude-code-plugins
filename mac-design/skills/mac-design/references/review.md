@@ -84,7 +84,8 @@ Each line: pattern to pass to `S` (plus what to confirm by hand) → rule IDs. P
 - `addGlobalMonitorForEvents` used as a hotkey → KBD-8, FLW-6
 - `RegisterEventHotKey|KeyboardShortcuts\.Name` (read the default modifiers) → KBD-7
 - `kVK_` used to match shortcuts → KBD-4
-- `activate\(ignoringOtherApps` → IMP-6
+- `activate\(ignoringOtherApps` at launch, on a timer or from a notification → IMP-6
+- `NSApp\.activate\(\)` right before a window or popover a click opens, in an `.accessory` app → IMP-6
 - `NSApp\.activate\(\)` inside `applicationDidFinishLaunching` → IMP-6
 - `NSApp\.windows\.(first|\[0\])|NSApplication\.shared\.windows\.first` → IMP-4
 - `window\.delegate *=` in a SwiftUI app → IMP-5
