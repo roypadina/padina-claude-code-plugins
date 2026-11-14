@@ -10,6 +10,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-14
 
 ### Changed
+- finalize-app-release 0.8.3: Step 2 says bump the build number too, and Step 1 GAPs when a Sparkle release's `sparkle:version` is not greater than the previous release's
 - finalize-app-release 0.8.2: verified LaunchAgent in-app update recipe, release-notes file from CHANGELOG with `--verify-tag`, CI Swift-version and `@SwiftUI.State` gotcha, support popup rollout status and reviewer principles
 
 ## 2026-11-13
