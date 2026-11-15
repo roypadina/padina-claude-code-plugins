@@ -209,8 +209,8 @@ Set `LSUIElement` to `YES` in Info.plist for a menu-bar-only app (clean launch n
 2. When the last such window closes: `setActivationPolicy(.accessory)`. Popovers and panels do not count.
 3. Activate only on a user action (click, hotkey, menu item, reopen), never at launch, at login or on a timer.
 
-- **Forceful on user actions, cooperative otherwise (IMP-6).** Since macOS 14 `NSApp.activate()` is a request, and from an `.accessory` app the front app often refuses it (traced on 27.2, 2026-11-14: `NSApp.isActive` reads true at once, but `frontmostApplication` stays the other app and `didBecomeActive` never posts). Symptoms: the first menu opened in a status popover or panel (`NSMenu` popUp, SwiftUI `Menu`, `Picker(.menu)`, right-click menu) closes at once, because opening it forces the activation and that closes it; windows opened from the menu bar open behind the front app. So a status-item click that opens a popover or panel, and every menu item or button that opens Settings, About, a main or welcome window, calls `NSApp.activate(ignoringOtherApps: true)`: deprecated (14, 27) but still forceful. Add a one-line why comment. Everything not started by the user (timers, notifications, launch at login, scheduled update reminders) keeps `activate()`. Sparkle: branch on `state.userInitiated` in `standardUserDriverWillHandleShowingUpdate`.
-- **Hand-back after the policy switch.** About 0.3–0.5 s after `.accessory` → `.regular`, macOS gives activation back to the previous app, even after the forceful call (traced 2026-11-15: Settings ended behind the front app with no click). After showing the window, watch 1.5 s: on `didResignActive` with no global mouse-down meanwhile and the window still visible, activate forcefully once and re-front the window (house `keepFront`, in the Settings example below). Only after a user-initiated show.
+- **Forceful on user actions, cooperative otherwise (IMP-6).** Since macOS 14 `NSApp.activate()` is a request, and from an `.accessory` app the front app often refuses it (traced on 27.2, 2026-11-14: `NSApp.isActive` reads true at once, but `frontmostApplication` stays the other app and `didBecomeActive` never posts). Symptoms: the first menu opened in a status popover or panel (`NSMenu` popUp, SwiftUI `Menu`, `Picker(.menu)`, right-click menu) closes at once, because opening it forces the activation and that closes it; windows opened from the menu bar open behind the front app. So a status-item click that opens a popover or panel, and every menu item or button that opens Settings, About, a main or welcome window, calls `NSApp.activate(ignoringOtherApps: true)`: deprecated (14, 27) but still forceful. Add a one-line why comment. Everything not started by the user (timers, notifications, launch at login, scheduled update reminders) keeps `activate()`. Sparkle: branch on `state.userInitiated` in `standardUserDriverWillHandleShowingUpdate`; the user-initiated branch also runs `keepFront(nil)`, since it switches to `.regular` too.
+- **Hand-back after the policy switch.** About 0.3–0.5 s after `.accessory` → `.regular`, macOS gives activation back to the previous app, even after the forceful call (traced 2026-11-15: Settings ended behind the front app with no click). After showing the window, watch 1.5 s: on `didResignActive` with no global mouse-down meanwhile and the window still visible, activate forcefully once and re-front the window (house `keepFront`, in the Settings example below). Only after a user-initiated show. Skip the re-activation once the policy is back to `.accessory` (window closed or update session over), and accept one limit: a keyboard app switch inside the 1.5 s is pulled back once.
 - Offer a Dock icon only as an explicit setting.
 - A relaunch from Finder sends a reopen event: implement `applicationShouldHandleReopen(_:hasVisibleWindows:)` to open the primary UI (MBX-8). A Dock menu exists only while the policy is `.regular`.
 - Return `false` from `applicationShouldTerminateAfterLastWindowClosed`. To keep one main window, hide it with `orderOut(nil)` from a window delegate: close-then-reopen of a SwiftUI `Window` crashed AppKit on macOS 26 (community, one source).
@@ -270,15 +270,15 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
 
     /// After the .accessory → .regular switch macOS hands activation back to the previous app (~0.3–0.5 s, traced on 27.2,
     /// even after the forceful call). Take it back once unless the user clicked elsewhere meanwhile.
-    private func keepFront(_ window: NSWindow) {
+    func keepFront(_ window: NSWindow?) {           // nil: Sparkle's update window
         var clicked = false, done = false
         let monitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { _ in clicked = true }
         let observer = NotificationCenter.default.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated {
-                guard !clicked, !done, window.isVisible else { return }
+                guard !clicked, !done, NSApp.activationPolicy() == .regular, window?.isVisible ?? true else { return }
                 done = true
                 NSApp.activate(ignoringOtherApps: true)
-                window.makeKeyAndOrderFront(nil)
+                window?.makeKeyAndOrderFront(nil)
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
