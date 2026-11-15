@@ -263,6 +263,8 @@ the `session-management` plugin's `/finish-session`), not to an ad-hoc `kill`.
   `sessions --json --full`), then end the turn. It takes the bare session id: the global ref
   returned `No matching session was found.`
 - `send-message` from an agent session signs the text; into a shell that breaks the command (5.3).
+- `send-text` and `send-enter` each print the whole session JSON (~60 lines) on success [live
+  11.5.0]. Redirect to `/dev/null` and check the exit code; read the screen with `read-text`.
 - From an agent session, `send-session-chat-message` / `queue-session-chat-prompt` / `send-message`
   sign the text too, and a `/` body gets the block first, so a slash command never runs. Signing
   happens only when the CLI finds a caller identity: unset `GHOSTEX_GLOBAL_SESSION_REF
