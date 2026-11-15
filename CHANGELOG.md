@@ -10,6 +10,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-15
 
 ### Changed
+- finalize-app-release 0.8.4: C2 reviewers must not xcodebuild or package (a `/tmp` `.app` hides the installed menu-bar icon; check `lsregister` lists only `/Applications`); AgentsSessionHopper row: attach the Linux CLI tarball in the same release (`releases/latest` link), `orb start`/`orb stop`, version check on the binary
 - mac-design 0.1.5: menu-bar activation rule from a traced macOS 27.2 bug — forceful `activate(ignoringOtherApps:)` on user-initiated opens (popover/panel, Settings, About, windows, user update checks), cooperative `activate()` otherwise; a `keepFront` guard for the hand-back ~0.5 s after the `.accessory` → `.regular` switch; IMP-6 and the review grep updated to match
 
 ## 2026-11-14
