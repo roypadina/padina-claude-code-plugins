@@ -7,6 +7,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-15
+
+### Changed
+- mac-design 0.1.5: menu-bar activation rule from a traced macOS 27.2 bug — forceful `activate(ignoringOtherApps:)` on user-initiated opens (popover/panel, Settings, About, windows, user update checks), cooperative `activate()` otherwise; a `keepFront` guard for the hand-back ~0.5 s after the `.accessory` → `.regular` switch; IMP-6 and the review grep updated to match
+
 ## 2026-11-14
 
 ### Changed
