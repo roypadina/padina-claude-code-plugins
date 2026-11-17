@@ -73,7 +73,10 @@ Only what applies to this session:
   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/session-procs.sh"` lists every process this session started
   that still runs — each is a `!` item.
 - **Files** — temp/scratch files, work-folder leftovers, generated artifacts, debug logs.
-- **Disk** — always, even when everything else is clean. Size every place this session wrote data:
+- **Disk** — always, even when everything else is clean. Start from the big-files ledger
+  `~/.claude/session-management/big-files/$CLAUDE_CODE_SESSION_ID.md` if it exists (one line per
+  big item the session recorded while working) — every entry still on disk must appear in the
+  report. Then size every place this session wrote data:
   its work folder (`du -sh <dir>`, then `du -sh <dir>/* <dir>/.[!.]* 2>/dev/null | sort -rh | head -15`),
   temp dirs it made, download targets, and build / package dirs it created in repos (`du -sh` each).
   Sort every leftover into keep (notes, research data, scripts, deliverables) or regenerable (see
@@ -143,7 +146,8 @@ If nothing is open: the `Disk:` lines, one line saying nothing is open + `Say "c
 
 Execute only the approved items, then one line per item: done / skipped / failed. A `clean` item
 re-checks each path is still regenerable (pushed, not edited since), deletes it, and says how much
-it freed (`freed 2.3 GB`).
+it freed (`freed 2.3 GB`). Then update the ledger: drop deleted entries; an entry the user chose to
+keep gets `kept <yyyy-mm-dd>` so it isn't offered again in this session.
 `ignore <n>` (or "never ask about X again") → append the item to the ignore list (create the file
 if missing): this one thing (`release gaps in agentctl`), or the whole kind only when the user
 said so (`release gaps, any repo`). Then one line `ignored: <what>`.

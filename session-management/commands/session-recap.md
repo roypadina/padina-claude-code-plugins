@@ -49,8 +49,9 @@ Only the checks that apply:
   `check its pane`. `ListAgents` if this session talked to other sessions. Never read their screen
   or message them.
 - **Git** — per repo touched: `git status -sb` (dirty files, ahead/behind).
-- **Disk** — `du -sh` of the session's work folder and anything big it downloaded or built: one
-  line with the total, plus each item ≥ 50 MB (`⚠` at ≥ 1 GB). Cleanup itself is `/finish-session`.
+- **Disk** — `du -sh` of the session's work folder and anything big it downloaded or built, plus
+  every entry in `~/.claude/session-management/big-files/$CLAUDE_CODE_SESSION_ID.md` (if it exists):
+  one line with the total, plus each item ≥ 50 MB (`⚠` at ≥ 1 GB). Cleanup itself is `/finish-session`.
 - **PRs** opened or updated here — `gh pr view <n> --json state,reviewDecision,mergeable,statusCheckRollup`
   with the right account; one line each.
 - **Session metadata** — if `agentctl` is on PATH:
