@@ -19,10 +19,19 @@ Arguments: $ARGUMENTS
 **Local cleanup** = only things this session created that nothing needs any more: scratch / temp
 files and dirs (`/tmp`, `$TMPDIR`, throwaway research downloads and test fixtures), leftover test
 resources it made, local branches it created that are already merged (`git branch -d`, never `-D`,
-never a remote branch). Never delete: anything under `~/ClaudWork/` (deliverables and artifacts
-stay), anything needed to resume this session later (notes, handoff files, reports, configs it
+never a remote branch). Never delete on its own: anything under `~/ClaudWork/` (deliverables and
+artifacts stay; its regenerable data is only offered, below), anything needed to resume this session later (notes, handoff files, reports, configs it
 wrote), worktrees, other sessions' files, anything outside this machine. Unsure → it is not
 cleanup; list it as an open item.
+
+**Regenerable data** = leftovers this session made that cost disk but lose nothing when deleted,
+because they can be rebuilt, re-installed or re-downloaded: build outputs (`bin/`, `obj/`, `dist/`,
+`build/`, `.build/`, `DerivedData/`, `target/`), dependency packages (`node_modules/`, `.venv/`,
+`Pods/`, vendored SDKs), caches, downloaded installers / datasets / archives / model files, and
+clones or copies whose work is committed and pushed. Allowed inside the work folder too (e.g.
+`~/ClaudWork/<folder>/`). Never offered: research notes, reports, raw data that can't be fetched
+again, scripts this session wrote, anything uncommitted or unpushed, anything needed to resume.
+Not auto-deleted — always listed with its size and offered (step 3).
 
 **Ignore list** = `~/.claude/session-management/finish-ignore.md`, one line per thing the user
 said never to raise again (`- <what> (<yyyy-mm-dd>)`), shared by every Claude config dir on this
@@ -64,6 +73,11 @@ Only what applies to this session:
   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/session-procs.sh"` lists every process this session started
   that still runs — each is a `!` item.
 - **Files** — temp/scratch files, work-folder leftovers, generated artifacts, debug logs.
+- **Disk** — always, even when everything else is clean. Size every place this session wrote data:
+  its work folder (`du -sh <dir>`, then `du -sh <dir>/* <dir>/.[!.]* 2>/dev/null | sort -rh | head -15`),
+  temp dirs it made, download targets, and build / package dirs it created in repos (`du -sh` each).
+  Sort every leftover into keep (notes, research data, scripts, deliverables) or regenerable (see
+  above). Bounded output only — never an unbounded `du` or `find`.
 - **Memory / config** — any gotcha or durable fact learned that isn't saved yet; skills or commands
   that should be patched with a lesson learned here.
 - **Session metadata** — if `agentctl` is on PATH: is the session named/labelled; should it be
@@ -95,6 +109,11 @@ The user will ask for detail if they want it.
 - **Open items:** one line each — `<what> → <proposed action>` (path/PR/ticket inline, no evidence
   dumps, no explanations). Only items that need action; skip anything clean.
 - Merge similar items (e.g. "3 temp files in X → delete").
+- **Disk:** always shown. First line = total size this session leaves on disk (work folder +
+  everything else it wrote). Then one line per leftover ≥ 10 MB, biggest first:
+  `<size>  <path>  keep|clean (<why>)`. Anything ≥ 1 GB is marked `⚠`. Every `clean` line also
+  becomes an open item `clean <what> (<size>) → delete`; merge them into one item when there are
+  several (`clean 4 regenerable dirs (2.3 GB) → delete`).
 - Prefix `!` to an item the close would kill or orphan: something started here that is still
   running (background shell or agent, port-forward, local server, Monitor, cron, loop), a lesson
   step 2b could not save, an unsent draft, uncommitted changes in a worktree this
@@ -108,17 +127,23 @@ Format:
 ```
 Done:
 - ...
+Disk: <total> left by this session
+- <size>  <path>  keep (<why>)
+- ⚠ <size>  <path>  clean (<why>)
 Open:
 1. <item> → <action>
 2. ! <item> → <action>
+3. clean <what> (<size>) → delete
 Run which? (all / 1,3 / none / ignore 2) — or "close" to close the session
 ```
 
-If nothing is open: one line saying so + `Say "close" to close the session.`
+If nothing is open: the `Disk:` lines, one line saying nothing is open + `Say "close" to close the session.`
 
 ## 4. Act on the user's picks
 
-Execute only the approved items, then one line per item: done / skipped / failed.
+Execute only the approved items, then one line per item: done / skipped / failed. A `clean` item
+re-checks each path is still regenerable (pushed, not edited since), deletes it, and says how much
+it freed (`freed 2.3 GB`).
 `ignore <n>` (or "never ask about X again") → append the item to the ignore list (create the file
 if missing): this one thing (`release gaps in agentctl`), or the whole kind only when the user
 said so (`release gaps, any repo`). Then one line `ignored: <what>`.
