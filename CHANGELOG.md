@@ -7,6 +7,12 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-18
+
+### Added
+- session-management 0.7.1: `/finish-session` and `/session-recap` read the session's big-files ledger (`~/.claude/session-management/big-files/<session-id>.md`, items ≥ 50 MB noted while working); every entry still on disk is shown, cleaned entries are dropped, kept ones marked `kept <date>`
+- session-management 0.7.0: `/finish-session` always shows a `Disk:` block — what the session leaves on disk with sizes, ≥ 1 GB marked `⚠` — and offers to delete regenerable data (build outputs, packages, caches, re-fetchable downloads, pushed clones), keeping notes, research data and scripts; `/session-recap` adds a disk line
+
 ## 2026-11-15
 
 ### Changed
