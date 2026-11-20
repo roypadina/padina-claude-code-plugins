@@ -144,6 +144,7 @@ Notes:
 
 - `.removalAllowed` (10.12) fits apps that stay useful without the icon; by default an item is not removable. Use `.terminationOnRemoval` only when quitting is wanted. The app must let the user bring the icon back: a Settings toggle bound to `isInserted`.
 - `item.menu` set-then-clear is a community workaround (`popUpStatusItemMenu(_:)` is deprecated). Re-test per macOS.
+- Entry point when the status item and windows are AppKit: a plain AppKit `@main` (`NSApplication.shared`, the delegate kept alive with `withExtendedLifetime(delegate) { app.run() }`, a hand-built `mainMenu` with App, Edit and Window). Do not keep a SwiftUI `App` whose only scene is a placeholder `Settings { EmptyView() }` carrying `.commands`: opening the running app again (Finder, Raycast, `open`) shows that empty Settings window (900 × 450, "<App> Settings") instead of your own (verified 27.2, 2026-11-20).
 - Use the button's target-action for clicks (MBX-14), not a local event monitor: Apple engineers say on the forums it is no longer supported on macOS 27 (27, verify).
 - Hotkey that opens this UI: KBD-7, KBD-8 in [menus-and-commands.md](menus-and-commands.md).
 
@@ -198,6 +199,7 @@ Drawing, template rules and symbol configuration: [icons.md](icons.md).
 
 - **Allow in the Menu Bar.** From macOS 26 people switch each app's icon in System Settings > Menu Bar. No API reads it. Apple DTS: use `behavior = .removalAllowed` and KVO on `isVisible`.
 - **No notch detection.** `isVisible` stays true when the item is crowded out or under the notch; `occlusionState` was unreliable on macOS 27 betas. The app must work with an invisible icon: hotkey, relaunch opens the UI, notifications (MBX-8, MBX-10). Add a Settings hint: "Icon missing? Check System Settings > Menu Bar."
+- **Only from `/Applications` (27).** The status item appears only when the running copy is inside `/Applications` and LaunchServices resolves the bundle id to that copy. A build run from DerivedData, `/tmp` or a work folder runs, but its icon never shows (verified 27.2). Test a dev build by installing it into `/Applications`; unregister other copies with `lsregister -u`.
 - Never move, hide or enumerate other apps' items.
 - **Menu icons on 27.** Status menus hide item images by default for apps linked on 26 or later. Opt in per item with `NSMenuItem.preferredImageVisibility = .visible` (27) or `.labelStyle(.titleAndIcon)`. Keep icons for state, places and devices. See MNU-10 in [menus-and-commands.md](menus-and-commands.md).
 

@@ -7,6 +7,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-20
+
+### Changed
+- mac-design 0.1.6: three gotchas from the Reeco VPN menu-bar app — an AppKit `@main` (not a SwiftUI `App` with a placeholder `Settings { EmptyView() }` scene, which opens an empty window on reopen) for `NSStatusItem` apps; on macOS 27 a status item shows only from `/Applications`; offscreen `cacheDisplay` renders of SwiftUI views for review (no Screen Recording)
+
 ## 2026-11-18
 
 ### Added
