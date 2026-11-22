@@ -7,6 +7,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-22
+
+### Changed
+- finalize-app-release 0.8.5: a PR for a reporter's issue says `Refs #N`, not `Closes #N`, so the issue stays open until they have tested the release
+
 ## 2026-11-20
 
 ### Changed

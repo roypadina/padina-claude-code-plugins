@@ -95,6 +95,8 @@ Top to bottom. Skip what Step 1 already shows as OK.
 
 1. Build and tests green with the repo's own commands. Protected `main` → commit on a branch now; push
    it, open the PR, wait for CI and `gh pr merge --squash --admin` only after the review gate (§ C2).
+   A PR for a user's issue that asks them to test the release: write `Refs #N`, not `Closes #N`, in the PR body;
+   `Closes` shuts the issue at merge, before they have tried the build (ASH #43 had to be reopened).
    Right after `gh pr create`, `gh pr checks --watch` prints "no checks reported" and exits non-zero:
    poll `gh pr checks` until a check exists, then watch. A helper script run in the background must not
    be edited while that run is open (bash reads the file as it goes) — run a copy.
