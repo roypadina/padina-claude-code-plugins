@@ -10,6 +10,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-22
 
 ### Changed
+- finalize-app-release 0.8.7: AgentsSessionHopper local install covers every install listed in the vault note `Setup/Claude/AgentsSessionHopper — installs.md`
 - finalize-app-release 0.8.6: AgentsSessionHopper Linux tarball check runs `strings` on the extracted binary (a pipe finds nothing on macOS) or `--version` in ubuntu:22.04; `orb stop` only when no other containers run
 - finalize-app-release 0.8.5: a PR for a reporter's issue says `Refs #N`, not `Closes #N`, so the issue stays open until they have tested the release
 
