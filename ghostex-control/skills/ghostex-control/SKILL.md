@@ -301,6 +301,15 @@ the `session-management` plugin's `/finish-session`), not to an ad-hoc `kill`.
   (`terminalCopyOnSelect`, default `false`; theme; font) go through `ghostex settings set`; options
   with no row (`macos-option-as-alt`, `keybind`) go in that file outside the managed markers.
   Copy on select seems to work in Claude sessions only because Claude Code copies its own selection.
+- "Turn on Claude's hooks?" card on every chat ("can't read the status file Claude keeps for this
+  terminal", fallback reason `noSessionRecord` in `~/.local/state/ghostex/agent-hooks/hook-fallbacks.json`):
+  with `useAgentHooks false` (hook-free tracking) Ghostex ties `~/.claude/sessions/<pid>.json` to a
+  pane by walking up from the `claude` pid to `zmx run <S-P-G>`, and **only shells may stand in
+  between** (`zmx_session_owning_agent`, `server/src/agent_hooks/ancestor_session.rs`). A wrapper
+  parent (`claude` → `sessionhopper` → `zsh` → `zmx`) makes the session unseen; after 90 s the card
+  shows [source, live 2026-11-23]. Fix: `ghostex settings set useAgentHooks true` (hooks route by the
+  inherited `GHOSTEX_*` env, so wrappers don't matter); with the hooks already installed it left all
+  5 profiles' `settings.json` byte-identical [live 10.4x]. Dismiss lasts only until gxserver restarts.
 
 ## 7. Ghostex's bundled skills — route, don't duplicate
 
