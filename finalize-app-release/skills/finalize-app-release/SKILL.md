@@ -351,6 +351,8 @@ how-to: its `README.md`, `docs/design.md`, `CLAUDE.md`. Skip when the app has no
       macOS 27 a menu-bar app then runs without a visible status item. After packaging, unregister and delete it:
       `/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -u <repo>/dist/<App>.app && rm -rf <repo>/dist/<App>.app`;
       `lsregister -dump | grep "^path:.*<App>.app"` must list only `/Applications`. Then relaunch.
+      That grep also matches the installed app's own nested bundles (`/Applications/<App>.app/Contents/Frameworks/Sparkle.framework/…/Updater.app`):
+      never `-u` a path under `/Applications/<App>.app/`. Unregistered one by mistake → `lsregister -f -R /Applications/<App>.app` (LanGuard 1.4.3).
     - App run by a LaunchAgent with KeepAlive (Obsidian Vault Git Watcher, VaultBar), brew path: brew swaps the bundle under
       the running agent, launchd relaunches it while still quarantined → SIGKILL "Launch Constraint Violation"
       (crash report). Clear the quarantine, then `launchctl kickstart -k gui/$(id -u)/<label>` — not `open`

@@ -10,6 +10,7 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 ## 2026-11-24
 
 ### Changed
+- finalize-app-release 0.8.8: the LaunchServices cleanup never unregisters bundles nested in the installed app (Sparkle `Updater.app`); how to re-register if it happened
 - session-management 0.8.0: `/session-recap` redesigned for coming back cold to a long (overnight, autopilot) session — the story so far (finished topics one line each, the current topic as a checklist of parts), running now, next steps, side topics & later (findings, later-todos, parked, not doing), and every unanswered question rewritten with context, lettered options and a recommended pick (`reply 1A 2B`); decisions the agent made without an answer show up as Confirm items
 
 ## 2026-11-22
