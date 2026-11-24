@@ -117,9 +117,10 @@ Install the plugin in every profile; the app's setup can do it for you.
 A long session starts things everywhere — background agents, other panes, PRs, tickets, temp files.
 These commands keep track of it:
 
-- `/session-recap` — mid-session: done / now / next, then what's open and *how* each item runs
-  (background agent, other pane or workspace, another session, a cron), what's missing, not planned,
-  waiting on, and what you need to do.
+- `/session-recap` — come back cold to a long (overnight) session: the story so far (finished topics
+  one line each, the current topic as a checklist), what is running and *how* (background agent, other
+  pane or workspace, another session, a cron), next steps, side findings and later-todos, and every
+  question waiting on you, rewritten with enough context to answer on the spot.
 - `/session-pause` — before a reboot or sleep: brings every background agent, shell, Monitor, cron
   and Workflow to a safe stop without losing work, records how to restart each, and says when it
   is safe. `/resume-all` restarts them afterwards.
