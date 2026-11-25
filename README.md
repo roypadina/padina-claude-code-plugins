@@ -258,14 +258,15 @@ skills (MIT).
 ### [`ghostex-control`](ghostex-control) — the Ghostex CLI, for Claude
 
 [Ghostex](https://ghostex.dev) runs every coding agent in its own persistent terminal session and
-exposes it all through a large `ghostex` / `gx` CLI. Its own agent skills are help-first and, all but
-one, never load automatically, so Claude meets the CLI's traps unaided: `ghostex terminal` creates a
+exposes it all through a large `ghostex` / `gx` CLI. Its own guides (`ghostex agents guide` and
+friends) are printed on demand, never loaded automatically, so Claude meets the CLI's traps unaided: `ghostex terminal` creates a
 session that is not started (and may add a sidebar project), `send-message` from an agent appends a
 sender block a shell then tries to run, and titles and numeric aliases are not safe handles for
-`kill`. This skill gives Claude the verified recipes (start a shell that runs a command after
-`.zshrc` with no race, start and message agents, read and wait on output), hard safety rules about
-other people's sessions and the user's window, a full command reference with risk classes,
-keyboard-shortcut answers from the live hotkey list, and routing to the skills Ghostex bundles.
+`kill`, and since Ghostex 12 an agent may no longer start a shell with a startup command. This skill
+gives Claude the verified recipes (start agents with `agents create`, start a shell and type into it
+after its prompt, message, read, wait on and close sessions), hard safety rules about other people's
+sessions and the user's window, a full command reference with risk classes, keyboard-shortcut answers
+from the live hotkey list, and routing to the guides Ghostex prints.
 
 **Requires** macOS and Ghostex (`brew install --cask ghostex`).
 

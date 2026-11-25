@@ -1,6 +1,6 @@
 # Ghostex CLI reference
 
-Every command in `ghostex --help` of Ghostex 10.40.0, grouped, with a risk class. `gx` is the same
+Every command in `ghostex --help` of Ghostex 10.40.0 (agent rows and new verbs re-checked on 12.0.0, 2026-11-25), grouped, with a risk class. `gx` is the same
 binary. `ghostex <command> --help` prints that command's usage and runs nothing (help gate in
 `server/src/ghostex_cli/mod.rs`); the commands with their own help pages are listed at the end.
 
@@ -20,9 +20,9 @@ printed `gx sessions` list.
 | `state \| dump-state` | R | Sidebar state JSON: `projects`, `sessions`, `product` |
 | `session-groups [--project-id id] [--json]` | R | `groups[] {groupId,projectId,title,sessionIds}` |
 | `previous-sessions [--query t] [--limit n] [--cursor c] [--project-id id] [--json]` | R | Closed sessions, newest first |
-| `create-session [title] [--input text] [--start] [--project-id id] [--group-id id] [--cwd path]` | W | Terminal session. `--input` runs once, after `.zshrc`, from the first precmd. `--start` makes the pty live. Result `{ok, session{projectId,sessionId,…}, provider}` |
+| `create-session [title] [--input text] [--start] [--project-id id] [--group-id id] [--cwd path]` | W | Terminal session. `--input` runs once, after `.zshrc`, from the first precmd — **refused from an agent session since 12.0.0** (`Only your own devices can supply a raw launch plan or startup command.`). `--start` makes the pty live. Result `{ok, session{projectId,sessionId,…}, provider}` |
 | `terminal \| t [--cwd path] [--title t] [-- command...]` | W | Quick terminal record, **not started**; registers a project for an unknown `--cwd` |
-| `create-agent <agentId> --project-id id [--group-id id] [--model m] [--effort e] [--first-input-draft t] [--run-on loc] [--defer-start] [--replace-empty-sessions] [--allow-hidden]` | W | Agent session with a per-session model/effort |
+| `create-agent <agentId> --project-id id [--group-id id] [--model m] [--effort e] [--first-input-draft t] [--run-on loc] [--account n\|email] [--defer-start] [--replace-empty-sessions] [--allow-hidden]` | W | Agent session with a per-session model/effort |
 | `run-agent <agentId> [--allow-hidden]` | UI | Clicks a configured agent button |
 | `rename-session <sessionId> <title> [--json]` | W | Sidebar title |
 | `rename-command <sel> <title>` | W | The agent's own rename command; wakes a sleeping session to deliver it |
@@ -84,12 +84,32 @@ Group edits go through the running app (Ghostex 10.36+).
 |---|---|---|
 | `agents whoami [--json]` | R | The calling session, from the environment |
 | `agents types [--json]`, `agents list [--all] [--json]` | R | |
-| `agents create <agentId> [--title t] [--project-id id] [--task t \| --body-file p] [--allow-hidden] [--standalone]` | W | Returns `globalRef` |
-| `agents send <ref> <text> \| --body-file p [--interrupt \| --queue] [--request-id id]` | W | Signed; delivery states `delivered/accepted/pending/queued` |
-| `agents close <ref>` | X | |
+| `agents create <agentId> [--title t] [--project-id id \| --path dir] [--task t \| --body-file p\|-] [--model m] [--effort e] [--role line] [--allow-hidden] [--standalone] [--computer name]` | W | Returns `globalRef`; `--path` adds the folder as a project (net-new). The agent-session launcher from an agent since 12.0.0 |
+| `agents send <ref> <text> \| --body-file p\|- [--interrupt \| --queue \| --with-next] [--request-id id]` | W | Signed; states `delivered/accepted/pending/queued/held`. `--with-next` holds an FYI until the recipient's next message. `--as-user` is refused inside a Ghostex session |
+| `agents send --main-coordinator (--project-id id \| --path dir) [--computer n] [--if-none create\|session] …` | W | Reach another project's main coordinator |
+| `agents wait-reply <ref> [--contains t] [--timeout s] [--after id\|now] [--json]` | R | Blocks until the next reply; exit 1 on timeout (default 600 s) |
+| `agents held [<ref>]`, `agents unhold <ref> (<req-id>… \| --all)` | R / W | `--with-next` notes |
+| `agents role set\|show\|clear [--session ref]` | W | Standing role line re-injected after `/clear` or compaction |
+| `agents close <ref>` | X | One agent session; no bulk mode |
 | `agents switch-account <ref> --account n\|email [--force] [--json]`, `agents reload <ref> [--json]` | X | `--force` and `reload` lose the current turn |
 | `accounts [--all] [--refresh] [--json]` | R | Claude and Codex accounts, usage, resets |
-| `coordinator create\|promote\|list\|status\|start-thread\|link\|unlink\|rename-self\|rename\|resolve\|reopen\|…` | W | See `ghostex coordinator --help` and the ghostex-orchestrator skill |
+| `coordinator create\|promote\|list\|status\|start-thread\|link\|unlink\|rename-self\|rename\|resolve\|reopen\|…` | W | See `ghostex coordinator --help` and `ghostex coordinator guide`. Also `item`, `board`, `remember`, `set-goal`, `playbook`, `make-main` |
+| `computers [--json]` | R | Connected computers; `--computer <name>` on sessions/agents/coordinator verbs |
+
+## User-facing helpers (12.0.0)
+
+| Command | Risk | Notes |
+|---|---|---|
+| `needs-you add "<what>" [--detail t] [--command t] [--answer label]… \| list [--all] \| done Q<n> \| drop Q<n>` | W | A step only the user can do, above the chat box; answer arrives as `Q<n>: Done` |
+| `secret request --label t --reason t [--placeholder t] [--timeout-minutes N]` | W | Private card (chat view only); returns `{status:"saved", file}` — read the file only inside the command; `secret guide` |
+| `secret providers list\|add\|remove\|check` | R / N | 1Password accounts |
+| `message show <M12\|G….M12> \| list [--last N] [--grep t]` | R | The user's numbered messages |
+| `work item …`, `work topic`, `work next-tag` | W | Work panel items (`ghostex work --help`) |
+| `clear-command <sel> [--timeout s] [--no-wait] [--json]` | X | The agent's own `/clear`; refused while it works |
+| `link add\|remove\|pin\|list …`, `link-session <sel> …` | W | Link a session to PRs / issues / tickets |
+| `project status [--computer n \| --all-computers] [--project-id id] [--json]` | R | Git state of the project on every computer |
+| `autopilot [status\|on\|off\|log …]` | R / W | Keeps sessions going while the user is away; only on request |
+| `help ask "<question>" [--new] [--json]` | W | Asks a Ghostex Help session |
 
 ## Projects and workspaces
 
@@ -99,7 +119,8 @@ Group edits go through the running app (Ghostex 10.36+).
 | `add-project <path> [--name n] [--create-if-missing] [--workspace w]` | W | Net-new sidebar project |
 | `remove-project (--project-id\|--path\|--name) v` | X | Deletes session records; close sessions first |
 | `move-project`, `group-project`, `restore-recent-project` | W | |
-| `workspace list \| create \| rename \| move-project \| delete` | R / W / X | |
+| `workspace list \| instructions <w> \| create \| rename \| move-project \| delete` | R / W / X | Changes are refused from agent sessions and Ghostex panes (Settings > Workspaces only) |
+| `projects [--all] [--json] [--computer n]`, `rename-project`, `relocate-project`, `move-project-folder` | R / W | `move-project-folder` only when the user asked |
 | `clone-repository <url> <dest> [--workspace w] --json` | N | Clones and registers |
 | `browse-directories`, `discover-source-control --json`, `lookup-repository … --json` | R | |
 | `read-sidebar-project-collections --json`, `read-sidebar-spaces --json`, `read-custom-session-tags --json` | R | The `update-*` counterparts replace the whole state: avoid |
@@ -114,7 +135,7 @@ Group edits go through the running app (Ghostex 10.36+).
 | `attach \| a \| resume \| r [sel]` | UI | Attaches the current terminal to the session |
 | `floating-editor \| fe -- <editor> [args]`, `floating-monaco-editor \| fme <file>`, `toggle-sidebar` | UI | |
 | `notify --title t [--body b] [--session-id id]` | W | Bell row; defaults to the calling session |
-| `show <file.html> [--title t] [--json] [--no-check]`, `visual check …` | W / R | Chat cards: the ghostex-visuals skill |
+| `show <file.html> [--title t] [--json] [--no-check]`, `visual check …` | W / R | Chat cards: `ghostex visual guide visuals\|forms\|pages`. `page retire <page>…` retires published pages |
 | `screenshot [out.png]`, `bundle [dir]` | R | Capture the Ghostex window |
 | `logs [--file f] [--lines n] [--grep t] [--json]` | R | |
 
@@ -141,7 +162,7 @@ Group edits go through the running app (Ghostex 10.36+).
 Help pages: `ghostex automations --help`, `ghostex quick-actions --help`. Read verbs
 (`automation-state`, `issues status`, `board` reads, `team status`) are **R**; saving, running,
 deleting, posting to Slack, creating tickets and `team deploy` are **W/N**. Route to the
-ghostex-cli and ghostex-manage-beads skills.
+`ghostex board guide` and `ghostex --help` (the bundled ghostex-cli / ghostex-manage-beads skills are gone since 12.0.0).
 
 ## Commands with their own help page
 

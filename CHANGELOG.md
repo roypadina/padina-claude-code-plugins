@@ -7,6 +7,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-25
+
+### Changed
+- ghostex-control 0.2.0: checked against Ghostex 12.0.0 — `create-session --input` from an agent session is refused ("Only your own devices can supply a raw launch plan or startup command."), so agents start with `ghostex agents create` (new flags `--path`, `--model`, `--effort`, `--role`, `--computer`) and shells with a bare `create-session --start` + `send-text`; close agents with `agents close`; new verbs `agents wait-reply`, `--with-next`, `needs-you`, `secret request`, `computers`; the app no longer bundles skills, so § 7 routes to the printed guides (`ghostex agent-guide`, `agents guide`, `coordinator guide`, `help guide`, `visual guide`, `board guide`, `secret guide`)
+
 ## 2026-11-24
 
 ### Changed

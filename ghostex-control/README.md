@@ -30,13 +30,13 @@ help text alone, Claude reaches for the obvious verbs and hits the traps:
 | Feature | Mechanism | File |
 |---|---|---|
 | Find yourself: environment, `agents whoami`, global refs | skill | `skills/ghostex-control/SKILL.md` |
-| Start a shell that runs a command, with no `.zshrc` race | skill recipe (`create-session --input … --start`) | same |
-| Start an agent session, message it, read and wait on it | skill recipe, routes to Ghostex's `ghostex-agents` skill | same |
+| Start a shell that runs a command (bare `create-session --start`, prompt wait, `send-text`) | skill recipe | same |
+| Start an agent session (`agents create`), message it, read and wait on it, close it | skill recipe, routes to `ghostex agents guide` | same |
 | Type into, read, wait on, rename, sleep, close, restore sessions | skill | same |
 | Notifications, hooks and the status line Ghostex installs | skill | same |
 | Answer keyboard-shortcut questions from the live hotkey list (your rebinds included) | skill (`ghostex settings hotkeys list`) | same |
 | Every CLI command with a risk class (read / state / UI / destructive / network) | reference, loaded on demand | `skills/ghostex-control/references/cli-reference.md` |
-| Routing to the skills Ghostex bundles in the app | skill | `SKILL.md` § 7 |
+| Routing to the guides Ghostex prints (`ghostex <area> guide`) | skill | `SKILL.md` § 7 |
 
 No hooks, no scripts, no commands: the plugin is knowledge only.
 
@@ -47,26 +47,27 @@ exactly; never `all`; never focus, open, attach or switch projects unless asked;
 session a person or another agent is using; leave Ghostex's hooks, status line wrapper and settings
 files alone; never restart the app or gxserver to fix a delivery problem.
 
-### Why `create-session --input` and not "wait for the prompt, then type"
+### Ghostex 12: agents launch agents with `agents create`
 
-The skill's main recipe hands the command to Ghostex instead of typing it. In zsh, Ghostex `eval`s
-that text once from the login shell's first `precmd` — after `.zshrc`, instant prompts and
-framework update questions are done — so nothing can swallow the first characters, aliases work,
-and `claude "$(< prompt.md)"` passes a long prompt with no quoting trouble. Typing into a fresh
-shell is still documented, with a prompt wait, for when it is the only option.
+Since Ghostex 12.0.0, `create-session --input '<cmd>'` run from an agent session is refused ("Only
+your own devices can supply a raw launch plan or startup command."). The skill launches agents with
+Ghostex's own `ghostex agents create` (configured launcher, account, approvals and hooks, folder
+pre-trusted) and uses a bare `create-session --start` plus a prompt wait and `send-text` only for plain
+shell work, never to type an agent launcher around the refusal.
 
-### Works with Ghostex's own skills
+### Works with Ghostex's own guides
 
-Ghostex bundles skills in `/Applications/Ghostex.app/Contents/Resources/CLI/skills/`
-(`ghostex-cli`, `ghostex-agents`, `ghostex-orchestrator`, `ghostex-help`, browser and computer use,
-the board, visuals, and more). This plugin does not copy them. Its skill is the one Claude loads
-automatically; it carries the traps and the safety rules, and tells Claude which bundled skill file
-to read when a task goes deeper (multi-agent runs, coordinators, settings, browsers).
+Ghostex 12 no longer bundles skills; it prints guides that always match the installed version
+(`ghostex agent-guide`, `ghostex agents guide`, `ghostex coordinator guide`, `ghostex help guide`,
+`ghostex visual guide`, `ghostex board guide`, `ghostex secret guide`). This plugin does not copy
+them. Its skill is the one Claude loads automatically; it carries the traps and the safety rules, and
+tells Claude which guide to read when a task goes deeper (multi-agent runs, coordinators, settings,
+browsers, secrets).
 
 ## Verified vs unverified
 
-Checked against Ghostex 10.40.0: the CLI help, the bundled skills, read-only commands on a live
-install, and the gxserver source on GitHub. Behaviour that would need a mutating live run is marked
+Checked against Ghostex 12.0.0 (2026-11-25; first written against 10.40.0): the CLI help, the built-in
+guides, read-only commands and an `agents create` → `agents close` round trip on a live install, and the gxserver source on GitHub. Behaviour that would need a mutating live run is marked
 **[unverified]** in the skill:
 
 - whether `agents create` leaves the user's focus where it was (`create-session --start` does);
