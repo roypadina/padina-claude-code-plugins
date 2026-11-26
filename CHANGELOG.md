@@ -7,6 +7,11 @@ version is in its `.claude-plugin/plugin.json`). Format follows
 
 ## [Unreleased]
 
+## 2026-11-26
+
+### Added
+- session-management 0.9.0: `/finish-session` reviews the whole session for routines worth turning into a new skill or slash command (or a patch to an existing one) because similar work comes up elsewhere; up to 3 `build` open items, created only when picked, generalised with no session-specific data
+
 ## 2026-11-25
 
 ### Changed

@@ -125,7 +125,8 @@ These commands keep track of it:
   and Workflow to a safe stop without losing work, records how to restart each, and says when it
   is safe. `/resume-all` restarts them afterwards.
 - `/finish-session` — before closing: every open, un-done, un-cleaned or owed item with a proposed
-  action; acts only on what you pick. Then say `close`: it marks the session done in `agentctl` and
+  action, plus routines from the session worth turning into a reusable skill or command; acts only
+  on what you pick. Then say `close`: it marks the session done in `agentctl` and
   closes the cmux pane — only its own, never someone else's.
 
 **Requires** nothing. `jq`, `agentctl` and cmux are used when present.

@@ -83,6 +83,15 @@ Only what applies to this session:
   above). Bounded output only — never an unbounded `du` or `find`.
 - **Memory / config** — any gotcha or durable fact learned that isn't saved yet; skills or commands
   that should be patched with a lesson learned here.
+- **Reuse candidates** — look back over the whole session for a procedure worth turning into a
+  new slash command or skill: a multi-step routine (several commands, checks or decisions in a
+  fixed order) that this session ran, or ran more than once, and that is likely to come up again —
+  because the user or memory says similar work happens elsewhere (other repos, sessions, tickets),
+  or the routine is plainly general. First check what already exists (installed skills and
+  commands, `~/.claude/skills`, `~/.claude/commands`, plugin sources): close match → propose
+  patching or extending it instead. Skip one-offs, trivial one-liners, and routines tied to this
+  session's specific data. Never build one in step 2b — each is an open item
+  `build <skill|command> <name>: <what it would do, reused where> → create` (at most 3, best first).
 - **Session metadata** — if `agentctl` is on PATH: is the session named/labelled; should it be
   marked done or flagged?
 
@@ -148,6 +157,9 @@ Execute only the approved items, then one line per item: done / skipped / failed
 re-checks each path is still regenerable (pushed, not edited since), deletes it, and says how much
 it freed (`freed 2.3 GB`). Then update the ledger: drop deleted entries; an entry the user chose to
 keep gets `kept <yyyy-mm-dd>` so it isn't offered again in this session.
+A `build` item creates the skill or command the way the user's CLAUDE.md says (location, scope,
+inventory rules; a skill-creation skill if installed), generalised from what this session did —
+no session-specific paths, ids or data — then one line with its name and path.
 `ignore <n>` (or "never ask about X again") → append the item to the ignore list (create the file
 if missing): this one thing (`release gaps in agentctl`), or the whole kind only when the user
 said so (`release gaps, any repo`). Then one line `ignored: <what>`.
